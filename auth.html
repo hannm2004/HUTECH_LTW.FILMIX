@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FILMIX — Đăng Nhập / Đăng Ký</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        /* Extra auth-page animations not in main CSS */
+        .auth-card__logo {
+            animation: logoGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoGlow {
+            from {
+                text-shadow: 0 0 20px rgba(229, 9, 20, .5);
+            }
+
+            to {
+                text-shadow: 0 0 50px rgba(229, 9, 20, .9), 0 0 80px rgba(229, 9, 20, .3);
+            }
+        }
+
+        /* Floating poster rows */
+        .auth-page__posters {
+            display: grid;
+            grid-template-rows: repeat(2, 1fr);
+        }
+
+        .posters-row {
+            display: flex;
+            gap: 3px;
+            overflow: hidden;
+        }
+
+        .posters-row img {
+            width: 150px;
+            height: 220px;
+            object-fit: cover;
+            flex-shrink: 0;
+            filter: saturate(.2) brightness(.45);
+        }
+
+        .posters-row:nth-child(1) {
+            animation: slideLeft 25s linear infinite;
+        }
+
+        .posters-row:nth-child(2) {
+            animation: slideRight 30s linear infinite;
+        }
+
+        @keyframes slideLeft {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        @keyframes slideRight {
+            from {
+                transform: translateX(-50%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        /* Password strength bar */
+        .pw-strength {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .pw-strength__bar {
+            height: 100%;
+            width: 0;
+            border-radius: 2px;
+            transition: width .4s ease, background .4s;
+        }
+
+        /* Error / success messages */
+        .form-msg {
+            font-size: .78rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-msg.error {
+            color: #ff6b6b;
+            display: block;
+        }
+
+        .form-msg.success {
+            color: #6bffb8;
+            display: block;
+        }
+
+        /* Input valid/invalid states */
+        .form-input.valid {
+            border-color: #2dcc70;
+        }
+
+        .form-input.invalid {
+            border-color: #ff6b6b;
+        }
+
+        /* Back to home link */
+        .back-home {
+            position: fixed;
+            top: 24px;
+            left: 28px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: rgba(255, 255, 255, .55);
+            font-size: .8rem;
+            font-weight: 600;
+            letter-spacing: .5px;
+            transition: color .25s;
+        }
+
+        .back-home:hover {
+            color: var(--white);
+        }
+
+        .back-home svg {
+            flex-shrink: 0;
+        }
+
+        /* Loading spinner on btn */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn-auth.loading .btn-text {
+            display: none;
+        }
+
+        .btn-auth .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, .3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+
+        .btn-auth.loading .spinner {
+            display: block;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1e1e1e;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: .88rem;
+            font-weight: 500;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
+            transition: transform .4s var(--ease);
+            z-index: 9998;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            border-left: 3px solid #2dcc70;
+        }
+
+        .toast.error {
+            border-left: 3px solid #ff6b6b;
+        }
+
+        .toast-icon {
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Back to home -->
+    <a href="index.html" class="back-home">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+        </svg>
+        Về Trang Chủ
+    </a>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">✓</span>
+        <span id="toastMsg">Đăng nhập thành công!</span>
+    </div>
+
+    <div class="auth-page">
+
+        <!-- BG layers -->
+        <div class="auth-page__bg"></div>
+
+        <!-- Animated poster rows -->
+        <div class="auth-page__posters" aria-hidden="true">
+            <div class="posters-row">
+                <!-- Row 1: duplicated for seamless loop -->
+                <img src="https://picsum.photos/seed/ap1/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap2/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap3/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap4/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap5/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap6/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap7/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap8/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap9/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap10/150/220" alt="" />
+                <!-- duplicates -->
+                <img src="https://picsum.photos/seed/ap1/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap2/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap3/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap4/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap5/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap6/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap7/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap8/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap9/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap10/150/220" alt="" />
+            </div>
+            <div class="posters-row">
+                <img src="https://picsum.photos/seed/ap11/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap12/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap13/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap14/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap15/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap16/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap17/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap18/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap19/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap20/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap11/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap12/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap13/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap14/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap15/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap16/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap17/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap18/150/220" alt="" />
+                <img src="https://picsum.photos/seed/ap19/150/220" alt="" /><img
+                    src="https://picsum.photos/seed/ap20/150/220" alt="" />
+            </div>
+        </div>
+
+        <div class="auth-page__overlay"></div>
+
+        <!-- ── Auth Card ── -->
+        <div class="auth-card">
+
+            <a href="index.html" class="auth-card__logo">FILM<span>IX</span></a>
+
+            <!-- Tab switcher -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Đăng Nhập</button>
+                <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Đăng Ký</button>
+            </div>
+
+            <!-- ═══ LOGIN PANEL ═══ -->
+            <div class="auth-panel active" id="panelLogin">
+                <div class="social-btns">
+                    <button class="btn-social" onclick="socialLogin('Google')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                fill="#4285F4" />
+                            <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853" />
+                            <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                fill="#FBBC05" />
+                            <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335" />
+                        </svg>
+                        Google
+                    </button>
+                    <button class="btn-social" onclick="socialLogin('Facebook')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#1877F2">
+                            <path
+                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                        Facebook
+                    </button>
+                    <button class="btn-social" onclick="socialLogin('Apple')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42zm2.52 7.44a4.51 4.51 0 0 1 2.16-3.81 4.66 4.66 0 0 0-3.66-2c-1.56-.16-3 .91-3.83.91s-2-.89-3.3-.87a4.92 4.92 0 0 0-4.14 2.53C2.93 12 3.6 16.08 5.86 18.73c1.12 1.31 2.44 2.78 4.17 2.72s2.35-.89 4.4-.89 2.63.89 4.44.86 2.96-1.34 4.06-2.65a10.94 10.94 0 0 0 1.81-3.07 4.38 4.38 0 0 1-2.28-4.07z" />
+                        </svg>
+                        Apple
+                    </button>
+                </div>
+
+                <div class="auth-divider">hoặc tiếp tục với email</div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="loginEmail" class="form-input" placeholder="ten@email.com"
+                        oninput="validateEmail(this, 'loginEmailMsg')" />
+                    <span class="form-msg" id="loginEmailMsg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="display:flex;justify-content:space-between;">
+                        Mật Khẩu
+                        <a href="#" class="forgot-link" style="float:none;">Quên mật khẩu?</a>
+                    </label>
+                    <div class="input-wrap">
+                        <input type="password" id="loginPw" class="form-input" placeholder="••••••••"
+                            oninput="validatePwBasic(this)" />
+                        <button class="toggle-pass" type="button" onclick="togglePw('loginPw', this)">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" id="eyeLogin">
+                                <path
+                                    d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <label class="form-check">
+                    <input type="checkbox" id="rememberMe" /> <span>Ghi nhớ đăng nhập</span>
+                </label>
+
+                <button class="btn-auth" onclick="handleLogin()">
+                    <span class="btn-text">Đăng Nhập</span>
+                    <div class="spinner"></div>
+                </button>
+
+                <p class="auth-note">
+                    Chưa có tài khoản? <a href="#" onclick="switchTab('signup')">Đăng ký miễn phí</a>
+                </p>
+            </div>
+
+            <!-- ═══ SIGNUP PANEL ═══ -->
+            <div class="auth-panel" id="panelSignup">
+                <div class="social-btns">
+                    <button class="btn-social" onclick="socialLogin('Google')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                fill="#4285F4" />
+                            <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853" />
+                            <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                fill="#FBBC05" />
+                            <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335" />
+                        </svg>
+                        Google
+                    </button>
+                    <button class="btn-social" onclick="socialLogin('Facebook')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#1877F2">
+                            <path
+                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                        Facebook
+                    </button>
+                    <button class="btn-social" onclick="socialLogin('Apple')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42zm2.52 7.44a4.51 4.51 0 0 1 2.16-3.81 4.66 4.66 0 0 0-3.66-2c-1.56-.16-3 .91-3.83.91s-2-.89-3.3-.87a4.92 4.92 0 0 0-4.14 2.53C2.93 12 3.6 16.08 5.86 18.73c1.12 1.31 2.44 2.78 4.17 2.72s2.35-.89 4.4-.89 2.63.89 4.44.86 2.96-1.34 4.06-2.65a10.94 10.94 0 0 0 1.81-3.07 4.38 4.38 0 0 1-2.28-4.07z" />
+                        </svg>
+                        Apple
+                    </button>
+                </div>
+
+                <div class="auth-divider">hoặc tạo tài khoản mới</div>
+
+                <div class="form-group">
+                    <label class="form-label">Họ &amp; Tên</label>
+                    <input type="text" id="signupName" class="form-input" placeholder="Nguyễn Văn A"
+                        oninput="validateName(this)" />
+                    <span class="form-msg" id="signupNameMsg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="signupEmail" class="form-input" placeholder="ten@email.com"
+                        oninput="validateEmail(this, 'signupEmailMsg')" />
+                    <span class="form-msg" id="signupEmailMsg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mật Khẩu</label>
+                    <div class="input-wrap">
+                        <input type="password" id="signupPw" class="form-input" placeholder="Tối thiểu 8 ký tự"
+                            oninput="checkPwStrength(this)" />
+                        <button class="toggle-pass" type="button" onclick="togglePw('signupPw', this)">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="pw-strength">
+                        <div class="pw-strength__bar" id="pwBar"></div>
+                    </div>
+                    <span class="form-msg" id="pwStrengthMsg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Xác Nhận Mật Khẩu</label>
+                    <div class="input-wrap">
+                        <input type="password" id="signupPwConfirm" class="form-input" placeholder="Nhập lại mật khẩu"
+                            oninput="checkPwMatch(this)" />
+                        <button class="toggle-pass" type="button" onclick="togglePw('signupPwConfirm', this)">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <span class="form-msg" id="pwMatchMsg"></span>
+                </div>
+
+                <label class="form-check" style="margin-bottom:20px;">
+                    <input type="checkbox" id="agreeTerms" />
+                    <span>Tôi đồng ý với <a href="#" style="color:var(--red);">Điều khoản</a> &amp; <a href="#"
+                            style="color:var(--red);">Chính sách</a></span>
+                </label>
+
+                <button class="btn-auth" onclick="handleSignup()">
+                    <span class="btn-text">Tạo Tài Khoản Miễn Phí</span>
+                    <div class="spinner"></div>
+                </button>
+
+                <p class="auth-note">
+                    Đã có tài khoản? <a href="#" onclick="switchTab('login')">Đăng nhập ngay</a>
+                </p>
+            </div>
+
+        </div><!-- /auth-card -->
+    </div><!-- /auth-page -->
+
+    <script>
+        /* ── Read ?mode= from URL ── */
+        (function () {
+            const p = new URLSearchParams(window.location.search);
+            if (p.get('mode') === 'signup') switchTab('signup');
+        })();
+
+        /* ── Tab switch ── */
+        function switchTab(tab) {
+            document.querySelectorAll('.auth-tab, .auth-panel').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab' + cap(tab)).classList.add('active');
+            document.getElementById('panel' + cap(tab)).classList.add('active');
+            return false;
+        }
+        function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+        /* ── Toggle password visibility ── */
+        function togglePw(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const isText = input.type === 'text';
+            input.type = isText ? 'password' : 'text';
+            btn.querySelector('svg').style.opacity = isText ? '1' : '.5';
+        }
+
+        /* ── Validation helpers ── */
+        function validateEmail(input, msgId) {
+            const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
+            const msg = document.getElementById(msgId);
+            if (!input.value) { input.className = 'form-input'; msg.className = 'form-msg'; return; }
+            if (ok) {
+                input.className = 'form-input valid';
+                msg.className = 'form-msg success'; msg.textContent = '✓ Email hợp lệ';
+            } else {
+                input.className = 'form-input invalid';
+                msg.className = 'form-msg error'; msg.textContent = 'Email không hợp lệ';
+            }
+        }
+
+        function validateName(input) {
+            const ok = input.value.trim().length >= 2;
+            input.className = input.value ? (ok ? 'form-input valid' : 'form-input invalid') : 'form-input';
+        }
+
+        function validatePwBasic(input) {
+            input.className = input.value.length >= 6 ? 'form-input valid' : (input.value ? 'form-input invalid' : 'form-input');
+        }
+
+        function checkPwStrength(input) {
+            const val = input.value;
+            const bar = document.getElementById('pwBar');
+            const msg = document.getElementById('pwStrengthMsg');
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+            const levels = [
+                { w: '0%', bg: 'transparent', text: '' },
+                { w: '25%', bg: '#e50914', text: '⚠ Yếu' },
+                { w: '50%', bg: '#ff9f43', text: '● Trung bình' },
+                { w: '75%', bg: '#ffd32a', text: '◑ Khá' },
+                { w: '100%', bg: '#2dcc70', text: '✓ Mạnh' },
+            ];
+            const lv = levels[score];
+            bar.style.width = lv.w;
+            bar.style.background = lv.bg;
+            msg.textContent = lv.text;
+            msg.className = score > 0 ? (score >= 3 ? 'form-msg success' : 'form-msg error') : 'form-msg';
+            input.className = val.length >= 8 ? 'form-input valid' : (val ? 'form-input invalid' : 'form-input');
+        }
+
+        function checkPwMatch(input) {
+            const pw = document.getElementById('signupPw').value;
+            const msg = document.getElementById('pwMatchMsg');
+            if (!input.value) { input.className = 'form-input'; msg.className = 'form-msg'; return; }
+            if (input.value === pw) {
+                input.className = 'form-input valid';
+                msg.className = 'form-msg success'; msg.textContent = '✓ Mật khẩu khớp';
+            } else {
+                input.className = 'form-input invalid';
+                msg.className = 'form-msg error'; msg.textContent = 'Mật khẩu không khớp';
+            }
+        }
+
+        /* ── Toast notification ── */
+        function showToast(message, type = 'success') {
+            const t = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msgEl = document.getElementById('toastMsg');
+            icon.textContent = type === 'success' ? '✓' : '✕';
+            msgEl.textContent = message;
+            t.className = `toast ${type} show`;
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        /* ── Loading spinner ── */
+        function setLoading(btn, loading) {
+            btn.classList.toggle('loading', loading);
+            btn.disabled = loading;
+        }
+
+        /* ── Social login ── */
+        function socialLogin(provider) {
+            showToast(`Đang kết nối với ${provider}...`, 'success');
+        }
+
+        /* ── Handle Login ── */
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pw = document.getElementById('loginPw').value;
+            const btn = document.querySelector('#panelLogin .btn-auth');
+
+            if (!email || !pw) { showToast('Vui lòng điền đầy đủ thông tin', 'error'); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Email không hợp lệ', 'error'); return; }
+            if (pw.length < 6) { showToast('Mật khẩu phải có ít nhất 6 ký tự', 'error'); return; }
+
+            setLoading(btn, true);
+            setTimeout(() => {
+                setLoading(btn, false);
+                showToast('Đăng nhập thành công! Chào mừng trở lại 👋', 'success');
+                setTimeout(() => { window.location.href = 'index.html'; }, 1800);
+            }, 1600);
+        }
+
+        /* ── Handle Signup ── */
+        function handleSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const pw = document.getElementById('signupPw').value;
+            const pwConf = document.getElementById('signupPwConfirm').value;
+            const agree = document.getElementById('agreeTerms').checked;
+            const btn = document.querySelector('#panelSignup .btn-auth');
+
+            if (!name || !email || !pw || !pwConf) { showToast('Vui lòng điền đầy đủ thông tin', 'error'); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Email không hợp lệ', 'error'); return; }
+            if (pw.length < 8) { showToast('Mật khẩu phải có ít nhất 8 ký tự', 'error'); return; }
+            if (pw !== pwConf) { showToast('Mật khẩu không khớp', 'error'); return; }
+            if (!agree) { showToast('Bạn cần đồng ý với điều khoản sử dụng', 'error'); return; }
+
+            setLoading(btn, true);
+            setTimeout(() => {
+                setLoading(btn, false);
+                showToast('Tài khoản đã được tạo thành công! 🎉', 'success');
+                setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+            }, 1800);
+        }
+    </script>
+</body>
+
+</html>
