@@ -1,3 +1,6 @@
+@{
+    Layout = null;
+}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -5,14 +8,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FILMIX — Đăng Nhập / Đăng Ký</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <script src="~/js/i18n.js"></script>
     <style>
         /* Extra auth-page animations not in main CSS */
         .auth-card__logo {
             animation: logoGlow 3s ease-in-out infinite alternate;
         }
 
-        @keyframes logoGlow {
+        @@keyframes logoGlow {
             from {
                 text-shadow: 0 0 20px rgba(229, 9, 20, .5);
             }
@@ -50,7 +54,7 @@
             animation: slideRight 30s linear infinite;
         }
 
-        @keyframes slideLeft {
+        @@keyframes slideLeft {
             from {
                 transform: translateX(0);
             }
@@ -60,7 +64,7 @@
             }
         }
 
-        @keyframes slideRight {
+        @@keyframes slideRight {
             from {
                 transform: translateX(-50%);
             }
@@ -137,7 +141,7 @@
         }
 
         /* Loading spinner on btn */
-        @keyframes spin {
+        @@keyframes spin {
             to {
                 transform: rotate(360deg);
             }
@@ -203,11 +207,11 @@
 <body>
 
     <!-- Back to home -->
-    <a href="index.html" class="back-home">
+    <a asp-controller="Home" asp-action="Index" class="back-home">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
         </svg>
-        Về Trang Chủ
+        <span data-i18n="auth.back">Về Trang Chủ</span>
     </a>
 
     <!-- Toast -->
@@ -225,49 +229,49 @@
         <div class="auth-page__posters" aria-hidden="true">
             <div class="posters-row">
                 <!-- Row 1: duplicated for seamless loop -->
-                <img src="https://picsum.photos/seed/ap1/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap2/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap3/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap4/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap5/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap6/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap7/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap8/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap9/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap10/150/220" alt="" />
+                <img src="~/images/auth/ap1.jpg" alt="" /><img
+                    src="~/images/auth/ap2.jpg" alt="" />
+                <img src="~/images/auth/ap3.jpg" alt="" /><img
+                    src="~/images/auth/ap4.jpg" alt="" />
+                <img src="~/images/auth/ap5.jpg" alt="" /><img
+                    src="~/images/auth/ap6.jpg" alt="" />
+                <img src="~/images/auth/ap7.jpg" alt="" /><img
+                    src="~/images/auth/ap8.jpg" alt="" />
+                <img src="~/images/auth/ap9.jpg" alt="" /><img
+                    src="~/images/auth/ap10.jpg" alt="" />
                 <!-- duplicates -->
-                <img src="https://picsum.photos/seed/ap1/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap2/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap3/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap4/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap5/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap6/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap7/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap8/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap9/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap10/150/220" alt="" />
+                <img src="~/images/auth/ap1.jpg" alt="" /><img
+                    src="~/images/auth/ap2.jpg" alt="" />
+                <img src="~/images/auth/ap3.jpg" alt="" /><img
+                    src="~/images/auth/ap4.jpg" alt="" />
+                <img src="~/images/auth/ap5.jpg" alt="" /><img
+                    src="~/images/auth/ap6.jpg" alt="" />
+                <img src="~/images/auth/ap7.jpg" alt="" /><img
+                    src="~/images/auth/ap8.jpg" alt="" />
+                <img src="~/images/auth/ap9.jpg" alt="" /><img
+                    src="~/images/auth/ap10.jpg" alt="" />
             </div>
             <div class="posters-row">
-                <img src="https://picsum.photos/seed/ap11/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap12/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap13/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap14/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap15/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap16/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap17/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap18/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap19/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap20/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap11/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap12/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap13/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap14/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap15/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap16/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap17/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap18/150/220" alt="" />
-                <img src="https://picsum.photos/seed/ap19/150/220" alt="" /><img
-                    src="https://picsum.photos/seed/ap20/150/220" alt="" />
+                <img src="~/images/auth/ap11.jpg" alt="" /><img
+                    src="~/images/auth/ap12.jpg" alt="" />
+                <img src="~/images/auth/ap13.jpg" alt="" /><img
+                    src="~/images/auth/ap14.jpg" alt="" />
+                <img src="~/images/auth/ap15.jpg" alt="" /><img
+                    src="~/images/auth/ap16.jpg" alt="" />
+                <img src="~/images/auth/ap17.jpg" alt="" /><img
+                    src="~/images/auth/ap18.jpg" alt="" />
+                <img src="~/images/auth/ap19.jpg" alt="" /><img
+                    src="~/images/auth/ap20.jpg" alt="" />
+                <img src="~/images/auth/ap11.jpg" alt="" /><img
+                    src="~/images/auth/ap12.jpg" alt="" />
+                <img src="~/images/auth/ap13.jpg" alt="" /><img
+                    src="~/images/auth/ap14.jpg" alt="" />
+                <img src="~/images/auth/ap15.jpg" alt="" /><img
+                    src="~/images/auth/ap16.jpg" alt="" />
+                <img src="~/images/auth/ap17.jpg" alt="" /><img
+                    src="~/images/auth/ap18.jpg" alt="" />
+                <img src="~/images/auth/ap19.jpg" alt="" /><img
+                    src="~/images/auth/ap20.jpg" alt="" />
             </div>
         </div>
 
@@ -276,12 +280,12 @@
         <!-- ── Auth Card ── -->
         <div class="auth-card">
 
-            <a href="index.html" class="auth-card__logo">FILM<span>IX</span></a>
+            <a asp-controller="Home" asp-action="Index" class="auth-card__logo">FILM<span>IX</span></a>
 
             <!-- Tab switcher -->
             <div class="auth-tabs">
-                <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Đăng Nhập</button>
-                <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Đăng Ký</button>
+                <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')" data-i18n="auth.login">Đăng Nhập</button>
+                <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')" data-i18n="auth.signup">Đăng Ký</button>
             </div>
 
             <!-- ═══ LOGIN PANEL ═══ -->
@@ -320,22 +324,24 @@
                     </button>
                 </div>
 
-                <div class="auth-divider">hoặc tiếp tục với email</div>
+                <div class="auth-divider" data-i18n="auth.orEmail">hoặc tiếp tục với email</div>
 
                 <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label" data-i18n="auth.email">Email</label>
                     <input type="email" id="loginEmail" class="form-input" placeholder="ten@email.com"
+                        data-i18n-placeholder="auth.emailPh"
                         oninput="validateEmail(this, 'loginEmailMsg')" />
                     <span class="form-msg" id="loginEmailMsg"></span>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" style="display:flex;justify-content:space-between;">
-                        Mật Khẩu
-                        <a href="#" class="forgot-link" style="float:none;">Quên mật khẩu?</a>
+                        <span data-i18n="auth.password">Mật Khẩu</span>
+                        <a href="#" class="forgot-link" style="float:none;" data-i18n="auth.forgot">Quên mật khẩu?</a>
                     </label>
                     <div class="input-wrap">
                         <input type="password" id="loginPw" class="form-input" placeholder="••••••••"
+                            data-i18n-placeholder="auth.pwPh"
                             oninput="validatePwBasic(this)" />
                         <button class="toggle-pass" type="button" onclick="togglePw('loginPw', this)">
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" id="eyeLogin">
@@ -347,16 +353,17 @@
                 </div>
 
                 <label class="form-check">
-                    <input type="checkbox" id="rememberMe" /> <span>Ghi nhớ đăng nhập</span>
+                    <input type="checkbox" id="rememberMe" /> <span data-i18n="auth.remember">Ghi nhớ đăng nhập</span>
                 </label>
 
                 <button class="btn-auth" onclick="handleLogin()">
-                    <span class="btn-text">Đăng Nhập</span>
+                    <span class="btn-text" data-i18n="auth.loginBtn">Đăng Nhập</span>
                     <div class="spinner"></div>
                 </button>
 
                 <p class="auth-note">
-                    Chưa có tài khoản? <a href="#" onclick="switchTab('signup')">Đăng ký miễn phí</a>
+                    <span data-i18n="auth.noAccount">Chưa có tài khoản?</span>
+                    <a href="#" onclick="switchTab('signup')" data-i18n="auth.signupFree">Đăng ký miễn phí</a>
                 </p>
             </div>
 
@@ -396,26 +403,29 @@
                     </button>
                 </div>
 
-                <div class="auth-divider">hoặc tạo tài khoản mới</div>
+                <div class="auth-divider" data-i18n="auth.orNew">hoặc tạo tài khoản mới</div>
 
                 <div class="form-group">
-                    <label class="form-label">Họ &amp; Tên</label>
+                    <label class="form-label" data-i18n="auth.name">Họ &amp; Tên</label>
                     <input type="text" id="signupName" class="form-input" placeholder="Nguyễn Văn A"
+                        data-i18n-placeholder="auth.namePh"
                         oninput="validateName(this)" />
                     <span class="form-msg" id="signupNameMsg"></span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label" data-i18n="auth.email">Email</label>
                     <input type="email" id="signupEmail" class="form-input" placeholder="ten@email.com"
+                        data-i18n-placeholder="auth.emailPh"
                         oninput="validateEmail(this, 'signupEmailMsg')" />
                     <span class="form-msg" id="signupEmailMsg"></span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Mật Khẩu</label>
+                    <label class="form-label" data-i18n="auth.password">Mật Khẩu</label>
                     <div class="input-wrap">
                         <input type="password" id="signupPw" class="form-input" placeholder="Tối thiểu 8 ký tự"
+                            data-i18n-placeholder="auth.pwMinPh"
                             oninput="checkPwStrength(this)" />
                         <button class="toggle-pass" type="button" onclick="togglePw('signupPw', this)">
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
@@ -431,9 +441,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Xác Nhận Mật Khẩu</label>
+                    <label class="form-label" data-i18n="auth.confirmPw">Xác Nhận Mật Khẩu</label>
                     <div class="input-wrap">
                         <input type="password" id="signupPwConfirm" class="form-input" placeholder="Nhập lại mật khẩu"
+                            data-i18n-placeholder="auth.confirmPwPh"
                             oninput="checkPwMatch(this)" />
                         <button class="toggle-pass" type="button" onclick="togglePw('signupPwConfirm', this)">
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
@@ -452,12 +463,13 @@
                 </label>
 
                 <button class="btn-auth" onclick="handleSignup()">
-                    <span class="btn-text">Tạo Tài Khoản Miễn Phí</span>
+                    <span class="btn-text" data-i18n="auth.signupBtn">Tạo Tài Khoản Miễn Phí</span>
                     <div class="spinner"></div>
                 </button>
 
                 <p class="auth-note">
-                    Đã có tài khoản? <a href="#" onclick="switchTab('login')">Đăng nhập ngay</a>
+                    <span data-i18n="auth.hasAccount">Đã có tài khoản?</span>
+                    <a href="#" onclick="switchTab('login')" data-i18n="auth.loginNow">Đăng nhập ngay</a>
                 </p>
             </div>
 
@@ -465,6 +477,11 @@
     </div><!-- /auth-page -->
 
     <script>
+        /* ── Auth guard: already logged in → go to index ── */
+        (function () {
+            if (localStorage.getItem('filmix_user')) location.replace('/');
+        })();
+
         /* ── Read ?mode= from URL ── */
         (function () {
             const p = new URLSearchParams(window.location.search);
@@ -490,12 +507,12 @@
 
         /* ── Validation helpers ── */
         function validateEmail(input, msgId) {
-            const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
+            const ok = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(input.value.trim());
             const msg = document.getElementById(msgId);
             if (!input.value) { input.className = 'form-input'; msg.className = 'form-msg'; return; }
             if (ok) {
                 input.className = 'form-input valid';
-                msg.className = 'form-msg success'; msg.textContent = '✓ Email hợp lệ';
+                msg.className = 'form-msg success'; msg.textContent = 'Email hợp lệ';
             } else {
                 input.className = 'form-input invalid';
                 msg.className = 'form-msg error'; msg.textContent = 'Email không hợp lệ';
@@ -521,11 +538,11 @@
             if (/[0-9]/.test(val)) score++;
             if (/[^A-Za-z0-9]/.test(val)) score++;
             const levels = [
-                { w: '0%', bg: 'transparent', text: '' },
-                { w: '25%', bg: '#e50914', text: '⚠ Yếu' },
-                { w: '50%', bg: '#ff9f43', text: '● Trung bình' },
-                { w: '75%', bg: '#ffd32a', text: '◑ Khá' },
-                { w: '100%', bg: '#2dcc70', text: '✓ Mạnh' },
+                { w: '0%',   bg: 'transparent', text: '' },
+                { w: '25%',  bg: '#e50914',     text: 'Yếu' },
+                { w: '50%',  bg: '#ff9f43',     text: 'Trung bình' },
+                { w: '75%',  bg: '#ffd32a',     text: 'Tốt' },
+                { w: '100%', bg: '#2dcc70',     text: 'Mạnh' },
             ];
             const lv = levels[score];
             bar.style.width = lv.w;
@@ -541,10 +558,10 @@
             if (!input.value) { input.className = 'form-input'; msg.className = 'form-msg'; return; }
             if (input.value === pw) {
                 input.className = 'form-input valid';
-                msg.className = 'form-msg success'; msg.textContent = '✓ Mật khẩu khớp';
+                msg.className = 'form-msg success'; msg.textContent = 'Mật khẩu khớp';
             } else {
                 input.className = 'form-input invalid';
-                msg.className = 'form-msg error'; msg.textContent = 'Mật khẩu không khớp';
+                msg.className = 'form-msg error'; msg.textContent = 'Mật khẩu chưa khớp';
             }
         }
 
@@ -567,7 +584,7 @@
 
         /* ── Social login ── */
         function socialLogin(provider) {
-            showToast(`Đang kết nối với ${provider}...`, 'success');
+            showToast('Đang kết nối tới ' + provider + '...', 'success');
         }
 
         /* ── Handle Login ── */
@@ -577,14 +594,13 @@
             const btn = document.querySelector('#panelLogin .btn-auth');
 
             if (!email || !pw) { showToast('Vui lòng điền đầy đủ thông tin', 'error'); return; }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Email không hợp lệ', 'error'); return; }
-            if (pw.length < 6) { showToast('Mật khẩu phải có ít nhất 6 ký tự', 'error'); return; }
 
             setLoading(btn, true);
             setTimeout(() => {
                 setLoading(btn, false);
-                showToast('Đăng nhập thành công! Chào mừng trở lại 👋', 'success');
-                setTimeout(() => { window.location.href = 'index.html'; }, 1800);
+                localStorage.setItem('filmix_user', JSON.stringify({ name: email.split('@@')[0], email }));
+                showToast('Đăng nhập thành công!', 'success');
+                setTimeout(() => { window.location.href = '/'; }, 1800);
             }, 1600);
         }
 
@@ -598,16 +614,15 @@
             const btn = document.querySelector('#panelSignup .btn-auth');
 
             if (!name || !email || !pw || !pwConf) { showToast('Vui lòng điền đầy đủ thông tin', 'error'); return; }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Email không hợp lệ', 'error'); return; }
-            if (pw.length < 8) { showToast('Mật khẩu phải có ít nhất 8 ký tự', 'error'); return; }
             if (pw !== pwConf) { showToast('Mật khẩu không khớp', 'error'); return; }
-            if (!agree) { showToast('Bạn cần đồng ý với điều khoản sử dụng', 'error'); return; }
+            if (!agree) { showToast('Bạn cần đồng ý với điều khoản', 'error'); return; }
 
             setLoading(btn, true);
             setTimeout(() => {
                 setLoading(btn, false);
-                showToast('Tài khoản đã được tạo thành công! 🎉', 'success');
-                setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+                localStorage.setItem('filmix_user', JSON.stringify({ name, email }));
+                showToast('Đăng ký thành công!', 'success');
+                setTimeout(() => { window.location.href = '/'; }, 2000);
             }, 1800);
         }
     </script>
