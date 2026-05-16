@@ -1,0 +1,56 @@
+@model IEnumerable<Movie>
+@{
+    ViewData["Title"] = "Danh Sách Phim";
+    var categories = ViewBag.Categories as IEnumerable<Category>;
+    int? selectedId = ViewBag.SelectedCategoryId;
+}
+
+<section class="trending" style="padding-top: 100px; min-height: 100vh;">
+    <div class="trending__header" style="flex-direction: column; align-items: flex-start; gap: 20px;">
+        <h2 class="trending__title">Khám Phá Phim</h2>
+        
+        <!-- Category Filter -->
+        <div class="category-menu" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a asp-action="List" asp-route-categoryId="" 
+               class="btn @(selectedId == null ? "btn-red" : "btn-ghost")" style="padding: 8px 20px; font-size: 0.8rem;">
+               Tất Cả
+            </a>
+            @foreach (var cat in categories)
+            {
+                <a asp-action="List" asp-route-categoryId="@cat.Id" 
+                   class="btn @(selectedId == cat.Id ? "btn-red" : "btn-ghost")" style="padding: 8px 20px; font-size: 0.8rem;">
+                   @cat.Name
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="trending__grid-wrap open" style="margin-top: 30px;">
+        <div class="trending__grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 20px; padding: 0 5%;">
+            @if (!Model.Any())
+            {
+                <p style="grid-column: 1/-1; text-align: center; color: var(--gray); padding: 50px;">Không tìm thấy phim nào trong danh mục này.</p>
+            }
+            @foreach (var movie in Model)
+            {
+                <div class="t-card" style="opacity: 1; transform: none; position: relative;">
+                    <img class="t-card__img" src="@movie.ImageUrl" alt="@movie.Title" loading="lazy" />
+                    <div class="t-card__play">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z" /></svg>
+                    </div>
+                    <div class="t-card__info">
+                        <div class="t-card__name">@movie.Title</div>
+                        <div class="t-card__meta"><span class="t-card__genre">@movie.Genre</span>@movie.Year</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const nav = document.getElementById('nav');
+        nav.classList.add('scrolled'); // Force scrolled state for list page
+    </script>
+}

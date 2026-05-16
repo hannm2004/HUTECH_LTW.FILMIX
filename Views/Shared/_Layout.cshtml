@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FILMIX</title>
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="~/js/i18n.js"></script>
+    <script src="~/js/auth-state.js"></script>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="nav" id="nav">
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="nav__logo">FILM<span>IX</span></a>
+
+        <div class="nav__links">
+            <a asp-area="" asp-controller="Home" asp-action="Index" data-i18n="nav.home">Trang Chủ</a>
+            <a asp-controller="TVShows" asp-action="Index" data-i18n="nav.tvShows">TV Shows</a>
+            <a asp-controller="Movies" asp-action="Index" data-i18n="nav.movies">Phim Lẻ</a>
+            <a asp-controller="NewAndHot" asp-action="Index" data-i18n="nav.newHot">Mới &amp; Hot</a>
+            <a asp-controller="Product" asp-action="List" data-i18n="nav.watchlist">Danh Sách</a>
+        </div>
+
+        <div class="nav__right">
+            <!-- Language Switcher -->
+            <div class="lang-switcher" id="langSwitcher">
+                <button class="lang-btn" id="langBtn" onclick="toggleLang()">
+                    <span id="langFlag">🇻🇳</span>
+                    <span id="langLabel">Tiếng Việt</span>
+                    <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7 10l5 5 5-5z" />
+                    </svg>
+                </button>
+                <div class="lang-dropdown" id="langDropdown">
+                    <a href="#" data-lang="vi" onclick="return setLanguage('vi','🇻🇳','Tiếng Việt')"><span class="flag">🇻🇳</span> Tiếng Việt</a>
+                    <a href="#" data-lang="en" onclick="return setLanguage('en','🇺🇸','English')"><span class="flag">🇺🇸</span> English</a>
+                    <a href="#" data-lang="ko" onclick="return setLanguage('ko','🇰🇷','한국어')"><span class="flag">🇰🇷</span> 한국어</a>
+                    <a href="#" data-lang="ja" onclick="return setLanguage('ja','🇯🇵','日本語')"><span class="flag">🇯🇵</span> 日本語</a>
+                    <a href="#" data-lang="zh" onclick="return setLanguage('zh','🇨🇳','中文')"><span class="flag">🇨🇳</span> 中文</a>
+                    <a href="#" data-lang="fr" onclick="return setLanguage('fr','🇫🇷','Français')"><span class="flag">🇫🇷</span> Français</a>
+                    <a href="#" data-lang="es" onclick="return setLanguage('es','🇪🇸','Español')"><span class="flag">🇪🇸</span> Español</a>
+                    <a href="#" data-lang="th" onclick="return setLanguage('th','🇹🇭','ภาษาไทย')"><span class="flag">🇹🇭</span> ภาษาไทย</a>
+                </div>
+            </div>
+
+            <a asp-controller="Account" asp-action="Auth" class="nav__signin" id="navSignin" data-i18n="nav.login">Đăng Nhập</a>
+
+            <div class="nav__profile" id="navProfile" style="display:none;">
+                <div class="nav__avatar" id="navAvatar"></div>
+                <span class="nav__username" id="navUsername"></span>
+                <button class="nav__logout" onclick="logout()" data-i18n="nav.logout">Đăng Xuất</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="welcome-bar" id="welcomeBar" style="display:none;">
+        <span id="welcomeGreet" data-i18n="welcome.greeting">Chào mừng trở lại,</span>
+        &nbsp;<strong id="welcomeName"></strong>
+    </div>
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer__top">
+            <div class="footer__logo">FILMIX</div>
+            <div class="footer__social">
+                <a href="#" title="Facebook">f</a>
+                <a href="#" title="Instagram">ig</a>
+                <a href="#" title="Twitter/X">𝕏</a>
+                <a href="#" title="YouTube">▶</a>
+                <a href="#" title="TikTok">tt</a>
+            </div>
+        </div>
+
+        <div class="footer__grid">
+            <div class="footer__col">
+                <h4>Hỗ Trợ</h4>
+                <ul>
+                    <li><a href="#">Câu Hỏi Thường Gặp</a></li>
+                    <li><a href="#">Trung Tâm Trợ Giúp</a></li>
+                    <li><a href="#">Liên Hệ</a></li>
+                    <li><a href="#">Kiểm Tra Tốc Độ</a></li>
+                    <li><a href="#">Báo Cáo Lỗi</a></li>
+                </ul>
+            </div>
+            <div class="footer__col">
+                <h4>Tài Khoản</h4>
+                <ul>
+                    <li><a href="#">Quản Lý Tài Khoản</a></li>
+                    <li><a href="#">Đổi Mật Khẩu</a></li>
+                    <li><a href="#">Lịch Sử Xem</a></li>
+                    <li><a href="#">Danh Sách Của Tôi</a></li>
+                    <li><a href="#">Hủy Đăng Ký</a></li>
+                </ul>
+            </div>
+            <div class="footer__col">
+                <h4>Công Ty</h4>
+                <ul>
+                    <li><a href="#">Giới Thiệu</a></li>
+                    <li><a href="#">Truyền Thông</a></li>
+                    <li><a href="#">Quan Hệ Đầu Tư</a></li>
+                    <li><a href="#">Việc Làm</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer__col">
+                <h4>Nội Dung</h4>
+                <ul>
+                    <li><a href="#">Phim Mới</a></li>
+                    <li><a href="#">Series Hot</a></li>
+                    <li><a href="#">Anime</a></li>
+                    <li><a href="#">Tài Liệu</a></li>
+                    <li><a href="#">Phim Cho Bé</a></li>
+                </ul>
+            </div>
+            <div class="footer__col">
+                <h4>Pháp Lý</h4>
+                <ul>
+                    <li><a href="#">Điều Khoản</a></li>
+                    <li><a href="#">Chính Sách Bảo Mật</a></li>
+                    <li><a href="#">Cookie</a></li>
+                    <li><a href="#">Thông Báo Pháp Lý</a></li>
+                    <li><a href="#">Khả Năng Truy Cập</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer__bottom">
+            <p class="footer__copy">© 2025 FILMIX Vietnam. Bảo lưu mọi quyền.</p>
+            <div class="footer__bottom-links">
+                <a href="#">Chính Sách Bảo Mật</a>
+                <a href="#">Điều Khoản</a>
+                <a href="#">Cookie</a>
+                <a href="#">Sơ Đồ Trang</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
