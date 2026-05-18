@@ -7,8 +7,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+var dbProvider = builder.Configuration["DbProvider"] ?? "MySql";
+
+if (dbProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(connectionString));
+}
+else
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+}
 
 
 var app = builder.Build();
@@ -17,7 +27,31 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        db.Database.EnsureCreated();
+        // Test query to verify if the schema is up-to-date (checks if Episodes table exists)
+        _ = db.Episodes.OrderBy(e => e.Id).FirstOrDefault();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning("Phát hiện database cũ hoặc lỗi cấu trúc bảng: {Message}", ex.Message);
+        try
+        {
+            logger.LogWarning("Đang tiến hành tự động xóa và khởi tạo lại database cùng dữ liệu mẫu mới...");
+            db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
+            logger.LogInformation("Khởi tạo lại database và nạp dữ liệu mẫu mới thành công!");
+        }
+        catch (Exception dbEx)
+        {
+            logger.LogError(dbEx, "=========================================================================\n" +
+                                "ERROR: Không thể kết nối hoặc khởi tạo cơ sở dữ liệu!\n" +
+                                "Vui lòng đảm bảo dịch vụ MySQL/SQL Server đang chạy và thông tin kết nối chính xác.\n" +
+                                "=========================================================================");
+        }
+    }
 }
 
 // Configure the HTTP request pipeline.

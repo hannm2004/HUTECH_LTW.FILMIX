@@ -22,7 +22,10 @@ namespace untitled1.Controllers
         {
             var categories = await _context.Categories.ToListAsync();
             var movies = categoryId.HasValue 
-                ? await _context.Movies.Where(m => m.CategoryId == categoryId.Value).ToListAsync() 
+                ? await _context.Movies
+                    .Include(m => m.MovieCategories)
+                    .Where(m => m.MovieCategories.Any(mc => mc.CategoryId == categoryId.Value))
+                    .ToListAsync() 
                 : await _context.Movies.ToListAsync();
 
             ViewBag.Categories = categories;
@@ -34,7 +37,13 @@ namespace untitled1.Controllers
         // Detail Page (User called it tv-shows/product-detail)
         public async Task<IActionResult> Detail(int id)
         {
-            var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
+            var movie = await _context.Movies
+                .Include(m => m.Episodes)
+                .Include(m => m.MovieCategories)
+                    .ThenInclude(mc => mc.Category)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (movie == null) return NotFound();
 
             return View(movie);

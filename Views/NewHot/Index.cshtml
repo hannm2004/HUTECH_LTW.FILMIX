@@ -1,0 +1,170 @@
+@model IEnumerable<Movie>
+@{
+    ViewData["Title"] = "Mới & Hot - FILMIX";
+    
+    // Dynamically filter new releases (e.g. movies from 2021 onwards)
+    var newReleases = Model.Where(m => m.Year >= 2021).ToList();
+    
+    // Dynamically filter trending items (e.g. popular shows/movies)
+    var trendingHot = Model.Where(m => m.Year < 2021 || m.IsTVSeries).Take(6).ToList();
+}
+
+<!-- Self-contained custom CSS link -->
+<link rel="stylesheet" href="~/css/newhot.css" asp-append-version="true" />
+
+<!-- ══════════════════════════════════════
+     HERO SECTION: SPIDER-MAN: NO WAY HOME
+     ══════════════════════════════════════ -->
+<section class="hero hero--newhot movies-fade-in">
+    <div class="hero__bg" style="background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%), url('/images/movies/10.jpg') center/cover;"></div>
+    <div class="hero__inner" style="align-items: flex-start; text-align: left; padding-left: 5%;">
+        <div class="hero__content" style="max-width: 650px; margin-left: 0;">
+            <div class="hero__badge newhot-hero-badge" style="background: linear-gradient(135deg, #f59e0b, #ef4444); border: none; color: #ffffff; font-weight: 800; font-size: 0.85rem; letter-spacing: 1px;">🔥 ĐANG THỊNH HÀNH SỐ 1</div>
+            <h1 class="hero__title" style="font-size: 4.5rem; letter-spacing: -2px; font-weight: 900; line-height: 1.1;">SPIDER-MAN:<br><span style="background: linear-gradient(to right, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">NO WAY HOME</span></h1>
+            <p class="hero__sub" style="margin-left: 0; color: #e2e8f0; line-height: 1.6;">
+                Lần đầu tiên trong lịch sử điện ảnh của Người Nhện, danh tính người hùng hàng xóm thân thiện bị tiết lộ. Peter Parker tìm đến phép thuật của Doctor Strange để giải quyết, vô tình mở ra đa vũ trụ và đối mặt với những kẻ thù truyền kiếp từ các thế giới khác.
+            </p>
+            <div class="hero__actions" style="justify-content: flex-start; gap: 15px; margin-top: 25px;">
+                <a asp-controller="Product" asp-action="Detail" asp-route-id="10" class="btn btn-red" style="background: linear-gradient(to right, #f59e0b, #ef4444); border: none; padding: 12px 30px; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                    Xem Ngay
+                </a>
+                <button class="btn btn-ghost" id="heroSaveBtn" style="border: 1px solid rgba(255, 255, 255, 0.25); padding: 12px 25px; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);" onclick="toggleHeroWatchlist(10, 'Spider-Man: No Way Home', '/images/movies/10.jpg', this)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /></svg>
+                    <span id="heroSaveBtnText">+ Danh Sách</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     NEW & HOT GRID SYSTEM
+     ══════════════════════════════════════ -->
+<div class="newhot-container movies-fade-in" style="background: #090d16;">
+    
+    <!-- SECTION 1: NEW RELEASES -->
+    <section class="newhot-section">
+        <div class="newhot-header">
+            <div class="newhot-title-group">
+                <h2 class="newhot-title">Mới Phát Hành</h2>
+                <span class="newhot-icon-tag" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);">NEW</span>
+            </div>
+            <span style="color: #94a3b8; font-size: 0.95rem;">Cập nhật tuần này</span>
+        </div>
+        
+        <div class="newhot-grid">
+            @foreach (var movie in newReleases)
+            {
+                <div class="newhot-card" onclick="window.location.href='@Url.Action("Detail", "Product", new { id = movie.Id })'">
+                    <span class="newhot-badge-tag badge-new">Mới</span>
+                    <div class="newhot-card__img-wrap">
+                        <img class="newhot-card__img" src="@movie.ImageUrl" alt="@movie.Title" loading="lazy" />
+                        <div class="newhot-card__play-btn">
+                            <svg width="22" height="22" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                    </div>
+                    <div class="newhot-card__info">
+                        <h3 class="newhot-card__title">@movie.Title</h3>
+                        <div class="newhot-card__meta">
+                            <span class="newhot-card__genre">@movie.Genre</span>
+                            <span class="newhot-card__year">@movie.Year</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- SECTION 2: TRENDING HOT -->
+    <section class="newhot-section" style="margin-top: 60px;">
+        <div class="newhot-header">
+            <div class="newhot-title-group">
+                <h2 class="newhot-title" style="background: linear-gradient(to right, #ffffff 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Đang Gây Sốt</h2>
+                <span class="newhot-icon-tag" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);">HOT</span>
+            </div>
+            <span style="color: #94a3b8; font-size: 0.95rem;">Xem nhiều nhất trong 24h</span>
+        </div>
+        
+        <div class="newhot-grid">
+            @foreach (var movie in trendingHot)
+            {
+                <div class="newhot-card" onclick="window.location.href='@Url.Action("Detail", "Product", new { id = movie.Id })'">
+                    <span class="newhot-badge-tag badge-hot">Hot</span>
+                    <div class="newhot-card__img-wrap">
+                        <img class="newhot-card__img" src="@movie.ImageUrl" alt="@movie.Title" loading="lazy" />
+                        <div class="newhot-card__play-btn" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);">
+                            <svg width="22" height="22" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                    </div>
+                    <div class="newhot-card__info">
+                        <h3 class="newhot-card__title">@movie.Title</h3>
+                        <div class="newhot-card__meta">
+                            <span class="newhot-card__genre" style="color: #fbbf24;">@movie.Genre</span>
+                            <span class="newhot-card__year" style="color: #fbbf24; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.25);">@movie.Year</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+</div>
+
+@section Scripts {
+    <script>
+        /* Hero watchlist toggle */
+        function toggleHeroWatchlist(id, title, img, btn) {
+            const span = btn.querySelector('#heroSaveBtnText');
+            const movieId = id.toString();
+            let watchlist = JSON.parse(localStorage.getItem('filmix_watchlist') || '[]').map(x => x.toString());
+
+            if (watchlist.includes(movieId)) {
+                watchlist = watchlist.filter(x => x !== movieId);
+                localStorage.setItem('filmix_watchlist', JSON.stringify(watchlist));
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.borderColor = 'rgba(255,255,255,0.25)';
+                if (span) span.textContent = '+ Danh Sách';
+                showHeroToast('Đã xóa khỏi danh sách');
+            } else {
+                watchlist.push(movieId);
+                localStorage.setItem('filmix_watchlist', JSON.stringify(watchlist));
+                btn.style.background = 'rgba(70,211,105,0.2)';
+                btn.style.borderColor = '#46d369';
+                if (span) span.textContent = '✓ Đã Lưu';
+                showHeroToast('Đã thêm vào danh sách của bạn');
+            }
+        }
+
+        function showHeroToast(msg) {
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;background:#2f2f2f;color:#fff;padding:12px 24px;border-radius:6px;font-weight:600;font-size:0.9rem;border-left:4px solid #46d369;box-shadow:0 5px 15px rgba(0,0,0,0.4);transition:opacity 0.3s;';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+        }
+
+        // Init state of hero save button on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('heroSaveBtn');
+            const span = document.getElementById('heroSaveBtnText');
+            if (btn) {
+                const wl = JSON.parse(localStorage.getItem('filmix_watchlist') || '[]').map(x => x.toString());
+                if (wl.includes('10')) {
+                    btn.style.background = 'rgba(70,211,105,0.2)';
+                    btn.style.borderColor = '#46d369';
+                    if (span) span.textContent = '✓ Đã Lưu';
+                }
+            }
+        });
+
+        /* Navbar background transparency toggle on scroll */
+        const nav = document.getElementById('nav');
+        if (nav) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
+            }, { passive: true });
+        }
+    </script>
+}

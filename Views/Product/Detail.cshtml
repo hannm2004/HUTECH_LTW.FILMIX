@@ -1,0 +1,306 @@
+@model Movie
+@{
+    ViewData["Title"] = Model.Title + " - FILMIX";
+    var categories = Model.MovieCategories.Select(mc => mc.Category.Name).ToList();
+}
+
+<div class="detail-page" style="background: #141414; color: #fff; min-height: 100vh; padding-bottom: 50px; font-family: 'Outfit', sans-serif;">
+    <!-- Hero Background Banner -->
+    <div class="detail-hero" style="position: relative; height: 70vh; background: linear-gradient(to bottom, rgba(20,20,20,0.1) 0%, rgba(20,20,20,0.8) 80%, #141414 100%), url('@Model.ImageUrl') center/cover no-repeat;">
+        <div class="detail-hero__overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to right, rgba(20,20,20,0.9) 0%, rgba(20,20,20,0.4) 50%, rgba(20,20,20,0.1) 100%);"></div>
+        
+        <div class="detail-hero__content" style="position: absolute; bottom: 5%; left: 5%; right: 5%; max-width: 800px; z-index: 2;">
+            <div class="detail-badge" style="display: inline-block; background: #e50914; color: #fff; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; border-radius: 4px; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px;">
+                @(Model.IsTVSeries ? "TV Series" : "Phim Điện Ảnh")
+            </div>
+            
+            <h1 class="detail-title" style="font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 20px; text-shadow: 2px 2px 10px rgba(0,0,0,0.8);">
+                @Model.Title
+            </h1>
+            
+            <!-- Metadata Row -->
+            <div class="detail-meta" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; font-size: 0.95rem; color: #ccc;">
+                <span style="border: 1px solid rgba(255,255,255,0.4); padding: 1px 6px; border-radius: 3px; font-size: 0.8rem; font-weight: 700; color: #fff;">18+</span>
+                <span class="detail-meta__year" style="font-weight: 600;">@Model.Year</span>
+                
+                @if (Model.IsTVSeries)
+                {
+                    <span class="detail-meta__duration" style="font-weight: 600; color: #46d369;">@Model.Episodes.Count Tập</span>
+                }
+                else
+                {
+                    <span class="detail-meta__duration" style="font-weight: 600; color: #46d369;">135 Phút</span>
+                }
+                
+                <span style="border: 1px solid #46d369; padding: 1px 6px; border-radius: 3px; font-size: 0.8rem; font-weight: 700; color: #46d369;">Ultra HD 4K</span>
+            </div>
+            
+            <!-- Category Tags -->
+            <div class="detail-genres" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 25px;">
+                @foreach (var catName in categories)
+                {
+                    <span class="genre-tag" style="background: rgba(255,255,255,0.15); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                        @catName
+                    </span>
+                }
+            </div>
+
+            <!-- Actions -->
+            <div class="detail-actions" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <button onclick="playMainVideo()" class="btn btn-red" style="padding: 12px 30px; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s ease;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    Xem Ngay
+                </button>
+                <button onclick="toggleWatchlist(this)" class="btn btn-ghost" style="padding: 12px 30px; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    <span>Danh Sách Của Tôi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Info -->
+    <div class="detail-container" style="max-width: 1200px; margin: 0 auto; padding: 40px 5%; display: grid; grid-template-columns: 2fr 1fr; gap: 40px; align-items: start;">
+        <div class="detail-main">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 15px; border-left: 4px solid #e50914; padding-left: 10px;">Tóm Tắt Nội Dung</h3>
+            <p class="detail-desc" style="font-size: 1.1rem; line-height: 1.6; color: #ddd; margin-bottom: 40px; text-align: justify;">
+                Khi một thế giới bí ẩn mở ra, bộ phim mang đến những trải nghiệm kịch tính, lôi cuốn với chất lượng âm thanh hình ảnh tuyệt vời nhất. Trải qua những thăng trầm của các nhân vật chính, khán giả sẽ được đắm chìm trong câu chuyện đầy chiều sâu nghệ thuật và những pha hành động nghẹt thở. Bản phát hành đặc biệt có chất lượng 4K UHD cùng phụ đề đa ngôn ngữ.
+            </p>
+
+            @if (Model.IsTVSeries && Model.Episodes.Any())
+            {
+                <!-- Episodes Section -->
+                <div class="episodes-section" style="margin-top: 20px;">
+                    <div class="episodes-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+                        <h3 style="font-size: 1.6rem; font-weight: 700; margin: 0;">Danh Sách Tập Phim</h3>
+                        
+                        <!-- Season Selector -->
+                        @{
+                            var seasons = Model.Episodes.Select(e => e.SeasonNumber).Distinct().OrderBy(s => s).ToList();
+                        }
+                        @if (seasons.Count > 1)
+                        {
+                            <select id="seasonSelect" onchange="filterSeason(this.value)" style="background: #2f2f2f; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; outline: none;">
+                                @foreach (var seasonNum in seasons)
+                                {
+                                    <option value="@seasonNum">Mùa @seasonNum</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <span style="font-weight: 600; color: #e50914; font-size: 1rem;">Mùa 1</span>
+                        }
+                    </div>
+
+                    <!-- Episodes List -->
+                    <div class="episodes-list" style="display: grid; gap: 15px;">
+                        @foreach (var ep in Model.Episodes.OrderBy(e => e.SeasonNumber).ThenBy(e => e.EpisodeNumber))
+                        {
+                            <div class="episode-card" data-season="@ep.SeasonNumber" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; gap: 20px; padding: 15px 20px; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.07)'; this.style.borderColor='rgba(255,255,255,0.15)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.05)';" onclick="playEpisode('@ep.Title', '@ep.VideoUrl')">
+                                <div class="ep-number" style="font-size: 1.5rem; font-weight: 900; color: rgba(255,255,255,0.3); min-width: 40px; text-align: center;">
+                                    @ep.EpisodeNumber
+                                </div>
+                                <div class="ep-thumbnail" style="position: relative; width: 120px; height: 70px; background: rgba(0,0,0,0.5); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                    <div style="position: absolute; inset: 0; background: url('@Model.ImageUrl') center/cover no-repeat; filter: brightness(0.6);"></div>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white" style="position: relative; z-index: 2; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                                <div class="ep-info" style="flex: 1;">
+                                    <h4 style="margin: 0 0 5px 0; font-size: 1.05rem; font-weight: 700; color: #fff;">@ep.Title</h4>
+                                    <span style="font-size: 0.85rem; color: #999;">Thời lượng: 45 phút</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar / Cast info -->
+        <div class="detail-sidebar" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 25px; backdrop-filter: blur(10px);">
+            <h4 style="font-size: 1.2rem; font-weight: 700; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; color: #fff;">Thông Tin Chi Tiết</h4>
+            
+            <div style="margin-bottom: 15px;">
+                <span style="display: block; font-size: 0.85rem; color: #888; text-transform: uppercase; margin-bottom: 3px;">Diễn viên</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #ddd;">Pedro Pascal, Bella Ramsey, Bryan Cranston, Jenna Ortega</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <span style="display: block; font-size: 0.85rem; color: #888; text-transform: uppercase; margin-bottom: 3px;">Đạo diễn</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #ddd;">Christopher Nolan, Vince Gilligan</span>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <span style="display: block; font-size: 0.85rem; color: #888; text-transform: uppercase; margin-bottom: 3px;">Định dạng âm thanh</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #ddd;">Dolby Atmos, Dolby Digital 5.1</span>
+            </div>
+
+            <div>
+                <span style="display: block; font-size: 0.85rem; color: #888; text-transform: uppercase; margin-bottom: 3px;">Quốc gia</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #ddd;">Mỹ, Vương Quốc Anh</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Video Player Modal -->
+<div id="videoModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <button onclick="closeVideo()" style="position: absolute; top: 20px; right: 20px; background: transparent; border: none; color: #fff; font-size: 2.5rem; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">&times;</button>
+    <div style="position: relative; width: 100%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <video id="modalVideo" controls style="width: 100%; height: 100%;">
+            <source src="" type="video/mp4">
+            Trình duyệt của bạn không hỗ trợ phát video.
+        </video>
+        <div id="videoTitleOverlay" style="position: absolute; top: 20px; left: 20px; font-size: 1.3rem; font-weight: 700; color: #fff; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); z-index: 10;"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Force header transition
+        const nav = document.getElementById('nav');
+        if(nav) {
+            nav.classList.add('scrolled');
+        }
+
+        // Season filtering
+        function filterSeason(seasonNum) {
+            document.querySelectorAll('.episode-card').forEach(card => {
+                if(card.getAttribute('data-season') == seasonNum) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize first season show and watchlist button state
+        document.addEventListener('DOMContentLoaded', () => {
+            const seasonSelect = document.getElementById('seasonSelect');
+            if (seasonSelect) {
+                filterSeason(seasonSelect.value);
+            }
+
+            // Watchlist Init
+            const watchlistBtn = document.querySelector('button[onclick="toggleWatchlist(this)"]');
+            if (watchlistBtn) {
+                const movieId = '@Model.Id';
+                let watchlist = JSON.parse(localStorage.getItem('filmix_watchlist') || '[]');
+                watchlist = watchlist.map(id => id.toString());
+                
+                if (watchlist.includes(movieId.toString())) {
+                    watchlistBtn.classList.add('saved');
+                    watchlistBtn.style.background = '#46d369';
+                    watchlistBtn.style.borderColor = '#46d369';
+                    const span = watchlistBtn.querySelector('span');
+                    const svg = watchlistBtn.querySelector('svg');
+                    if (span) span.textContent = 'Đã Lưu';
+                    if (svg) svg.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+                }
+            }
+        });
+
+        // Video control
+        function playMainVideo() {
+            playEpisode("@Model.Title", "/videos/sample.mp4");
+        }
+
+        function playEpisode(title, url) {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            const overlay = document.getElementById('videoTitleOverlay');
+            
+            if (modal && video) {
+                overlay.textContent = title;
+                video.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+                modal.style.display = 'flex';
+                video.play();
+            }
+        }
+
+        function closeVideo() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            if (modal && video) {
+                video.pause();
+                modal.style.display = 'none';
+                video.src = "";
+            }
+        }
+
+        // Watchlist toggle toast helper with localStorage persistence
+        function toggleWatchlist(btn) {
+            const span = btn.querySelector('span');
+            const svg = btn.querySelector('svg');
+            const movieId = '@Model.Id'.toString();
+            let watchlist = JSON.parse(localStorage.getItem('filmix_watchlist') || '[]');
+            watchlist = watchlist.map(id => id.toString());
+            
+            if (btn.classList.contains('saved')) {
+                btn.classList.remove('saved');
+                btn.style.background = 'rgba(255,255,255,0.1)';
+                btn.style.borderColor = 'rgba(255,255,255,0.2)';
+                span.textContent = 'Danh Sách Của Tôi';
+                svg.innerHTML = '<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>';
+                
+                // Remove from localStorage
+                watchlist = watchlist.filter(id => id !== movieId);
+                localStorage.setItem('filmix_watchlist', JSON.stringify(watchlist));
+                
+                showToast("Đã xóa khỏi danh sách của bạn");
+            } else {
+                btn.classList.add('saved');
+                btn.style.background = '#46d369';
+                btn.style.borderColor = '#46d369';
+                span.textContent = 'Đã Lưu';
+                svg.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+                
+                // Add to localStorage
+                if (!watchlist.includes(movieId)) {
+                    watchlist.push(movieId);
+                }
+                localStorage.setItem('filmix_watchlist', JSON.stringify(watchlist));
+                
+                showToast("Đã thêm vào danh sách của bạn");
+            }
+        }
+
+        function showToast(msg) {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:99999;display:grid;gap:10px;';
+                document.body.appendChild(container);
+            }
+            
+            const toast = document.createElement('div');
+            toast.style.cssText = 'background:#2f2f2f;color:#fff;padding:12px 24px;border-radius:6px;font-weight:600;font-size:0.95rem;box-shadow:0 5px 15px rgba(0,0,0,0.3);animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;border-left:4px solid #46d369;';
+            toast.textContent = msg;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Add animations dynamically
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @@keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @@keyframes fadeOut {
+                to { opacity: 0; transform: translateY(10px); }
+            }
+            .genre-tag:hover {
+                background: rgba(255,255,255,0.3) !important;
+                transform: scale(1.05);
+            }
+            .btn:hover {
+                transform: scale(1.03);
+                filter: brightness(1.1);
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - FILMIX</title>
+    <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="~/js/i18n.js"></script>
@@ -16,10 +16,10 @@
 
         <div class="nav__links">
             <a asp-area="" asp-controller="Home" asp-action="Index" data-i18n="nav.home">Trang Chủ</a>
-            <a asp-controller="TVShows" asp-action="Index" data-i18n="nav.tvShows">TV Shows</a>
-            <a asp-controller="Movies" asp-action="Index" data-i18n="nav.movies">Phim Lẻ</a>
-            <a asp-controller="NewAndHot" asp-action="Index" data-i18n="nav.newHot">Mới &amp; Hot</a>
-            <a asp-controller="Product" asp-action="List" data-i18n="nav.watchlist">Danh Sách</a>
+            <a asp-area="" asp-controller="TVShows" asp-action="Index" data-i18n="nav.tvShows">TV Shows</a>
+            <a asp-area="" asp-controller="Movies" asp-action="Index" data-i18n="nav.movies">Phim Lẻ</a>
+            <a asp-area="" asp-controller="NewHot" asp-action="Index" data-i18n="nav.newHot">Mới &amp; Hot</a>
+            <a asp-area="" asp-controller="Product" asp-action="List" data-i18n="nav.watchlist">Danh Sách</a>
         </div>
 
         <div class="nav__right">
@@ -93,7 +93,7 @@
                     <li><a href="#">Quản Lý Tài Khoản</a></li>
                     <li><a href="#">Đổi Mật Khẩu</a></li>
                     <li><a href="#">Lịch Sử Xem</a></li>
-                    <li><a href="#">Danh Sách Của Tôi</a></li>
+                    <li><a asp-controller="Product" asp-action="List" asp-fragment="watchlist">Danh Sách Của Tôi</a></li>
                     <li><a href="#">Hủy Đăng Ký</a></li>
                 </ul>
             </div>
