@@ -49,7 +49,7 @@ using (var scope = app.Services.CreateScope())
             logger.LogError(dbEx, "=========================================================================\n" +
                                 "ERROR: Không thể kết nối hoặc khởi tạo cơ sở dữ liệu!\n" +
                                 "Vui lòng đảm bảo dịch vụ MySQL/SQL Server đang chạy và thông tin kết nối chính xác.\n" +
-                                "=========================================================================");
+                                "========================================================================");
         }
     }
 }
