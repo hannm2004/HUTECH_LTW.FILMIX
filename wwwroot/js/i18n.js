@@ -146,16 +146,11 @@ const TRANSLATIONS = {
     'ui.save':     'Lưu',
     'ui.saved':    'Đã lưu',
     'ui.play':     'Xem ngay',
-    'ui.playBtn':  'Phát',
-    'ui.details':  'Chi tiết',
-    'ui.recommended':'Đề xuất cho bạn',
-    'ui.popular':  'Phổ biến',
     'ui.new':      'MỚI',
     'ui.hot':      'HOT',
     'ui.filterAll':'Tất cả',
     'ui.seasons':  'Mùa',
     'ui.scroll':   'Scroll',
-    'ui.myList':   'Danh sách của tôi',
   },
 
   en: {
@@ -278,16 +273,11 @@ const TRANSLATIONS = {
     'ui.save':     'Save',
     'ui.saved':    'Saved',
     'ui.play':     'Watch now',
-    'ui.playBtn':  'Play',
-    'ui.details':  'Details',
-    'ui.recommended':'Recommended for you',
-    'ui.popular':  'Popular',
     'ui.new':      'NEW',
     'ui.hot':      'HOT',
     'ui.filterAll':'All',
     'ui.seasons':  'Seasons',
     'ui.scroll':   'Scroll',
-    'ui.myList':   'My List',
   },
 };
 
@@ -322,16 +312,6 @@ function applyTranslations() {
   document.documentElement.lang = getCurrentLang();
 }
 
-function toggleLang() {
-  const btn = document.getElementById('langBtn');
-  const dropdown = document.getElementById('langDropdown');
-  if (btn && dropdown) {
-    const isOpen = dropdown.classList.contains('open');
-    dropdown.classList.toggle('open', !isOpen);
-    btn.classList.toggle('open', !isOpen);
-  }
-}
-
 function setLanguage(code, flag, label) {
   localStorage.setItem('filmix_lang', code);
   localStorage.setItem('filmix_lang_flag', flag);
@@ -346,26 +326,9 @@ function setLanguage(code, flag, label) {
     a.classList.toggle('active', a.dataset.lang === code);
   });
 
-  // Close dropdown after selection
-  const btn = document.getElementById('langBtn');
-  const dropdown = document.getElementById('langDropdown');
-  if (btn) btn.classList.remove('open');
-  if (dropdown) dropdown.classList.remove('open');
-
   applyTranslations();
   return false;
 }
-
-// Close dropdown when clicking outside
-document.addEventListener('click', (e) => {
-  const switcher = document.getElementById('langSwitcher');
-  if (switcher && !switcher.contains(e.target)) {
-    const btn = document.getElementById('langBtn');
-    const dropdown = document.getElementById('langDropdown');
-    if (btn) btn.classList.remove('open');
-    if (dropdown) dropdown.classList.remove('open');
-  }
-});
 
 (function () {
   const code  = localStorage.getItem('filmix_lang')       || 'vi';
@@ -379,8 +342,28 @@ document.addEventListener('click', (e) => {
     if (flagEl)  flagEl.textContent  = flag;
     if (labelEl) labelEl.textContent = label;
 
+    // Mark active language in dropdown
     document.querySelectorAll('.lang-dropdown a[data-lang]').forEach(a => {
       a.classList.toggle('active', a.dataset.lang === code);
     });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+      const switcher = document.getElementById('langSwitcher');
+      if (switcher && !switcher.contains(e.target)) {
+        const dropdown = document.getElementById('langDropdown');
+        const btn      = document.getElementById('langBtn');
+        if (dropdown) dropdown.classList.remove('open');
+        if (btn)      btn.classList.remove('open');
+      }
+    });
   });
 })();
+
+/* Toggle language dropdown open/close */
+function toggleLang() {
+  const dropdown = document.getElementById('langDropdown');
+  const btn      = document.getElementById('langBtn');
+  if (dropdown) dropdown.classList.toggle('open');
+  if (btn)      btn.classList.toggle('open');
+}

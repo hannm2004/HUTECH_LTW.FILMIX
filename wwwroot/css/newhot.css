@@ -1,0 +1,252 @@
+/* ─────────────────────────────────────────────────────
+   FILMIX — New & Hot Category Stylesheet (Mới & Hot)
+   Theme: Energetic Amber-Red Glow / Vibrant Badges & Micro-Animations
+   ───────────────────────────────────────────────────── */
+
+/* Hero section custom override for New & Hot */
+.hero--newhot {
+    position: relative;
+    overflow: hidden;
+    min-height: 85vh;
+}
+
+.hero--newhot::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.15) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Pulsing Hot Badge on Hero */
+.newhot-hero-badge {
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%) !important;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+    animation: newhotPulse 2s infinite alternate;
+}
+
+@keyframes newhotPulse {
+    0% {
+        box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+        transform: scale(1);
+    }
+    100% {
+        box-shadow: 0 0 18px rgba(239, 68, 68, 0.8);
+        transform: scale(1.05);
+    }
+}
+
+/* Section Header styling with red gradient underline */
+.newhot-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 4% 50px 4%;
+}
+
+.newhot-section {
+    margin-bottom: 50px;
+}
+
+.newhot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 12px;
+}
+
+.newhot-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.newhot-title {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #ffffff 30%, #ef4444 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.newhot-icon-tag {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+/* New & Hot Cards grid */
+.newhot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+}
+
+/* Glowing Neon Hover Card */
+.newhot-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.newhot-card:hover {
+    transform: translateY(-10px) scale(1.04);
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow: 0 15px 30px rgba(239, 68, 68, 0.2), 0 0 10px rgba(239, 68, 68, 0.15);
+}
+
+.newhot-card__img-wrap {
+    position: relative;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+}
+
+.newhot-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.newhot-card:hover .newhot-card__img {
+    transform: scale(1.08);
+}
+
+/* Glass panel info overlay */
+.newhot-card__info {
+    padding: 15px;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.7) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.newhot-card__title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 6px;
+    transition: color 0.3s ease;
+}
+
+.newhot-card:hover .newhot-card__title {
+    color: #f87171; /* Orange-red light up */
+}
+
+.newhot-card__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.newhot-card__genre {
+    color: #f87171;
+    font-weight: 500;
+}
+
+.newhot-card__year {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Pulsating Play Overlay Button */
+.newhot-card__play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
+    z-index: 2;
+}
+
+.newhot-card:hover .newhot-card__play-btn {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.newhot-card__play-btn svg {
+    margin-left: 3px;
+    fill: #ffffff;
+}
+
+/* Dynamic New/Hot Tag */
+.newhot-badge-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.badge-new {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-hot {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: white;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    animation: badgePulse 1.5s infinite alternate;
+}
+
+@keyframes badgePulse {
+    from {
+        box-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
+    }
+    to {
+        box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .newhot-title {
+        font-size: 1.7rem;
+    }
+    .newhot-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+}

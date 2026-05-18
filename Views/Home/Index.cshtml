@@ -1,5 +1,3 @@
-@using untitled1.Models.Entities
-@model IEnumerable<Movie>
 @{
     ViewData["Title"] = "FILMIX — Xem Phim Không Giới Hạn";
 }
@@ -87,24 +85,147 @@
 
     <!-- Horizontal scroll (top 10) -->
     <div class="trending__track" id="trendingTrack">
-        @foreach (var movie in Model.Take(10).Select((m, i) => new { Movie = m, Index = i + 1 }))
-        {
-            <div class="t-card">
-                <img class="t-card__img"
-                     src="@movie.Movie.ImageUrl"
-                     onerror="this.src='/images/movies/1.jpg'" alt="@movie.Movie.Title" loading="lazy" />
-                <span class="t-card__num">@movie.Index</span>
-                <div class="t-card__play">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
-                </div>
-                <div class="t-card__info">
-                    <div class="t-card__name">@movie.Movie.Title</div>
-                    <div class="t-card__meta"><span class="t-card__genre">@movie.Movie.Genre</span>@movie.Movie.Year</div>
-                </div>
+
+        <a href="/Product/Detail/1" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/1.jpg"
+                onerror="this.src='~/images/movies/1.jpg'" alt="Breaking Bad" loading="lazy" />
+            <span class="t-card__num">1</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">Breaking Bad</div>
+                <div class="t-card__meta"><span class="t-card__genre">Crime</span>2008</div>
             </div>
-        }
+        </a>
+
+        <a href="/Product/Detail/2" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/2.jpg"
+                onerror="this.src='~/images/movies/2.jpg'" alt="Game of Thrones" loading="lazy" />
+            <span class="t-card__num">2</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">Game of Thrones</div>
+                <div class="t-card__meta"><span class="t-card__genre">Fantasy</span>2011</div>
+            </div>
+        </a>
+
+        <a href="/Product/Detail/3" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/3.jpg"
+                onerror="this.src='~/images/movies/3.jpg'" alt="Oppenheimer" loading="lazy" />
+            <span class="t-card__num">3</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">Oppenheimer</div>
+                <div class="t-card__meta"><span class="t-card__genre">Drama</span>2023</div>
+            </div>
+        </a>
+
+        <a href="/Product/Detail/4" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/4.jpg"
+                onerror="this.src='~/images/movies/4.jpg'" alt="Avengers: Infinity War" loading="lazy" />
+            <span class="t-card__num">4</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">Avengers: Infinity War</div>
+                <div class="t-card__meta"><span class="t-card__genre">Action</span>2018</div>
+            </div>
+        </a>
+
+        <a href="/Product/Detail/5" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/5.jpg"
+                onerror="this.src='~/images/movies/5.jpg'" alt="Fight Club" loading="lazy" />
+            <span class="t-card__num">5</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">Fight Club</div>
+                <div class="t-card__meta"><span class="t-card__genre">Thriller</span>1999</div>
+            </div>
+        </a>
+
+        <a href="/Product/Detail/6" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/6.jpg"
+                onerror="this.src='~/images/movies/6.jpg'" alt="The Dark Knight" loading="lazy" />
+            <span class="t-card__num">6</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">The Dark Knight</div>
+                <div class="t-card__meta"><span class="t-card__genre">Action</span>2008</div>
+            </div>
+        </a>
+
+        <a href="/Product/Detail/7" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/7.jpg"
+                onerror="this.src='~/images/movies/7.jpg'" alt="Interstellar" loading="lazy" />
+            <span class="t-card__num">7</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">Interstellar</div>
+                <div class="t-card__meta"><span class="t-card__genre">Sci-Fi</span>2014</div>
+            </div>
+        </a>
+
+        <a href="/Product/Detail/8" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/8.jpg"
+                onerror="this.src='~/images/movies/8.jpg'" alt="Wednesday" loading="lazy" />
+            <span class="t-card__num">8</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">Wednesday</div>
+                <div class="t-card__meta"><span class="t-card__genre">Horror</span>2022</div>
+            </div>
+        </a>
+
+        <a href="/Product/Detail/9" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/9.jpg"
+                onerror="this.src='~/images/movies/9.jpg'" alt="Squid Game" loading="lazy" />
+            <span class="t-card__num">9</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">Squid Game</div>
+                <div class="t-card__meta"><span class="t-card__genre">Thriller</span>2021</div>
+            </div>
+        </a>
+
+        <a href="/Product/Detail/10" class="t-card" style="display: block; text-decoration: none; color: inherit;">
+            <img class="t-card__img"
+                src="~/images/movies/10.jpg"
+                onerror="this.src='~/images/movies/10.jpg'" alt="Spider-Man: NWH" loading="lazy" />
+            <span class="t-card__num">10</span>
+            <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                </svg></div>
+            <div class="t-card__info">
+                <div class="t-card__name">Spider-Man: NWH</div>
+                <div class="t-card__meta"><span class="t-card__genre">Action</span>2021</div>
+            </div>
+        </a>
+
     </div>
 
     <!-- Expanded grid (all movies) -->
@@ -266,9 +387,9 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8 5v14l11-7z" />
                 </svg>
-                <span data-i18n="cta.btn1">Bắt Đầu Xem Ngay</span>
+                Bắt Đầu Xem Ngay
             </a>
-            <a href="#" class="btn btn-ghost" data-i18n="cta.btn2">Xem Bảng Giá</a>
+            <a href="#" class="btn btn-ghost">Xem Bảng Giá</a>
         </div>
     </div>
 </section>
@@ -329,10 +450,26 @@
 
         /* ── All Movies expand/collapse ── */
         const ALL_MOVIES = [
-            @foreach (var movie in Model.Select((m, i) => new { Movie = m, Index = i + 1 }))
-            {
-                <text>{ num: @movie.Index, title: '@Html.Raw(movie.Movie.Title)', genre: '@movie.Movie.Genre', year: @movie.Movie.Year, img: '@movie.Movie.ImageUrl' },</text>
-            }
+            { num: 1, title: 'Breaking Bad', genre: 'Crime', year: 2008, img: '/images/movies/1.jpg', seed: 'm01' },
+            { num: 2, title: 'Game of Thrones', genre: 'Fantasy', year: 2011, img: '/images/movies/2.jpg', seed: 'm02' },
+            { num: 3, title: 'Oppenheimer', genre: 'Drama', year: 2023, img: '/images/movies/3.jpg', seed: 'm03' },
+            { num: 4, title: 'Avengers: IW', genre: 'Action', year: 2018, img: '/images/movies/4.jpg', seed: 'm04' },
+            { num: 5, title: 'Fight Club', genre: 'Thriller', year: 1999, img: '/images/movies/5.jpg', seed: 'm05' },
+            { num: 6, title: 'The Dark Knight', genre: 'Action', year: 2008, img: '/images/movies/6.jpg', seed: 'm06' },
+            { num: 7, title: 'Interstellar', genre: 'Sci-Fi', year: 2014, img: '/images/movies/7.jpg', seed: 'm07' },
+            { num: 8, title: 'Wednesday', genre: 'Horror', year: 2022, img: '/images/movies/8.jpg', seed: 'm08' },
+            { num: 9, title: 'Squid Game', genre: 'Thriller', year: 2021, img: '/images/movies/9.jpg', seed: 'm09' },
+            { num: 10, title: 'Spider-Man: NWH', genre: 'Action', year: 2021, img: '/images/movies/10.jpg', seed: 'm10' },
+            { num: 11, title: 'Stranger Things', genre: 'Sci-Fi', year: 2016, img: 'https://picsum.photos/seed/m11/185/278', seed: 'm11' },
+            { num: 12, title: 'Parasite', genre: 'Thriller', year: 2019, img: 'https://picsum.photos/seed/m12/185/278', seed: 'm12' },
+            { num: 13, title: 'Dune: Part Two', genre: 'Sci-Fi', year: 2024, img: 'https://picsum.photos/seed/m13/185/278', seed: 'm13' },
+            { num: 14, title: 'The Last of Us', genre: 'Drama', year: 2023, img: 'https://picsum.photos/seed/m14/185/278', seed: 'm14' },
+            { num: 15, title: 'Peaky Blinders', genre: 'Crime', year: 2013, img: 'https://picsum.photos/seed/m15/185/278', seed: 'm15' },
+            { num: 16, title: 'Inception', genre: 'Sci-Fi', year: 2010, img: 'https://picsum.photos/seed/m16/185/278', seed: 'm16' },
+            { num: 17, title: 'The Witcher', genre: 'Fantasy', year: 2019, img: 'https://picsum.photos/seed/m17/185/278', seed: 'm17' },
+            { num: 18, title: 'Money Heist', genre: 'Crime', year: 2017, img: 'https://picsum.photos/seed/m18/185/278', seed: 'm18' },
+            { num: 19, title: 'Joker', genre: 'Drama', year: 2019, img: 'https://picsum.photos/seed/m19/185/278', seed: 'm19' },
+            { num: 20, title: 'Ozark', genre: 'Crime', year: 2017, img: 'https://picsum.photos/seed/m20/185/278', seed: 'm20' },
         ];
 
         let allMoviesOpen = false;
@@ -347,7 +484,7 @@
             if (allMoviesOpen) {
                 if (!grid.children.length) {
                     grid.innerHTML = ALL_MOVIES.map((m, i) => `
-                <div class="t-card" style="animation-delay:${i * 0.04}s">
+                <a href="/Product/Detail/${m.num}" class="t-card" style="animation-delay:${i * 0.04}s; display: block; text-decoration: none; color: inherit;">
                   <img class="t-card__img" src="${m.img}" onerror="this.src='/images/movies/${m.num}.jpg'" alt="${m.title}" loading="lazy"/>
                   <span class="t-card__num">${m.num}</span>
                   <div class="t-card__play"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div>
@@ -355,19 +492,17 @@
                     <div class="t-card__name">${m.title}</div>
                     <div class="t-card__meta"><span class="t-card__genre">${m.genre}</span>${m.year}</div>
                   </div>
-                </div>`).join('');
+                </a>`).join('');
                 }
                 wrap.classList.add('open');
                 btn.classList.add('expanded');
-                // Use i18n t() function
-                const label = typeof t === 'function' ? t('trending.collapse') : 'Thu Gọn';
-                btn.innerHTML = `${label} <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>`;
+                // Lưu ý: t() là hàm từ i18n.js, tạm thời để text tĩnh nếu chưa có JS
+                btn.innerHTML = `Thu Gọn <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>`;
                 setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
             } else {
                 wrap.classList.remove('open');
                 btn.classList.remove('expanded');
-                const label = typeof t === 'function' ? t('trending.seeAll') : 'Xem Tất Cả';
-                btn.innerHTML = `${label} <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>`;
+                btn.innerHTML = `Xem Tất Cả <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>`;
             }
         }
     </script>
