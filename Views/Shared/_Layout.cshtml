@@ -23,6 +23,17 @@
         </div>
 
         <div class="nav__right">
+            <!-- Live Search -->
+            <div class="nav__search" style="position: relative; margin-right: 15px;">
+                <div style="display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 10px; transition: all 0.3s ease;" onfocusin="this.style.borderColor='#e50914'; this.style.background='rgba(0,0,0,0.8)';" onfocusout="this.style.borderColor='rgba(255,255,255,0.2)'; this.style.background='rgba(0,0,0,0.5)';">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color: #aaa; margin-right: 8px;"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    <input type="text" id="liveSearchInput" placeholder="Tìm tên, diễn viên..." style="background: transparent; border: none; color: #fff; width: 160px; font-size: 0.9rem; outline: none; transition: width 0.3s ease;" autocomplete="off" onfocus="this.style.width='220px'" onblur="this.value.trim() === '' ? this.style.width='160px' : null" />
+                </div>
+                <!-- Dropdown Results -->
+                <div id="liveSearchResults" style="display: none; position: absolute; top: 100%; right: 0; width: 340px; background: rgba(20,20,20,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 100; max-height: 450px; overflow-y: auto;">
+                </div>
+            </div>
+
             <!-- Language Switcher -->
             <div class="lang-switcher" id="langSwitcher">
                 <button class="lang-btn" id="langBtn" onclick="toggleLang()">
@@ -142,6 +153,72 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Live Search Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('liveSearchInput');
+            const searchResults = document.getElementById('liveSearchResults');
+            let searchTimeout;
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    const query = this.value.trim();
+                    
+                    if (query.length === 0) {
+                        searchResults.style.display = 'none';
+                        return;
+                    }
+
+                    searchTimeout = setTimeout(() => {
+                        fetch('/api/search?q=' + encodeURIComponent(query))
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.length === 0) {
+                                    searchResults.innerHTML = '<div style="padding: 15px; text-align: center; color: #888; font-size: 0.95rem;">Không tìm thấy kết quả phù hợp</div>';
+                                } else {
+                                    let html = '<div style="padding: 10px 15px; font-size: 0.8rem; color: #666; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.05);">Kết quả tìm kiếm</div>';
+                                    data.forEach(movie => {
+                                        const mainGenre = movie.genre ? movie.genre.split('/')[0] : '';
+                                        html += `
+                                            <a href="/Product/Detail/${movie.id}" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <img src="${movie.imageUrl}" alt="${movie.title}" style="width: 50px; height: 70px; object-fit: cover; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.4);" />
+                                                <div style="flex: 1; overflow: hidden;">
+                                                    <div style="font-weight: 700; color: #fff; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px;">${movie.title}</div>
+                                                    <div style="font-size: 0.8rem; color: #aaa; display: flex; align-items: center; gap: 10px;">
+                                                        <span style="color: #e50914; font-weight: 700; background: rgba(229,9,20,0.1); padding: 2px 6px; border-radius: 3px;">${mainGenre}</span>
+                                                        <span>${movie.year}</span>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        `;
+                                    });
+                                    searchResults.innerHTML = html;
+                                }
+                                searchResults.style.display = 'block';
+                            })
+                            .catch(err => console.error("Search API error:", err));
+                    }, 250); // 250ms debounce
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                        searchResults.style.display = 'none';
+                    }
+                });
+
+                // Re-open on focus
+                searchInput.addEventListener('focus', function() {
+                    if (this.value.trim().length > 0 && searchResults.innerHTML.trim() !== '') {
+                        searchResults.style.display = 'block';
+                    }
+                });
+            }
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

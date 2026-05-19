@@ -2,6 +2,11 @@
 
 ## 1. Các công việc và chỉnh sửa đã hoàn thành hôm nay
 
+### 🔍 Tìm Kiếm Thời Gian Thực (Smart Live Search)
+- **Hoàn thành**: Xây dựng API Controller (`Controllers/SearchController.cs`) để truy vấn và trả về kết quả tìm kiếm phim bằng JSON. Hỗ trợ tìm kiếm theo nhiều tiêu chí: Tên phim, Thể loại, Diễn viên và Đạo diễn.
+- **Hoàn thành**: Tích hợp thanh tìm kiếm trực tiếp trên thanh điều hướng chính (`_Layout.cshtml`). Tự động hiển thị danh sách thả xuống (dropdown) với hiệu ứng mượt mà khi người dùng gõ từ khóa (có áp dụng kỹ thuật Debounce 250ms để tối ưu hiệu suất gọi API).
+- **Hoàn thành**: Giao diện kết quả tìm kiếm được thiết kế chi tiết với ảnh bìa (thumbnail), tên phim, năm phát hành và thẻ thể loại nổi bật.
+
 ### ▶️ Trình Phát Video Nâng Cao & Tự Động Hóa (Advanced Video Player)
 - **Hoàn thành**: Tính năng **Lưu Trạng Thái Xem (Resume Watching)** - Tự động theo dõi tiến trình video (cứ 1 giây) và lưu vào `localStorage`. Khi xem lại, tự động tua đến thời điểm lưu và hiển thị Overlay *Đang xem tiếp từ [thời gian]* chuyên nghiệp bên trong player.
 - **Hoàn thành**: Tính năng **Tự Động Phát Tập Tiếp Theo (Autoplay Next Episode)** - Tích hợp bộ đếm ngược 5 giây khi video kết thúc (`onended`), hiển thị overlay mờ toàn phần thông báo tự động chuyển tập, kèm lựa chọn *Phát Ngay* hoặc *Hủy*.
@@ -50,8 +55,9 @@
 
 ---
 
-## 2. Các Bug / Yêu cầu tính năng còn tồn đọng cần xử lý tiếp
-- Hiện tại chưa ghi nhận lỗi phát sinh hay yêu cầu tính năng cấp bách mới. Hệ thống hoạt động hoàn toàn ổn định.
+## 2. Lộ trình phát triển tiếp theo (Next Steps)
+- **Tính năng 3:** Triển khai **Xem Trước Phim Khi Di Chuột (Hover Video Preview)** - Hiệu ứng thẻ phim nổi lên và tự phát trailer thu nhỏ (không âm thanh) khi hover, giống hiệu ứng đặc trưng của Netflix.
+- **Tính năng 5:** Xây dựng màn hình **Hồ Sơ Người Dùng ("Who's Watching?")** - Cho phép người dùng chọn Profile (ví dụ: Người lớn, Trẻ em) trước khi vào trang chủ để cá nhân hóa trải nghiệm và danh sách yêu thích.
 
 ---
 **Trạng thái hiện tại: 🟢 Ổn định (Stable)** — Toàn bộ tính năng chính hoạt động đúng. Không còn lỗi JavaScript runtime hay bug giao diện nghiêm trọng.
