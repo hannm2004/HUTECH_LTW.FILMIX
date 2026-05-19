@@ -51,16 +51,16 @@ namespace untitled1.Data
 
             // Seeding Movies (removed direct CategoryId column)
             modelBuilder.Entity<Movie>().HasData(
-                new Movie { Id = 1, Title = "Breaking Bad", ImageUrl = "/images/movies/1.jpg", Year = 2008, Genre = "Crime/Drama", IsTVSeries = true },
-                new Movie { Id = 2, Title = "Game of Thrones", ImageUrl = "/images/movies/2.jpg", Year = 2011, Genre = "Action/Fantasy", IsTVSeries = true },
-                new Movie { Id = 3, Title = "Oppenheimer", ImageUrl = "/images/movies/3.jpg", Year = 2023, Genre = "Drama/History", IsTVSeries = false },
-                new Movie { Id = 4, Title = "Avengers: Infinity War", ImageUrl = "/images/movies/4.jpg", Year = 2018, Genre = "Action/Sci-Fi", IsTVSeries = false },
-                new Movie { Id = 5, Title = "Fight Club", ImageUrl = "/images/movies/5.jpg", Year = 1999, Genre = "Drama/Thriller", IsTVSeries = false },
-                new Movie { Id = 6, Title = "The Dark Knight", ImageUrl = "/images/movies/6.jpg", Year = 2008, Genre = "Action/Drama", IsTVSeries = false },
-                new Movie { Id = 7, Title = "Interstellar", ImageUrl = "/images/movies/7.jpg", Year = 2014, Genre = "Sci-Fi/Drama", IsTVSeries = false },
-                new Movie { Id = 8, Title = "Wednesday", ImageUrl = "/images/movies/8.jpg", Year = 2022, Genre = "Horror/Fantasy", IsTVSeries = true },
-                new Movie { Id = 9, Title = "Squid Game", ImageUrl = "/images/movies/9.jpg", Year = 2021, Genre = "Action/Thriller", IsTVSeries = true },
-                new Movie { Id = 10, Title = "Spider-Man: No Way Home", ImageUrl = "/images/movies/10.jpg", Year = 2021, Genre = "Action/Sci-Fi", IsTVSeries = false }
+                new Movie { Id = 1, Title = "Breaking Bad", ImageUrl = "/images/movies/1.jpg", Year = 2008, Genre = "Crime/Drama", IsTVSeries = true, Director = "Vince Gilligan", Cast = "Bryan Cranston, Aaron Paul, Anna Gunn, RJ Mitte" },
+                new Movie { Id = 2, Title = "Game of Thrones", ImageUrl = "/images/movies/2.jpg", Year = 2011, Genre = "Action/Fantasy", IsTVSeries = true, Director = "David Benioff, D.B. Weiss", Cast = "Emilia Clarke, Kit Harington, Peter Dinklage, Lena Headey" },
+                new Movie { Id = 3, Title = "Oppenheimer", ImageUrl = "/images/movies/3.jpg", Year = 2023, Genre = "Drama/History", IsTVSeries = false, Director = "Christopher Nolan", Cast = "Cillian Murphy, Emily Blunt, Matt Damon, Robert Downey Jr." },
+                new Movie { Id = 4, Title = "Avengers: Infinity War", ImageUrl = "/images/movies/4.jpg", Year = 2018, Genre = "Action/Sci-Fi", IsTVSeries = false, Director = "Anthony Russo, Joe Russo", Cast = "Robert Downey Jr., Chris Hemsworth, Mark Ruffalo, Chris Evans" },
+                new Movie { Id = 5, Title = "Fight Club", ImageUrl = "/images/movies/5.jpg", Year = 1999, Genre = "Drama/Thriller", IsTVSeries = false, Director = "David Fincher", Cast = "Brad Pitt, Edward Norton, Meat Loaf, Zach Grenier" },
+                new Movie { Id = 6, Title = "The Dark Knight", ImageUrl = "/images/movies/6.jpg", Year = 2008, Genre = "Action/Drama", IsTVSeries = false, Director = "Christopher Nolan", Cast = "Christian Bale, Heath Ledger, Aaron Eckhart, Maggie Gyllenhaal" },
+                new Movie { Id = 7, Title = "Interstellar", ImageUrl = "/images/movies/7.jpg", Year = 2014, Genre = "Sci-Fi/Drama", IsTVSeries = false, Director = "Christopher Nolan", Cast = "Matthew McConaughey, Anne Hathaway, Jessica Chastain, Mackenzie Foy" },
+                new Movie { Id = 8, Title = "Wednesday", ImageUrl = "/images/movies/8.jpg", Year = 2022, Genre = "Horror/Fantasy", IsTVSeries = true, Director = "Tim Burton", Cast = "Jenna Ortega, Hunter Doohan, Percy Hynes White, Emma Myers" },
+                new Movie { Id = 9, Title = "Squid Game", ImageUrl = "/images/movies/9.jpg", Year = 2021, Genre = "Action/Thriller", IsTVSeries = true, Director = "Hwang Dong-hyuk", Cast = "Lee Jung-jae, Park Hae-soo, Wi Ha-jun, Hoyeon" },
+                new Movie { Id = 10, Title = "Spider-Man: No Way Home", ImageUrl = "/images/movies/10.jpg", Year = 2021, Genre = "Action/Sci-Fi", IsTVSeries = false, Director = "Jon Watts", Cast = "Tom Holland, Zendaya, Benedict Cumberbatch, Jacob Batalon" }
             );
 
             // Seeding Many-to-Many connections (MovieCategory)

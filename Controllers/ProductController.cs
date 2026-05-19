@@ -46,6 +46,22 @@ namespace untitled1.Controllers
 
             if (movie == null) return NotFound();
 
+            // Get category IDs of the current movie
+            var currentCategoryIds = movie.MovieCategories.Select(mc => mc.CategoryId).ToList();
+
+            // Find similar movies (matching category or director, excluding current movie)
+            var similarMovies = await _context.Movies
+                .Include(m => m.MovieCategories)
+                    .ThenInclude(mc => mc.Category)
+                .Where(m => m.Id != id && (
+                    m.MovieCategories.Any(mc => currentCategoryIds.Contains(mc.CategoryId)) 
+                    || (!string.IsNullOrEmpty(m.Director) && m.Director == movie.Director)
+                ))
+                .Take(6)
+                .ToListAsync();
+
+            ViewBag.SimilarMovies = similarMovies;
+
             return View(movie);
         }
     }

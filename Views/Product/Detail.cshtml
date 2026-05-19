@@ -97,7 +97,7 @@
                     <div class="episodes-list" style="display: grid; gap: 15px;">
                         @foreach (var ep in Model.Episodes.OrderBy(e => e.SeasonNumber).ThenBy(e => e.EpisodeNumber))
                         {
-                            <div class="episode-card" data-season="@ep.SeasonNumber" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; gap: 20px; padding: 15px 20px; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.07)'; this.style.borderColor='rgba(255,255,255,0.15)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.05)';" onclick="playEpisode('@ep.Title', '@ep.VideoUrl')">
+                            <div class="episode-card" data-season="@ep.SeasonNumber" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; gap: 20px; padding: 15px 20px; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.07)'; this.style.borderColor='rgba(255,255,255,0.15)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.05)';" onclick="playEpisode('@Html.Raw(ep.Title.Replace("'", "\\'"))', '@ep.VideoUrl', '@ep.Id')">
                                 <div class="ep-number" style="font-size: 1.5rem; font-weight: 900; color: rgba(255,255,255,0.3); min-width: 40px; text-align: center;">
                                     @ep.EpisodeNumber
                                 </div>
@@ -122,12 +122,12 @@
             
             <div style="margin-bottom: 15px;">
                 <span style="display: block; font-size: 0.85rem; color: #888; text-transform: uppercase; margin-bottom: 3px;">Diễn viên</span>
-                <span style="font-size: 0.95rem; font-weight: 600; color: #ddd;">Pedro Pascal, Bella Ramsey, Bryan Cranston, Jenna Ortega</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #ddd;">@(string.IsNullOrEmpty(Model.Cast) ? "Đang cập nhật" : Model.Cast)</span>
             </div>
             
             <div style="margin-bottom: 15px;">
                 <span style="display: block; font-size: 0.85rem; color: #888; text-transform: uppercase; margin-bottom: 3px;">Đạo diễn</span>
-                <span style="font-size: 0.95rem; font-weight: 600; color: #ddd;">Christopher Nolan, Vince Gilligan</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #ddd;">@(string.IsNullOrEmpty(Model.Director) ? "Đang cập nhật" : Model.Director)</span>
             </div>
 
             <div style="margin-bottom: 15px;">
@@ -141,6 +141,32 @@
             </div>
         </div>
     </div>
+
+    <!-- Similar Movies Section ("More Like This" Netflix style) -->
+    @{
+        var similarMovies = ViewBag.SimilarMovies as List<Movie>;
+    }
+    @if (similarMovies != null && similarMovies.Any())
+    {
+        <div class="similar-section" style="max-width: 1200px; margin: 40px auto 0; padding: 0 5%;">
+            <h3 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 25px; border-left: 4px solid #e50914; padding-left: 10px;">Nội Dung Tương Tự</h3>
+            <div class="trending__grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 20px;">
+                @foreach (var simMovie in similarMovies)
+                {
+                    <a asp-action="Detail" asp-route-id="@simMovie.Id" class="t-card" style="opacity: 1; transform: none; position: relative; display: block; text-decoration: none; color: inherit;">
+                        <img class="t-card__img" src="@simMovie.ImageUrl" alt="@simMovie.Title" loading="lazy" />
+                        <div class="t-card__play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                        <div class="t-card__info">
+                            <div class="t-card__name">@simMovie.Title</div>
+                            <div class="t-card__meta"><span class="t-card__genre">@simMovie.Genre</span>@simMovie.Year</div>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    }
 </div>
 
 <!-- Video Player Modal -->
@@ -152,6 +178,35 @@
             Trình duyệt của bạn không hỗ trợ phát video.
         </video>
         <div id="videoTitleOverlay" style="position: absolute; top: 20px; left: 20px; font-size: 1.3rem; font-weight: 700; color: #fff; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); z-index: 10;"></div>
+        
+        <!-- Resume Watching Prompt Overlay -->
+        <div id="resumeOverlay" style="display: none; position: absolute; bottom: 80px; left: 20px; z-index: 20; background: rgba(0,0,0,0.85); border-left: 4px solid #e50914; padding: 12px 20px; border-radius: 0 4px 4px 0; color: #fff; font-size: 0.95rem; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            <span id="resumeText">Đang xem tiếp từ 02:15</span>
+            <button onclick="restartVideo()" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">Xem từ đầu</button>
+        </div>
+
+        <!-- Skip Intro Button -->
+        <button id="skipIntroBtn" onclick="skipIntro()" style="display: none; position: absolute; bottom: 80px; right: 20px; z-index: 20; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.5); color: #fff; padding: 10px 20px; font-size: 0.95rem; font-weight: 700; cursor: pointer; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;" onmouseover="this.style.background='#fff'; this.style.color='#000';" onmouseout="this.style.background='rgba(0,0,0,0.8)'; this.style.color='#fff';">
+            Bỏ Qua Giới Thiệu
+        </button>
+
+        <!-- Autoplay Next Episode Countdown Overlay -->
+        <div id="autoplayOverlay" style="display: none; position: absolute; inset: 0; z-index: 30; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Outfit', sans-serif;">
+            <div style="text-align: center; max-width: 500px; padding: 20px;">
+                <span style="font-size: 1rem; color: #aaa; text-transform: uppercase; letter-spacing: 2px;">Tập tiếp theo sẽ phát sau</span>
+                <div id="autoplayCountdown" style="font-size: 5rem; font-weight: 900; color: #e50914; margin: 15px 0;">5</div>
+                <h3 id="nextEpisodeTitle" style="font-size: 1.6rem; font-weight: 700; margin-bottom: 25px;">Tập 2: Chiếc túi bí mật</h3>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button onclick="playNextEpisodeImmediately()" style="background: #e50914; color: #fff; border: none; padding: 12px 30px; font-size: 1rem; font-weight: 700; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        Phát Ngay
+                    </button>
+                    <button onclick="cancelAutoplay()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 12px 30px; font-size: 1rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                        Hủy
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -200,19 +255,60 @@
             }
         });
 
-        // Video control
+        // Advanced Video Player States
+        let currentMovieId = '@Model.Id';
+        let currentEpisodeId = 'main';
+        let autoplayTimer = null;
+        let autoplayCountdownVal = 5;
+        let nextEpisodeObj = null;
+
+        // Build Javascript Episode Array for Autoplay
+        const episodesList = [
+            @if (Model.IsTVSeries && Model.Episodes.Any()) {
+                @foreach (var ep in Model.Episodes.OrderBy(e => e.SeasonNumber).ThenBy(e => e.EpisodeNumber))
+                {
+                    <text>{ id: '@ep.Id', title: '@Html.Raw(ep.Title.Replace("'", "\\'"))', url: '@ep.VideoUrl', season: '@ep.SeasonNumber', episodeNum: '@ep.EpisodeNumber' },</text>
+                }
+            }
+        ];
+
         function playMainVideo() {
-            playEpisode("@Model.Title", "/videos/sample.mp4");
+            playEpisode("@Html.Raw(Model.Title.Replace("'", "\\'"))", "/videos/sample.mp4", "main");
         }
 
-        function playEpisode(title, url) {
+        function playEpisode(title, url, epId) {
+            currentEpisodeId = epId || 'main';
+
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('modalVideo');
             const overlay = document.getElementById('videoTitleOverlay');
             
             if (modal && video) {
+                // Reset states
+                document.getElementById('autoplayOverlay').style.display = 'none';
+                document.getElementById('resumeOverlay').style.display = 'none';
+                document.getElementById('skipIntroBtn').style.display = 'none';
+                if (autoplayTimer) clearInterval(autoplayTimer);
+
                 overlay.textContent = title;
+                // Using standard sample video for demo purposes
                 video.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+                
+                // Check Resume Watching
+                const progressKey = 'filmix_progress_' + currentMovieId + '_' + currentEpisodeId;
+                const savedTime = parseFloat(localStorage.getItem(progressKey) || '0');
+                
+                if (savedTime > 3) {
+                    video.currentTime = savedTime;
+                    document.getElementById('resumeText').textContent = "Đang xem tiếp từ " + formatTime(savedTime);
+                    document.getElementById('resumeOverlay').style.display = 'flex';
+                    // Hide resume toast after 5s
+                    setTimeout(() => {
+                        const el = document.getElementById('resumeOverlay');
+                        if (el) el.style.display = 'none';
+                    }, 5000);
+                }
+
                 modal.style.display = 'flex';
                 video.play();
             }
@@ -225,8 +321,108 @@
                 video.pause();
                 modal.style.display = 'none';
                 video.src = "";
+                if (autoplayTimer) clearInterval(autoplayTimer);
             }
         }
+
+        function restartVideo() {
+            const video = document.getElementById('modalVideo');
+            if (video) {
+                video.currentTime = 0;
+                const progressKey = 'filmix_progress_' + currentMovieId + '_' + currentEpisodeId;
+                localStorage.removeItem(progressKey);
+                document.getElementById('resumeOverlay').style.display = 'none';
+            }
+        }
+
+        function skipIntro() {
+            const video = document.getElementById('modalVideo');
+            if (video) {
+                video.currentTime = 25; // Skip first 25s
+                document.getElementById('skipIntroBtn').style.display = 'none';
+            }
+        }
+
+        function playNextEpisodeImmediately() {
+            if (autoplayTimer) clearInterval(autoplayTimer);
+            document.getElementById('autoplayOverlay').style.display = 'none';
+            if (nextEpisodeObj) {
+                playEpisode(nextEpisodeObj.title, nextEpisodeObj.url, nextEpisodeObj.id);
+            }
+        }
+
+        function cancelAutoplay() {
+            if (autoplayTimer) clearInterval(autoplayTimer);
+            document.getElementById('autoplayOverlay').style.display = 'none';
+            closeVideo();
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+        }
+
+        // Setup Time Tracking and End Events
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('modalVideo');
+            if (!video) return;
+
+            video.addEventListener('timeupdate', () => {
+                const ct = video.currentTime;
+                const dur = video.duration;
+
+                // Save Progress (save if watched >3s and not in last 10s)
+                if (ct > 3 && (dur - ct) > 10) {
+                    const progressKey = 'filmix_progress_' + currentMovieId + '_' + currentEpisodeId;
+                    localStorage.setItem(progressKey, ct);
+                }
+
+                // Show Skip Intro between 5s and 25s
+                if (ct >= 5 && ct <= 25) {
+                    document.getElementById('skipIntroBtn').style.display = 'block';
+                } else {
+                    document.getElementById('skipIntroBtn').style.display = 'none';
+                }
+            });
+
+            video.addEventListener('ended', () => {
+                // Clear progress when finished
+                const progressKey = 'filmix_progress_' + currentMovieId + '_' + currentEpisodeId;
+                localStorage.removeItem(progressKey);
+
+                if (episodesList.length > 0) {
+                    let nextEp = null;
+                    if (currentEpisodeId === 'main') {
+                        nextEp = episodesList[0];
+                    } else {
+                        const idx = episodesList.findIndex(e => e.id == currentEpisodeId);
+                        if (idx >= 0 && idx < episodesList.length - 1) {
+                            nextEp = episodesList[idx + 1];
+                        }
+                    }
+
+                    if (nextEp) {
+                        nextEpisodeObj = nextEp;
+                        document.getElementById('nextEpisodeTitle').textContent = "Mùa " + nextEp.season + " - Tập " + nextEp.episodeNum + ": " + nextEp.title;
+                        document.getElementById('autoplayOverlay').style.display = 'flex';
+                        
+                        autoplayCountdownVal = 5;
+                        document.getElementById('autoplayCountdown').textContent = autoplayCountdownVal;
+
+                        autoplayTimer = setInterval(() => {
+                            autoplayCountdownVal--;
+                            if (autoplayCountdownVal <= 0) {
+                                clearInterval(autoplayTimer);
+                                playNextEpisodeImmediately();
+                            } else {
+                                document.getElementById('autoplayCountdown').textContent = autoplayCountdownVal;
+                            }
+                        }, 1000);
+                    }
+                }
+            });
+        });
 
         // Watchlist toggle toast helper with localStorage persistence
         function toggleWatchlist(btn) {

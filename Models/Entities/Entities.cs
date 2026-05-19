@@ -17,6 +17,8 @@ namespace untitled1.Models.Entities
         public int Year { get; set; }
         public string Genre { get; set; } = string.Empty; // Keeps textual genre overview for reference
         public bool IsTVSeries { get; set; }
+        public string Director { get; set; } = string.Empty;
+        public string Cast { get; set; } = string.Empty;
 
         // Many-to-many relationship with Categories via join table
         public ICollection<MovieCategory> MovieCategories { get; set; } = new List<MovieCategory>();
