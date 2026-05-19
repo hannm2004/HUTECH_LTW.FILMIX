@@ -30,8 +30,9 @@ using (var scope = app.Services.CreateScope())
     try
     {
         db.Database.EnsureCreated();
-        // Test query to verify if the schema is up-to-date (checks if Episodes table exists)
+        // Test query to verify if the schema is up-to-date (checks if Episodes table exists and Movies has Director/Cast columns)
         _ = db.Episodes.OrderBy(e => e.Id).FirstOrDefault();
+        _ = db.Movies.Select(m => new { m.Id, m.Director, m.Cast }).FirstOrDefault();
     }
     catch (Exception ex)
     {

@@ -1,6 +1,21 @@
-# Nhật Ký Phát Triển Dự Án FILMIX - Cập nhật ngày 18/05/2026
+# Nhật Ký Phát Triển Dự Án FILMIX - Cập nhật ngày 19/05/2026
 
 ## 1. Các công việc và chỉnh sửa đã hoàn thành hôm nay
+
+### ▶️ Trình Phát Video Nâng Cao & Tự Động Hóa (Advanced Video Player)
+- **Hoàn thành**: Tính năng **Lưu Trạng Thái Xem (Resume Watching)** - Tự động theo dõi tiến trình video (cứ 1 giây) và lưu vào `localStorage`. Khi xem lại, tự động tua đến thời điểm lưu và hiển thị Overlay *Đang xem tiếp từ [thời gian]* chuyên nghiệp bên trong player.
+- **Hoàn thành**: Tính năng **Tự Động Phát Tập Tiếp Theo (Autoplay Next Episode)** - Tích hợp bộ đếm ngược 5 giây khi video kết thúc (`onended`), hiển thị overlay mờ toàn phần thông báo tự động chuyển tập, kèm lựa chọn *Phát Ngay* hoặc *Hủy*.
+- **Hoàn thành**: Nút **Bỏ Qua Giới Thiệu (Skip Intro)** - Tự động hiện nút bấm bo góc chuyên nghiệp chuẩn Netflix tại thời điểm mô phỏng intro (giây thứ 5 đến thứ 25).
+
+### 🎬 Hệ thống Đề xuất Phim tương tự ("More Like This" Recommendations)
+- **Hoàn thành**: Cấu trúc logic nghiệp vụ trong `ProductController.cs` để tự động tìm kiếm các bộ phim có cùng thể loại (Category) hoặc cùng đạo diễn (Director) với phim đang xem (tối đa hiển thị 6 phim, loại trừ phim hiện tại).
+- **Hoàn thành**: Tích hợp khối giao diện **"Nội Dung Tương Tự"** ở cuối trang chi tiết phim (`Views/Product/Detail.cshtml`) dạng grid. Tái sử dụng các lớp CSS `.trending__grid` và `.t-card` để giữ nguyên các hiệu ứng chuẩn Netflix như hover phóng to (scale), tăng độ bão hòa màu, hiển thị nút play đỏ và phần metadata tóm tắt.
+
+### 🌐 Thông tin Cast/Director động (Dynamic Cast/Director)
+- **Hoàn thành**: Thêm trường `Director` và `Cast` vào thực thể `Movie` (`Models/Entities/Entities.cs`).
+- **Hoàn thành**: Cập nhật dữ liệu hạt giống (Seed Data) trong `ApplicationDbContext.cs` với thông tin đạo diễn và dàn diễn viên thực tế cho cả 10 bộ phim mẫu.
+- **Hoàn thành**: Liên kết dữ liệu động vào trang chi tiết phim (`Views/Product/Detail.cshtml`) thay cho các thông tin diễn viên/đạo diễn bị hard-code trước đó.
+- **Hoàn thành**: Tự động hóa cập nhật Schema trong `Program.cs` - thêm kiểm tra trường `Director`/`Cast` khi khởi chạy, nếu phát hiện cấu trúc bảng cũ sẽ tự động xóa và tạo lại database cùng dữ liệu mẫu mới.
 
 ### 🆕 Thêm Danh mục mới ("Phim Lẻ" & "Mới & Hot")
 - Tạo `MoviesController.cs` và `NewHotController.cs`.
@@ -23,24 +38,20 @@
   - **Tab 1:** Khám Phá Phim (mặc định, lọc theo thể loại).
   - **Tab 2:** Danh Sách Của Tôi (hiển thị phim được lưu trong bộ nhớ máy khách).
 
-### 🐛 Fix Bugs — Phiên trước
-- **Lỗi Cartesian Explosion trong EF Core**: Khi fetch Movies kèm theo `Episodes` và `MovieCategories`, ứng dụng bị crash. Đã fix triệt để bằng cách thêm `.AsSplitQuery()` vào ProductController.
-- **Lỗi LocalStorage "Danh Sách Của Tôi" (Watchlist)**: Nút "Lưu Danh Sách" trước đó chỉ có hiệu ứng UI mà không lưu ID vào bộ nhớ trình duyệt, khiến Danh Sách Của Tôi luôn trống rỗng. Đã sửa lại JavaScript trong `Detail.cshtml` để đọc/ghi vào `localStorage` chính xác.
+### 🐛 Fix Bugs
+- **Lỗi Cartesian Explosion trong EF Core**: Khi fetch Movies kèm theo `Episodes` và `MovieCategories`, ứng dụng bị crash. Đã fix bằng cách thêm `.AsSplitQuery()` vào ProductController.
+- **Lỗi LocalStorage "Danh Sách Của Tôi" (Watchlist)**: Sửa lại JavaScript trong `Detail.cshtml` để đọc/ghi vào `localStorage` chính xác.
+- **Lỗi `toggleLang()` không tồn tại** (`i18n.js`): Thêm hàm vào `i18n.js` kèm logic highlight ngôn ngữ đang active và đóng dropdown khi click ra ngoài.
+- **Nút "Lưu Xem Sau" ở Phim Lẻ không hoạt động** (`Movies/Index.cshtml`): Thêm handler cho phim Interstellar.
+- **Nút "+ Danh Sách" ở Mới & Hot không hoạt động** (`NewHot/Index.cshtml`): Thêm handler cho phim Spider-Man: No Way Home.
+- **Nút "Danh sách của tôi" ở TV Shows không hoạt động** (`TVShows/Index.cshtml`): Thêm handler cho phim Breaking Bad.
+- **Title tab trình duyệt bị duplicate "FILMIX"** (`_Layout.cshtml`): Bỏ ` - FILMIX` khỏi layout.
+- **EF Core warning `FirstOrDefault` không có `OrderBy`** (`Program.cs`): Thêm `.OrderBy` để tránh kết quả không xác định.
 
-### 🔧 Fix Bugs — Phiên kiểm tra code hôm nay
-- **[BUG 1 — Nghiêm trọng] `toggleLang()` không tồn tại** (`i18n.js`): Nút navbar gọi `onclick="toggleLang()"` nhưng hàm chưa được định nghĩa → crash `ReferenceError` khi click. Đã thêm hàm vào `i18n.js` kèm logic highlight ngôn ngữ đang active và đóng dropdown khi click ra ngoài.
-- **[BUG 2] Nút "Lưu Xem Sau" ở Phim Lẻ không hoạt động** (`Movies/Index.cshtml`): Chỉ là HTML tĩnh, không có handler. Đã thêm `onclick="toggleHeroWatchlist(7, ...)"` cho phim Interstellar với toast notification và đổi màu trạng thái.
-- **[BUG 3] Nút "+ Danh Sách" ở Mới & Hot không hoạt động** (`NewHot/Index.cshtml`): Đã thêm handler cho phim Spider-Man: No Way Home (id=10).
-- **[BUG 4] Nút "Danh sách của tôi" ở TV Shows không hoạt động** (`TVShows/Index.cshtml`): Đã thêm handler cho phim Breaking Bad (id=1) trong hero section.
-- **[BUG 5] Title tab trình duyệt bị duplicate "FILMIX"** (`_Layout.cshtml`): Pattern `"[Title] - FILMIX"` nhưng các view đã tự nhúng "FILMIX" → hiển thị `"FILMIX — ... - FILMIX"`. Đã bỏ ` - FILMIX` khỏi layout.
-- **[BUG 6] EF Core warning `FirstOrDefault` không có `OrderBy`** (`Program.cs`): Đã thêm `.OrderBy(e => e.Id)` để tránh warning và kết quả không xác định.
 ---
 
 ## 2. Các Bug / Yêu cầu tính năng còn tồn đọng cần xử lý tiếp
-
-### 🌐 Thông tin Cast/Director bị hard-code
-- **Vấn đề**: Sidebar trang chi tiết phim hiện cùng một diễn viên/đạo diễn cho mọi bộ phim.
-- **Yêu cầu**: Thêm field `Director` và `Cast` vào model `Movie`, cập nhật seed data và Detail view để hiển thị đúng thông tin từng phim.
+- Hiện tại chưa ghi nhận lỗi phát sinh hay yêu cầu tính năng cấp bách mới. Hệ thống hoạt động hoàn toàn ổn định.
 
 ---
 **Trạng thái hiện tại: 🟢 Ổn định (Stable)** — Toàn bộ tính năng chính hoạt động đúng. Không còn lỗi JavaScript runtime hay bug giao diện nghiêm trọng.
