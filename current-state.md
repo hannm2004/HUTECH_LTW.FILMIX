@@ -1,4 +1,4 @@
-# Nhật Ký Phát Triển Dự Án FILMIX - Cập nhật ngày 19/05/2026
+# Nhật Ký Phát Triển Dự Án FILMIX - Cập nhật ngày 21/05/2026
 
 ## 1. Các công việc và chỉnh sửa đã hoàn thành hôm nay
 
@@ -55,8 +55,28 @@
 
 ---
 
-## 2. Lộ trình phát triển tiếp theo (Next Steps)
-- **Tính năng 3:** Triển khai **Xem Trước Phim Khi Di Chuột (Hover Video Preview)** - Hiệu ứng thẻ phim nổi lên và tự phát trailer thu nhỏ (không âm thanh) khi hover, giống hiệu ứng đặc trưng của Netflix.
+## 2. Tính năng đã hoàn thành thêm
+
+### 🎬 Xem Trước Phim Khi Di Chuột (Hover Video Preview) — Tính năng 3
+- **Hoàn thành**: Tạo file `wwwroot/css/hover-preview.css` — CSS cho popup card Netflix-style với hiệu ứng scale, shadow, animation xuất hiện mượt mà.
+- **Hoàn thành**: Tạo file `wwwroot/js/hover-preview.js` — JavaScript engine toàn diện:
+  - Popup xuất hiện sau 600ms hover (debounce), ẩn sau 250ms rời chuột
+  - Video autoplay muted sau 300ms, có nút toggle Mute/Unmute
+  - Hiển thị thumbnail ngay lập tức + spinner khi video đang load
+  - Positioning thông minh: tính toán tránh tràn mép màn hình (trên/dưới/trái/phải)
+  - Popup hiển thị: % phù hợp, rating, năm, thể loại, tiến trình xem (resume bar)
+  - Nút **Phát Ngay**, **+ Danh Sách** (sync với localStorage watchlist), **Like**, **Xem Chi Tiết**
+  - Hỗ trợ đóng bằng phím `Escape`
+  - MutationObserver: tự gắn listener cho card mới được inject động ("Xem Tất Cả")
+- **Hoàn thành**: Include `hover-preview.css` và `hover-preview.js` vào `_Layout.cshtml` → **tự động áp dụng cho TẤT CẢ trang** (Home, TVShows, Phim Lẻ, Mới & Hot, Danh Sách, Detail)
+- **Hoàn thành**: Hỗ trợ đa dạng loại card:
+  - `.t-card` dùng `href` (Home, TVShows, Movies, Product/List, Detail)
+  - `.newhot-card` dùng `onclick` (trang Mới & Hot)
+  - Card inject động từ JavaScript ("Xem Tất Cả" grid)
+
+---
+
+## 3. Lộ trình phát triển tiếp theo (Next Steps)
 - **Tính năng 5:** Xây dựng màn hình **Hồ Sơ Người Dùng ("Who's Watching?")** - Cho phép người dùng chọn Profile (ví dụ: Người lớn, Trẻ em) trước khi vào trang chủ để cá nhân hóa trải nghiệm và danh sách yêu thích.
 
 ---
