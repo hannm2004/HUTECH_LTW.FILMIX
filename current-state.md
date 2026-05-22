@@ -1,84 +1,105 @@
-# Nhật Ký Phát Triển Dự Án FILMIX - Cập nhật ngày 21/05/2026
+# Nhật Ký Phát Triển Dự Án FILMIX - Cập nhật ngày 22/05/2026
 
-## 1. Các công việc và chỉnh sửa đã hoàn thành hôm nay
+## 2. Các công việc và chỉnh sửa đã hoàn thành hôm nay
 
-### 🔍 Tìm Kiếm Thời Gian Thực (Smart Live Search)
-- **Hoàn thành**: Xây dựng API Controller (`Controllers/SearchController.cs`) để truy vấn và trả về kết quả tìm kiếm phim bằng JSON. Hỗ trợ tìm kiếm theo nhiều tiêu chí: Tên phim, Thể loại, Diễn viên và Đạo diễn.
-- **Hoàn thành**: Tích hợp thanh tìm kiếm trực tiếp trên thanh điều hướng chính (`_Layout.cshtml`). Tự động hiển thị danh sách thả xuống (dropdown) với hiệu ứng mượt mà khi người dùng gõ từ khóa (có áp dụng kỹ thuật Debounce 250ms để tối ưu hiệu suất gọi API).
-- **Hoàn thành**: Giao diện kết quả tìm kiếm được thiết kế chi tiết với ảnh bìa (thumbnail), tên phim, năm phát hành và thẻ thể loại nổi bật.
+### 🔐 Phase 1 & 2 — Identity + Roles (hoàn thành từ session trước)
+> Ghi lại đầy đủ để tham chiếu. Các file này đã ổn định, không cần đụng thêm.
 
-### ▶️ Trình Phát Video Nâng Cao & Tự Động Hóa (Advanced Video Player)
-- **Hoàn thành**: Tính năng **Lưu Trạng Thái Xem (Resume Watching)** - Tự động theo dõi tiến trình video (cứ 1 giây) và lưu vào `localStorage`. Khi xem lại, tự động tua đến thời điểm lưu và hiển thị Overlay *Đang xem tiếp từ [thời gian]* chuyên nghiệp bên trong player.
-- **Hoàn thành**: Tính năng **Tự Động Phát Tập Tiếp Theo (Autoplay Next Episode)** - Tích hợp bộ đếm ngược 5 giây khi video kết thúc (`onended`), hiển thị overlay mờ toàn phần thông báo tự động chuyển tập, kèm lựa chọn *Phát Ngay* hoặc *Hủy*.
-- **Hoàn thành**: Nút **Bỏ Qua Giới Thiệu (Skip Intro)** - Tự động hiện nút bấm bo góc chuyên nghiệp chuẩn Netflix tại thời điểm mô phỏng intro (giây thứ 5 đến thứ 25).
+- **`untitled1.csproj`** — thêm `Microsoft.AspNetCore.Identity.EntityFrameworkCore 9.0.0`.
+- **`Models/Entities/Entities.cs`** — thêm class `ApplicationUser : IdentityUser` với property `FullName`.
+- **`Data/ApplicationDbContext.cs`** — đổi base class thành `IdentityDbContext<ApplicationUser>`, gọi `base.OnModelCreating(modelBuilder)`.
+- **`Data/DbSeeder.cs`** — seed 2 role (`Admin`, `User`) và 2 tài khoản admin (`admin1@filmix.com`, `admin2@filmix.com` / `admin@123`), idempotent.
+- **`Program.cs`** — đăng ký Identity services (password policy nới lỏng), `ConfigureApplicationCookie` LoginPath = `/Account/Auth`, gọi `DbSeeder.SeedAsync`, thêm `UseAuthentication()`.
+- **`Controllers/AccountController.cs`** — login/register/logout qua `SignInManager`, trả JSON cho AJAX fetch.
+- **`Views/Account/Auth.cshtml`** — dùng CSRF token + fetch API thay cho form submit thủ công.
+- **`Views/Shared/_Layout.cshtml`** — logout chuyển thành form POST; khi không authenticated thì xóa `localStorage['filmix_user']`.
 
-### 🎬 Hệ thống Đề xuất Phim tương tự ("More Like This" Recommendations)
-- **Hoàn thành**: Cấu trúc logic nghiệp vụ trong `ProductController.cs` để tự động tìm kiếm các bộ phim có cùng thể loại (Category) hoặc cùng đạo diễn (Director) với phim đang xem (tối đa hiển thị 6 phim, loại trừ phim hiện tại).
-- **Hoàn thành**: Tích hợp khối giao diện **"Nội Dung Tương Tự"** ở cuối trang chi tiết phim (`Views/Product/Detail.cshtml`) dạng grid. Tái sử dụng các lớp CSS `.trending__grid` và `.t-card` để giữ nguyên các hiệu ứng chuẩn Netflix như hover phóng to (scale), tăng độ bão hòa màu, hiển thị nút play đỏ và phần metadata tóm tắt.
+### 🏗 Phase 3 — Admin Area (hoàn thành)
 
-### 🌐 Thông tin Cast/Director động (Dynamic Cast/Director)
-- **Hoàn thành**: Thêm trường `Director` và `Cast` vào thực thể `Movie` (`Models/Entities/Entities.cs`).
-- **Hoàn thành**: Cập nhật dữ liệu hạt giống (Seed Data) trong `ApplicationDbContext.cs` với thông tin đạo diễn và dàn diễn viên thực tế cho cả 10 bộ phim mẫu.
-- **Hoàn thành**: Liên kết dữ liệu động vào trang chi tiết phim (`Views/Product/Detail.cshtml`) thay cho các thông tin diễn viên/đạo diễn bị hard-code trước đó.
-- **Hoàn thành**: Tự động hóa cập nhật Schema trong `Program.cs` - thêm kiểm tra trường `Director`/`Cast` khi khởi chạy, nếu phát hiện cấu trúc bảng cũ sẽ tự động xóa và tạo lại database cùng dữ liệu mẫu mới.
+#### Backend
+- **`Areas/Admin/Controllers/DashboardController.cs`** — trả về 4 stat: TotalMovies, TotalTVSeries, TotalFilms, TotalUsers + `ViewBag.RecentMovies` (5 phim mới nhất theo Id desc).
+- **`Areas/Admin/Controllers/ProductController.cs`** — CRUD đầy đủ với:
+  - Search theo title (`?search=`), pagination Skip/Take (PageSize = 10).
+  - `TempData["Success"]` sau mỗi Create / Edit / Delete thành công.
+  - Edit POST chỉ cập nhật scalar properties, không đụng Episodes/MovieImages.
 
-### 🆕 Thêm Danh mục mới ("Phim Lẻ" & "Mới & Hot")
-- Tạo `MoviesController.cs` và `NewHotController.cs`.
-- Thiết kế giao diện riêng biệt với `movies.css` và `newhot.css`.
-- Xây dựng Razor Views (`Views/Movies/Index.cshtml`, `Views/NewHot/Index.cshtml`).
-- Cập nhật liên kết trên thanh điều hướng (`_Layout.cshtml`).
+#### Layout & Routing
+- **`Areas/Admin/Views/_ViewStart.cshtml`** — trỏ tới `_AdminLayout.cshtml`.
+- **`Areas/Admin/Views/_ViewImports.cshtml`** — import namespace + TagHelpers.
+- **`Program.cs`** — area route default controller đổi thành `Dashboard`.
 
-### 🛠 Cấu trúc Database & Kiến trúc mới (Movies Entity)
-- Sửa lỗi Namespace không đồng nhất gây lỗi biên dịch.
-- Hỗ trợ đa nền tảng cơ sở dữ liệu: Thêm tùy chọn `DbProvider` trong `appsettings.json` để chuyển đổi dễ dàng giữa **MySQL** và **SQL Server** cho các thành viên trong team.
-- Tái cấu trúc thực thể `Movie`:
-  - Thêm quan hệ nhiều-nhiều (Many-to-Many) với `Category` thông qua bảng `MovieCategory`.
-  - Thêm quan hệ một-nhiều (One-to-Many) với `Episode` để hỗ trợ hiển thị danh sách các tập phim cho TV Series.
-- Đồng bộ dữ liệu hạt giống (Seed Data) của DB với các phim hiển thị ngoài trang chủ để không bị lỗi.
+#### Admin Layout (`Areas/Admin/Views/Shared/_AdminLayout.cshtml`)
+- Sidebar cố định (fixed) với logo FILMIX Admin, nav links (Dashboard, Quản Lý Phim), footer hiển thị avatar + tên user + nút logout.
+- Topbar sticky với tiêu đề trang + link về trang chủ.
+- TempData `Success`/`Error` alert hiển thị ngay trong layout.
+- Hoàn toàn tách biệt khỏi public `_Layout.cshtml`.
 
-### 🎬 Nâng cấp giao diện & Tính năng (Detail Page & Watchlist)
-- Tạo trang **Chi tiết phim chuẩn Netflix** (`/Product/Detail/{id}`) với hero banner lớn, danh sách thể loại động, bộ chọn Season và các tập phim.
-- Khắc phục lỗi **không click được vào thẻ phim**: Đã bọc các thẻ phim ở Trang Chủ, trang TV Shows và Danh Sách bằng thẻ `<a>`.
-- Thiết kế giao diện **Tab 2 cột chuyên nghiệp** cho trang `/Product/List`:
-  - **Tab 1:** Khám Phá Phim (mặc định, lọc theo thể loại).
-  - **Tab 2:** Danh Sách Của Tôi (hiển thị phim được lưu trong bộ nhớ máy khách).
+#### Admin CSS (`wwwroot/css/admin.css`)
+- Hệ thống design token riêng biệt (`--a-*` variables), không dùng biến từ `site.css`.
+- Bao gồm: shell layout, sidebar, topbar, stat cards, toolbar/search, admin table, pagination, form card, delete confirm, badges, action buttons, alerts.
+- **Hôm nay bổ sung thêm:** `.page-actions`, `.btn-clear`, `.thumb`, `.no-thumb`, `.title-cell`, `.title-cell__sub`, `.table-section-head`, `.dashboard-grid`.
 
-### 🐛 Fix Bugs
-- **Lỗi Cartesian Explosion trong EF Core**: Khi fetch Movies kèm theo `Episodes` và `MovieCategories`, ứng dụng bị crash. Đã fix bằng cách thêm `.AsSplitQuery()` vào ProductController.
-- **Lỗi LocalStorage "Danh Sách Của Tôi" (Watchlist)**: Sửa lại JavaScript trong `Detail.cshtml` để đọc/ghi vào `localStorage` chính xác.
-- **Lỗi `toggleLang()` không tồn tại** (`i18n.js`): Thêm hàm vào `i18n.js` kèm logic highlight ngôn ngữ đang active và đóng dropdown khi click ra ngoài.
-- **Nút "Lưu Xem Sau" ở Phim Lẻ không hoạt động** (`Movies/Index.cshtml`): Thêm handler cho phim Interstellar.
-- **Nút "+ Danh Sách" ở Mới & Hot không hoạt động** (`NewHot/Index.cshtml`): Thêm handler cho phim Spider-Man: No Way Home.
-- **Nút "Danh sách của tôi" ở TV Shows không hoạt động** (`TVShows/Index.cshtml`): Thêm handler cho phim Breaking Bad.
-- **Title tab trình duyệt bị duplicate "FILMIX"** (`_Layout.cshtml`): Bỏ ` - FILMIX` khỏi layout.
-- **EF Core warning `FirstOrDefault` không có `OrderBy`** (`Program.cs`): Thêm `.OrderBy` để tránh kết quả không xác định.
+#### Admin Views
+- **`Dashboard/Index.cshtml`** — 4 stat cards + `dashboard-grid` 2 cột: bảng "Phim Mới Nhất" (có thumbnail) và bảng "Truy Cập Nhanh".
+- **`Product/Index.cshtml`** — search + nút "+ Thêm" trên **cùng một hàng** (`page-actions`), bảng có cột ảnh thumbnail (`thumb`/`no-thumb`), title kèm genre subtitle (`title-cell`), inline delete confirm qua `window.confirm()`.
+- **`Product/Create.cshtml`** — form card sạch với `form-row`, `form-control`, `cat-check-grid`, `check-row`.
+- **`Product/Edit.cshtml`** — tương tự Create, pre-select category hiện có.
+- **`Product/Delete.cshtml`** — `delete-card` với thông tin phim + nút xác nhận.
 
----
-
-## 2. Tính năng đã hoàn thành thêm
-
-### 🎬 Xem Trước Phim Khi Di Chuột (Hover Video Preview) — Tính năng 3
-- **Hoàn thành**: Tạo file `wwwroot/css/hover-preview.css` — CSS cho popup card Netflix-style với hiệu ứng scale, shadow, animation xuất hiện mượt mà.
-- **Hoàn thành**: Tạo file `wwwroot/js/hover-preview.js` — JavaScript engine toàn diện:
-  - Popup xuất hiện sau 600ms hover (debounce), ẩn sau 250ms rời chuột
-  - Video autoplay muted sau 300ms, có nút toggle Mute/Unmute
-  - Hiển thị thumbnail ngay lập tức + spinner khi video đang load
-  - Positioning thông minh: tính toán tránh tràn mép màn hình (trên/dưới/trái/phải)
-  - Popup hiển thị: % phù hợp, rating, năm, thể loại, tiến trình xem (resume bar)
-  - Nút **Phát Ngay**, **+ Danh Sách** (sync với localStorage watchlist), **Like**, **Xem Chi Tiết**
-  - Hỗ trợ đóng bằng phím `Escape`
-  - MutationObserver: tự gắn listener cho card mới được inject động ("Xem Tất Cả")
-- **Hoàn thành**: Include `hover-preview.css` và `hover-preview.js` vào `_Layout.cshtml` → **tự động áp dụng cho TẤT CẢ trang** (Home, TVShows, Phim Lẻ, Mới & Hot, Danh Sách, Detail)
-- **Hoàn thành**: Hỗ trợ đa dạng loại card:
-  - `.t-card` dùng `href` (Home, TVShows, Movies, Product/List, Detail)
-  - `.newhot-card` dùng `onclick` (trang Mới & Hot)
-  - Card inject động từ JavaScript ("Xem Tất Cả" grid)
+### 🔀 Global Layout Switch
+- **`Views/_ViewStart.cshtml`** — logic chọn layout theo role:
+  - Admin → `~/Areas/Admin/Views/Shared/_AdminLayout.cshtml`
+  - Còn lại → `~/Views/Shared/_Layout.cshtml`
+  - Area-level `_ViewStart` (trong `Areas/Admin/`) luôn ưu tiên hơn global, nên Admin Area không bị ảnh hưởng.
 
 ---
 
-## 3. Lộ trình phát triển tiếp theo (Next Steps)
-- Xem chi tiết lộ trình phát triển định hướng chuẩn Netflix tại đây: [netflix_roadmap.md](file:///C:/Users/HP/.gemini/antigravity/brain/a33702d8-132a-4369-96bf-efab0dc4fbc1/netflix_roadmap.md)
-- **Ưu tiên trước mắt:** Triển khai **Giai đoạn 2: Hệ thống Hồ Sơ Người dùng ("Who's Watching?")** (bao gồm cập nhật DB, Controller và màn hình chọn Profile) làm cơ sở dữ liệu để thực hiện tiếp các tính năng lưu trạng thái xem phim và danh sách watchlist riêng biệt.
+## 3. Các Bug / Rủi ro tiềm ẩn cần theo dõi
+
+### 🔴 Bug có thể xảy ra ngay
+
+#### B1 — Admin thấy Admin Layout trên trang công khai
+- **Mô tả:** Do `Views/_ViewStart.cshtml` switch layout theo role, khi admin duyệt `/Product/Detail/1`, `/Movies`, `/TVShows`... sẽ thấy sidebar admin thay vì navbar công khai. Sidebar admin không có link phim, danh mục, v.v.
+- **Ảnh hưởng:** Trải nghiệm duyệt phim của admin bị hỏng hoàn toàn.
+- **Hướng fix gợi ý:** Chỉ áp dụng admin layout trong Admin Area (đã có `Areas/Admin/Views/_ViewStart.cshtml` lo việc này), bỏ logic switch trong `Views/_ViewStart.cshtml` hoặc thêm điều kiện kiểm tra Area:
+  ```razor
+  @if (ViewContext.RouteData.Values["area"]?.ToString() == "Admin")
+  {
+      // không cần set vì area _ViewStart đã xử lý
+  }
+  // Luôn dùng layout công khai ở đây
+  Layout = "~/Views/Shared/_Layout.cshtml";
+  ```
+
+#### B2 — localStorage không đồng bộ khi Admin đăng nhập qua server
+- **Mô tả:** Navbar công khai dùng `auth-state.js` đọc `localStorage['filmix_user']` để hiển thị trạng thái đăng nhập. Nếu admin login qua form POST thông thường (không qua AJAX fetch trong Auth.cshtml), localStorage sẽ không được ghi → navbar hiện nút "Đăng Nhập" dù đã login.
+- **Ảnh hưởng:** Navbar công khai sai trạng thái với admin users.
+
+#### B3 — Xóa phim không cascade Episodes/MovieImages
+- **Mô tả:** `DeleteConfirmed` chỉ gọi `_context.Movies.Remove(movie)`. Nếu DB không có `ON DELETE CASCADE` (phụ thuộc vào cấu hình EF `EnsureCreated`), lệnh xóa sẽ throw foreign key violation exception.
+- **Ảnh hưởng:** Xóa phim có tập phim hoặc ảnh phụ sẽ crash với HTTP 500.
+- **Hướng fix gợi ý:** Kiểm tra EF có tự cascade không; nếu không, load kèm `.Include(m => m.Episodes).Include(m => m.MovieImages)` trước khi remove.
+
+### 🟡 Rủi ro nhỏ / UX Issues
+
+#### B4 — Trang Error hiển thị Admin Layout với admin user
+- **Mô tả:** Trang `/Home/Error` cũng dùng `Views/_ViewStart.cshtml`, nên admin thấy trang lỗi với sidebar admin — trông lạ.
+
+#### B5 — Confirm dialog xóa bị block trong một số môi trường
+- **Mô tả:** `window.confirm()` trong onclick của nút Xóa có thể bị browser block khi trang chạy trong iframe hoặc một số security policy.
+- **Ảnh hưởng:** Nút Xóa submit form ngay không qua confirm.
+
+#### B6 — Build lỗi MSB3027 khi app đang chạy
+- **Mô tả:** `dotnet build` fail với file lock error vì app đang giữ `untitled1.exe`. Đây không phải lỗi code — phải stop app trước khi build.
+- **Lưu ý:** Razor views (`.cshtml`) không cần restart app — thay đổi view có hiệu lực ngay. Chỉ thay đổi `.cs` mới cần restart.
+
+#### B7 — Pagination mất search term khi navigate
+- **Mô tả:** Đã xử lý qua `asp-route-search="@search"` trong pagination links. Tuy nhiên nếu user submit form search mà không có `name="search"` param, trang sẽ về trang 1 với search rỗng.
 
 ---
-**Trạng thái hiện tại: 🟢 Ổn định (Stable)** — Toàn bộ tính năng chính hoạt động đúng. Không còn lỗi JavaScript runtime hay bug giao diện nghiêm trọng.
+
+## 4. Các tính năng còn tồn đọng từ trước (chưa xử lý)
+- Các nút thêm vào danh sách ở **"Mới & Hot"** và **"Phim Lẻ"** chưa đồng nhất với TV Shows.
+- ### 🌐 Thiếu tính năng Chuyển đổi Ngôn ngữ
+- Chưa có cơ chế i18n động toàn cục.
+- **Trạng thái hiện tại: 🟡 Hoạt động nhưng cần fix B1 trước khi demo** — Admin Area CRUD ổn định, Identity/Roles hoạt động, tuy nhiên bug B1 (admin layout đè lên trang công khai) cần xử lý ngay.
