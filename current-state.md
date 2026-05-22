@@ -77,7 +77,8 @@
 ---
 
 ## 3. Lộ trình phát triển tiếp theo (Next Steps)
-- **Tính năng 5:** Xây dựng màn hình **Hồ Sơ Người Dùng ("Who's Watching?")** - Cho phép người dùng chọn Profile (ví dụ: Người lớn, Trẻ em) trước khi vào trang chủ để cá nhân hóa trải nghiệm và danh sách yêu thích.
+- Xem chi tiết lộ trình phát triển định hướng chuẩn Netflix tại đây: [netflix_roadmap.md](file:///C:/Users/HP/.gemini/antigravity/brain/a33702d8-132a-4369-96bf-efab0dc4fbc1/netflix_roadmap.md)
+- **Ưu tiên trước mắt:** Triển khai **Giai đoạn 2: Hệ thống Hồ Sơ Người dùng ("Who's Watching?")** (bao gồm cập nhật DB, Controller và màn hình chọn Profile) làm cơ sở dữ liệu để thực hiện tiếp các tính năng lưu trạng thái xem phim và danh sách watchlist riêng biệt.
 
 ---
 **Trạng thái hiện tại: 🟢 Ổn định (Stable)** — Toàn bộ tính năng chính hoạt động đúng. Không còn lỗi JavaScript runtime hay bug giao diện nghiêm trọng.

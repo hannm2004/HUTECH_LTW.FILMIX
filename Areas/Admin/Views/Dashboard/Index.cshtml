@@ -1,0 +1,139 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    int totalMovies   = (int)(ViewBag.TotalMovies   ?? 0);
+    int totalTVSeries = (int)(ViewBag.TotalTVSeries  ?? 0);
+    int totalFilms    = (int)(ViewBag.TotalFilms     ?? 0);
+    int totalUsers    = (int)(ViewBag.TotalUsers     ?? 0);
+    var recentMovies  = ViewBag.RecentMovies as IEnumerable<untitled1.Models.Entities.Movie>
+                        ?? Enumerable.Empty<untitled1.Models.Entities.Movie>();
+}
+
+<div class="stats-grid">
+    <div class="stat-card red">
+        <div class="stat-card__label">Tổng Số Phim</div>
+        <div class="stat-card__value">@totalMovies</div>
+        <div class="stat-card__sub">Tất cả trong hệ thống</div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-card__label">TV Series</div>
+        <div class="stat-card__value">@totalTVSeries</div>
+        <div class="stat-card__sub">Phim nhiều tập</div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-card__label">Phim Lẻ</div>
+        <div class="stat-card__value">@totalFilms</div>
+        <div class="stat-card__sub">Phim độc lập</div>
+    </div>
+    <div class="stat-card yellow">
+        <div class="stat-card__label">Người Dùng</div>
+        <div class="stat-card__value">@totalUsers</div>
+        <div class="stat-card__sub">Đã đăng ký</div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+
+    <div class="admin-table-wrap">
+        <div class="table-section-head">
+            <span>Phim Mới Nhất</span>
+            <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="quick-link"
+               style="font-size:.78rem;text-transform:none;letter-spacing:0">Xem tất cả →</a>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width:52px">Ảnh</th>
+                    <th>Tiêu Đề</th>
+                    <th style="width:70px">Năm</th>
+                    <th style="width:100px">Loại</th>
+                    <th style="width:70px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!recentMovies.Any())
+                {
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <div class="empty-state__icon">🎬</div>
+                                <div class="empty-state__text">Chưa có phim nào.</div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @foreach (var m in recentMovies)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(m.ImageUrl))
+                            {
+                                <img src="@m.ImageUrl" class="thumb" alt="@m.Title" />
+                            }
+                            else
+                            {
+                                <div class="no-thumb">N/A</div>
+                            }
+                        </td>
+                        <td>
+                            <div class="title-cell">
+                                <strong>@m.Title</strong>
+                                @if (!string.IsNullOrEmpty(m.Genre))
+                                {
+                                    <span class="title-cell__sub">@m.Genre</span>
+                                }
+                            </div>
+                        </td>
+                        <td>@m.Year</td>
+                        <td>
+                            @if (m.IsTVSeries)
+                            {
+                                <span class="badge badge-tv">TV Series</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-movie">Phim Lẻ</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-area="Admin" asp-controller="Product" asp-action="Edit"
+                               asp-route-id="@m.Id" class="btn-edit">Sửa</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="admin-table-wrap">
+        <div class="table-section-head"><span>Truy Cập Nhanh</span></div>
+        <table class="admin-table">
+            <tbody>
+                <tr>
+                    <td>
+                        <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="quick-link">
+                            → Danh sách phim
+                        </a>
+                    </td>
+                    <td class="text-muted-cell">@totalMovies phim</td>
+                </tr>
+                <tr>
+                    <td>
+                        <a asp-area="Admin" asp-controller="Product" asp-action="Create" class="quick-link">
+                            → Thêm phim mới
+                        </a>
+                    </td>
+                    <td class="text-muted-cell">—</td>
+                </tr>
+                <tr>
+                    <td>
+                        <a asp-area="" asp-controller="Home" asp-action="Index" class="quick-link">
+                            → Trang chủ công khai
+                        </a>
+                    </td>
+                    <td class="text-muted-cell">—</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>

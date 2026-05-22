@@ -1,0 +1,101 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — FILMIX Admin</title>
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+</head>
+<body class="admin-body">
+@{
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var userName = User.Identity?.Name ?? "";
+    var avatar   = userName.Length > 0 ? char.ToUpper(userName[0]).ToString() : "A";
+}
+<div class="admin-shell">
+
+    <!-- ── Sidebar ── -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-logo">
+            <a asp-area="" asp-controller="Home" asp-action="Index">FILM<span>IX</span></a>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">Menu</div>
+
+            <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+               class="sidebar-link @(ctrl == "Dashboard" ? "active" : "")">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                </svg>
+                Dashboard
+            </a>
+
+            <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+               class="sidebar-link @(ctrl == "Product" ? "active" : "")">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                </svg>
+                Quản Lý Phim
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-avatar">@avatar</div>
+                <span class="sidebar-username">@userName</span>
+            </div>
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-logout">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                    </svg>
+                    Đăng Xuất
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <div class="admin-main">
+        <header class="admin-topbar">
+            <div class="topbar-title">@(ViewData["Title"] ?? "Admin")</div>
+            <div class="topbar-right">
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="topbar-link">← Về trang chủ</a>
+                <span class="topbar-user">@userName</span>
+            </div>
+        </header>
+
+        <main class="admin-content">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    @TempData["Success"]
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    @TempData["Error"]
+                </div>
+            }
+
+            @RenderBody()
+        </main>
+    </div>
+
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

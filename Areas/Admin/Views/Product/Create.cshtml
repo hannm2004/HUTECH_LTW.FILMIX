@@ -1,0 +1,62 @@
+@model Movie
+@{
+    ViewData["Title"] = "Thêm Phim Mới";
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+}
+
+<div class="page-header">
+    <h1>Thêm <span>Phim Mới</span></h1>
+</div>
+
+<div class="form-card">
+    <form asp-area="Admin" asp-controller="Product" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="form-row">
+            <label asp-for="Title">Tiêu Đề</label>
+            <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề phim..." />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <label asp-for="ImageUrl">URL Ảnh Bìa</label>
+            <input asp-for="ImageUrl" class="form-control" placeholder="/images/movies/ten-anh.jpg" />
+            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <label asp-for="Year">Năm Phát Hành</label>
+            <input asp-for="Year" type="number" class="form-control" placeholder="2024" min="1900" max="2100" />
+            <span asp-validation-for="Year" class="text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <label asp-for="Genre">Thể Loại (mô tả)</label>
+            <input asp-for="Genre" class="form-control" placeholder="Action / Drama" />
+            <span asp-validation-for="Genre" class="text-danger"></span>
+        </div>
+
+        <div class="check-row">
+            <input asp-for="IsTVSeries" type="checkbox" id="IsTVSeries" />
+            <label for="IsTVSeries">Là TV Series (có nhiều tập)</label>
+        </div>
+
+        <div class="form-row">
+            <label>Danh Mục</label>
+            <div class="cat-check-grid">
+                @foreach (var cat in categories)
+                {
+                    <label class="cat-check-item">
+                        <input type="checkbox" name="selectedCategories" value="@cat.Id" />
+                        <span>@cat.Name</span>
+                    </label>
+                }
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">Lưu Phim</button>
+            <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="btn-cancel">Hủy</a>
+        </div>
+    </form>
+</div>

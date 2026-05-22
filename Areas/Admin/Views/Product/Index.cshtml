@@ -1,0 +1,141 @@
+@model IEnumerable<Movie>
+@{
+    ViewData["Title"] = "Quản Lý Phim";
+    string search     = ViewBag.Search ?? "";
+    int    page       = (int)(ViewBag.Page       ?? 1);
+    int    totalPages = (int)(ViewBag.TotalPages  ?? 1);
+    int    totalCount = (int)(ViewBag.TotalCount  ?? 0);
+}
+
+<div class="page-header">
+    <h1>Quản Lý <span>Phim</span></h1>
+    <div class="page-actions">
+        <form asp-area="Admin" asp-controller="Product" asp-action="Index"
+              method="get" class="toolbar-search">
+            <input type="text" name="search" value="@search" placeholder="Tìm theo tên..." />
+            <button type="submit" title="Tìm kiếm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+            </button>
+        </form>
+        @if (!string.IsNullOrWhiteSpace(search))
+        {
+            <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="btn-clear">✕ Xóa lọc</a>
+        }
+        <a asp-area="Admin" asp-controller="Product" asp-action="Create" class="btn-primary">
+            + Thêm Phim
+        </a>
+    </div>
+</div>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th style="width:52px">Ảnh</th>
+                <th>Tiêu Đề</th>
+                <th style="width:70px">Năm</th>
+                <th>Danh Mục</th>
+                <th style="width:100px">Loại</th>
+                <th style="width:120px">Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <div class="empty-state__icon">🎬</div>
+                            <div class="empty-state__text">
+                                @(string.IsNullOrWhiteSpace(search)
+                                    ? "Chưa có phim nào trong hệ thống."
+                                    : $"Không tìm thấy phim nào khớp với \"{search}\".")
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" class="thumb" alt="@item.Title" />
+                        }
+                        else
+                        {
+                            <div class="no-thumb">N/A</div>
+                        }
+                    </td>
+                    <td>
+                        <div class="title-cell">
+                            <strong>@item.Title</strong>
+                            @if (!string.IsNullOrEmpty(item.Genre))
+                            {
+                                <span class="title-cell__sub">@item.Genre</span>
+                            }
+                        </div>
+                    </td>
+                    <td>@item.Year</td>
+                    <td>
+                        @foreach (var mc in item.MovieCategories)
+                        {
+                            <span class="cat-tag">@mc.Category?.Name</span>
+                        }
+                    </td>
+                    <td>
+                        @if (item.IsTVSeries)
+                        {
+                            <span class="badge badge-tv">TV Series</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-movie">Phim Lẻ</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <a asp-area="Admin" asp-controller="Product" asp-action="Edit"
+                               asp-route-id="@item.Id" class="btn-edit">Sửa</a>
+                            <form asp-area="Admin" asp-controller="Product" asp-action="Delete"
+                                  asp-route-id="@item.Id" method="post" style="display:inline;margin:0">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-del"
+                                        onclick="return confirm('Xóa phim này? Hành động không thể hoàn tác.')">Xóa</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (totalPages > 1)
+    {
+        <div class="pagination">
+            <span class="pagination-info">@totalCount phim · Trang @(page) / @totalPages</span>
+
+            @if (page > 1)
+            {
+                <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+                   asp-route-page="@(page - 1)" asp-route-search="@search" class="page-btn">‹</a>
+            }
+
+            @for (int p = Math.Max(1, page - 2); p <= Math.Min(totalPages, page + 2); p++)
+            {
+                <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+                   asp-route-page="@p" asp-route-search="@search"
+                   class="page-btn @(p == page ? "active" : "")">@p</a>
+            }
+
+            @if (page < totalPages)
+            {
+                <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+                   asp-route-page="@(page + 1)" asp-route-search="@search" class="page-btn">›</a>
+            }
+        </div>
+    }
+</div>

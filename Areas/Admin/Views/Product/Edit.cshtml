@@ -1,0 +1,65 @@
+@model Movie
+@{
+    ViewData["Title"] = "Sửa Phim";
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+    var selected   = ViewBag.SelectedCategories as List<int> ?? new List<int>();
+}
+
+<div class="page-header">
+    <h1>Sửa <span>Phim</span></h1>
+</div>
+
+<div class="form-card">
+    <form asp-area="Admin" asp-controller="Product" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-row">
+            <label asp-for="Title">Tiêu Đề</label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <label asp-for="ImageUrl">URL Ảnh Bìa</label>
+            <input asp-for="ImageUrl" class="form-control" />
+            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <label asp-for="Year">Năm Phát Hành</label>
+            <input asp-for="Year" type="number" class="form-control" min="1900" max="2100" />
+            <span asp-validation-for="Year" class="text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <label asp-for="Genre">Thể Loại (mô tả)</label>
+            <input asp-for="Genre" class="form-control" />
+            <span asp-validation-for="Genre" class="text-danger"></span>
+        </div>
+
+        <div class="check-row">
+            <input asp-for="IsTVSeries" type="checkbox" id="IsTVSeries" />
+            <label for="IsTVSeries">Là TV Series (có nhiều tập)</label>
+        </div>
+
+        <div class="form-row">
+            <label>Danh Mục</label>
+            <div class="cat-check-grid">
+                @foreach (var cat in categories)
+                {
+                    <label class="cat-check-item">
+                        <input type="checkbox" name="selectedCategories" value="@cat.Id"
+                               @(selected.Contains(cat.Id) ? "checked" : "") />
+                        <span>@cat.Name</span>
+                    </label>
+                }
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">Cập Nhật</button>
+            <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="btn-cancel">Hủy</a>
+        </div>
+    </form>
+</div>

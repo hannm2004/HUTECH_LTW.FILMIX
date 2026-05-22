@@ -1,0 +1,34 @@
+@model Movie
+@{
+    ViewData["Title"] = "Xóa Phim";
+}
+
+<div class="delete-card">
+    <div class="delete-card__icon">🗑️</div>
+    <h2>Xác Nhận Xóa Phim</h2>
+    <p class="delete-card__sub">Hành động này không thể hoàn tác.</p>
+
+    <div class="delete-info">
+        <dl>
+            <dt>Tiêu đề</dt>
+            <dd>@Model.Title</dd>
+
+            <dt>Năm</dt>
+            <dd>@Model.Year</dd>
+
+            <dt>Thể loại</dt>
+            <dd>@string.Join(", ", Model.MovieCategories.Select(mc => mc.Category?.Name ?? ""))</dd>
+
+            <dt>Loại</dt>
+            <dd>@(Model.IsTVSeries ? "TV Series" : "Phim Lẻ")</dd>
+        </dl>
+    </div>
+
+    <form asp-area="Admin" asp-controller="Product" asp-action="Delete" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <div class="delete-actions">
+            <button type="submit" class="btn-danger">Xóa Vĩnh Viễn</button>
+            <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="btn-cancel">Hủy Bỏ</a>
+        </div>
+    </form>
+</div>
