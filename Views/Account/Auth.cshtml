@@ -205,6 +205,7 @@
 </head>
 
 <body>
+    <div style="display:none">@Html.AntiForgeryToken()</div>
 
     <!-- Back to home -->
     <a asp-controller="Home" asp-action="Index" class="back-home">
@@ -477,10 +478,10 @@
     </div><!-- /auth-page -->
 
     <script>
-        /* ── Auth guard: already logged in → go to index ── */
-        (function () {
-            if (localStorage.getItem('filmix_user')) location.replace('/');
-        })();
+        /* ── CSRF token helper ── */
+        function getCsrfToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]').value;
+        }
 
         /* ── Read ?mode= from URL ── */
         (function () {
@@ -588,24 +589,38 @@
         }
 
         /* ── Handle Login ── */
-        function handleLogin() {
+        async function handleLogin() {
             const email = document.getElementById('loginEmail').value.trim();
             const pw = document.getElementById('loginPw').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
             const btn = document.querySelector('#panelLogin .btn-auth');
 
             if (!email || !pw) { showToast('Vui lòng điền đầy đủ thông tin', 'error'); return; }
 
             setLoading(btn, true);
-            setTimeout(() => {
+            try {
+                const res = await fetch('/Account/Login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `__RequestVerificationToken=${encodeURIComponent(getCsrfToken())}&Email=${encodeURIComponent(email)}&Password=${encodeURIComponent(pw)}&RememberMe=${rememberMe}`
+                });
+                const data = await res.json();
                 setLoading(btn, false);
-                localStorage.setItem('filmix_user', JSON.stringify({ name: email.split('@@')[0], email }));
-                showToast('Đăng nhập thành công!', 'success');
-                setTimeout(() => { window.location.href = '/'; }, 1800);
-            }, 1600);
+                if (data.success) {
+                    localStorage.setItem('filmix_user', JSON.stringify({ name: email.split('@@')[0], email }));
+                    showToast('Đăng nhập thành công!', 'success');
+                    setTimeout(() => { window.location.href = data.redirectUrl || '/'; }, 1200);
+                } else {
+                    showToast(data.message || 'Đăng nhập thất bại', 'error');
+                }
+            } catch {
+                setLoading(btn, false);
+                showToast('Lỗi kết nối máy chủ', 'error');
+            }
         }
 
         /* ── Handle Signup ── */
-        function handleSignup() {
+        async function handleSignup() {
             const name = document.getElementById('signupName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const pw = document.getElementById('signupPw').value;
@@ -618,12 +633,25 @@
             if (!agree) { showToast('Bạn cần đồng ý với điều khoản', 'error'); return; }
 
             setLoading(btn, true);
-            setTimeout(() => {
+            try {
+                const res = await fetch('/Account/Register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `__RequestVerificationToken=${encodeURIComponent(getCsrfToken())}&FullName=${encodeURIComponent(name)}&Email=${encodeURIComponent(email)}&Password=${encodeURIComponent(pw)}&ConfirmPassword=${encodeURIComponent(pwConf)}`
+                });
+                const data = await res.json();
                 setLoading(btn, false);
-                localStorage.setItem('filmix_user', JSON.stringify({ name, email }));
-                showToast('Đăng ký thành công!', 'success');
-                setTimeout(() => { window.location.href = '/'; }, 2000);
-            }, 1800);
+                if (data.success) {
+                    localStorage.setItem('filmix_user', JSON.stringify({ name, email }));
+                    showToast('Đăng ký thành công!', 'success');
+                    setTimeout(() => { window.location.href = data.redirectUrl || '/'; }, 1200);
+                } else {
+                    showToast(data.message || 'Đăng ký thất bại', 'error');
+                }
+            } catch {
+                setLoading(btn, false);
+                showToast('Lỗi kết nối máy chủ', 'error');
+            }
         }
     </script>
 </body>
