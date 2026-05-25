@@ -100,12 +100,8 @@
                         <div class="action-btns">
                             <a asp-area="Admin" asp-controller="Product" asp-action="Edit"
                                asp-route-id="@item.Id" class="btn-edit">Sửa</a>
-                            <form asp-area="Admin" asp-controller="Product" asp-action="Delete"
-                                  asp-route-id="@item.Id" method="post" style="display:inline;margin:0">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn-del"
-                                        onclick="return confirm('Xóa phim này? Hành động không thể hoàn tác.')">Xóa</button>
-                            </form>
+                            <a asp-area="Admin" asp-controller="Product" asp-action="Delete"
+                               asp-route-id="@item.Id" class="btn-del">Xóa</a>
                         </div>
                     </td>
                 </tr>

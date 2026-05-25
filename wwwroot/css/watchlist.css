@@ -1,0 +1,320 @@
+/* ══════════════════════════════════════════════
+   watchlist.css – Trang Danh Sách Của Tôi (My List)
+══════════════════════════════════════════════ */
+
+/* ─── Page wrapper ─── */
+.watchlist-page {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #0a0e1a 0%, #0f172a 40%, #06030f 100%);
+    padding-top: 90px;
+    padding-bottom: 60px;
+}
+
+/* ─── Header ─── */
+.watchlist-header {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 4% 30px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.watchlist-header__icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #e50914 0%, #b00610 100%);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 6px 24px rgba(229,9,20,0.35);
+}
+.watchlist-header__icon svg { color: white; }
+.watchlist-header__text h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+}
+.watchlist-header__text p {
+    color: #8892a4;
+    font-size: 0.95rem;
+    margin: 0;
+}
+.watchlist-count {
+    margin-left: auto;
+    background: rgba(229,9,20,0.15);
+    border: 1px solid rgba(229,9,20,0.3);
+    color: #e50914;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* ─── Controls ─── */
+.watchlist-controls {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 4%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.watchlist-controls .filter-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #ccc;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.watchlist-controls .filter-btn:hover,
+.watchlist-controls .filter-btn.active {
+    background: #e50914;
+    border-color: #e50914;
+    color: #fff;
+}
+.watchlist-controls .clear-btn {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #8892a4;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.watchlist-controls .clear-btn:hover {
+    border-color: #e50914;
+    color: #e50914;
+}
+
+/* ─── Grid ─── */
+.watchlist-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 10px 4% 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* ─── Card ─── */
+.wl-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+    cursor: pointer;
+}
+.wl-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    border-color: rgba(229,9,20,0.4);
+}
+.wl-card__img-wrap {
+    position: relative;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+}
+.wl-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+.wl-card:hover .wl-card__img { transform: scale(1.06); }
+
+.wl-card__badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #e50914;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.wl-card__badge.tv { background: #0ea5e9; }
+
+.wl-card__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 20px;
+    gap: 10px;
+}
+.wl-card:hover .wl-card__overlay { opacity: 1; }
+
+.wl-card__play-btn {
+    width: 44px;
+    height: 44px;
+    background: #e50914;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+}
+.wl-card__play-btn:hover { transform: scale(1.15); background: #ff1a27; }
+.wl-card__play-btn svg { color: white; }
+
+.wl-card__remove-btn {
+    width: 44px;
+    height: 44px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.wl-card__remove-btn:hover { transform: scale(1.15); background: rgba(229,9,20,0.5); }
+.wl-card__remove-btn svg { color: white; }
+
+.wl-card__info {
+    padding: 12px 14px 14px;
+}
+.wl-card__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.wl-card__meta {
+    font-size: 0.78rem;
+    color: #64748b;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.wl-card__genre {
+    color: #e50914;
+    font-weight: 600;
+}
+
+/* ─── Empty state ─── */
+.watchlist-empty {
+    max-width: 480px;
+    margin: 80px auto;
+    text-align: center;
+    padding: 0 20px;
+}
+.watchlist-empty__icon {
+    width: 90px;
+    height: 90px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    border: 2px dashed rgba(255,255,255,0.15);
+}
+.watchlist-empty__icon svg { color: #475569; }
+.watchlist-empty h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin: 0 0 10px;
+}
+.watchlist-empty p {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin: 0 0 28px;
+    line-height: 1.6;
+}
+.watchlist-empty .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 8px;
+}
+
+/* ─── Loading skeleton ─── */
+.wl-skeleton {
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+.wl-skeleton__img {
+    aspect-ratio: 2/3;
+    background: rgba(255,255,255,0.08);
+}
+.wl-skeleton__info {
+    padding: 12px 14px 14px;
+}
+.wl-skeleton__line {
+    height: 12px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+.wl-skeleton__line:last-child { width: 60%; margin-bottom: 0; }
+
+@keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ─── Toast ─── */
+.wl-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    background: #1e293b;
+    color: #fff;
+    padding: 13px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-left: 4px solid #46d369;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+.wl-toast.show { transform: translateY(0); opacity: 1; }
+.wl-toast.error { border-left-color: #e50914; }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .watchlist-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+    .watchlist-header { flex-wrap: wrap; }
+    .watchlist-count { margin-left: 0; }
+}
+@media (max-width: 480px) {
+    .watchlist-grid { grid-template-columns: repeat(2, 1fr); }
+}

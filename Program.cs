@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using untitled1.Data;
+using untitled1.Models.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,21 @@ else
         options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 }
 
+// Register Identity
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Auth";
+});
 
 var app = builder.Build();
 
@@ -30,9 +47,10 @@ using (var scope = app.Services.CreateScope())
     try
     {
         db.Database.EnsureCreated();
-        // Test query to verify if the schema is up-to-date (checks if Episodes table exists and Movies has Director/Cast columns)
+        // Test query to verify if the schema is up-to-date (checks if Episodes table exists, Movies has Director/Cast columns, and Identity tables exist)
         _ = db.Episodes.OrderBy(e => e.Id).FirstOrDefault();
         _ = db.Movies.Select(m => new { m.Id, m.Director, m.Cast }).FirstOrDefault();
+        _ = db.Users.FirstOrDefault();
     }
     catch (Exception ex)
     {
@@ -53,24 +71,41 @@ using (var scope = app.Services.CreateScope())
                                 "========================================================================");
         }
     }
+
+    // Call DbSeeder
+    try
+    {
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        DbSeeder.SeedAsync(roleManager, userManager).GetAwaiter().GetResult();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Lỗi khi chạy DbSeeder");
+    }
 }
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
-
 {
     app.UseExceptionHandler("/Home/Error");
 }
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
 
 app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}")
+    .WithStaticAssets();
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

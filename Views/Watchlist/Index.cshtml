@@ -1,0 +1,220 @@
+@using untitled1.Models.Entities
+@model IEnumerable<Movie>
+@{
+    ViewData["Title"] = "Danh Sách Của Tôi - FILMIX";
+}
+
+<link rel="stylesheet" href="~/css/watchlist.css" asp-append-version="true" />
+
+<div class="watchlist-page">
+
+    <!-- ── Header ── -->
+    <div class="watchlist-header">
+        <div class="watchlist-header__icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 10H6.17L5 14.17V5h14v8z"/>
+            </svg>
+        </div>
+        <div class="watchlist-header__text">
+            <h1>Danh Sách Của Tôi</h1>
+            <p>Những bộ phim bạn đã lưu để xem sau</p>
+        </div>
+        <span class="watchlist-count" id="wlCount">0 phim</span>
+    </div>
+
+    <!-- ── Controls ── -->
+    <div class="watchlist-controls">
+        <button class="filter-btn active" onclick="filterWL('all', this)">Tất Cả</button>
+        <button class="filter-btn" onclick="filterWL('movie', this)">Phim Lẻ</button>
+        <button class="filter-btn" onclick="filterWL('series', this)">TV Series</button>
+        <button class="clear-btn" onclick="clearAll()" id="clearAllBtn" style="display:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+            Xóa Tất Cả
+        </button>
+    </div>
+
+    <!-- ── Skeleton loading (hiển thị khi đang tải) ── -->
+    <div class="watchlist-grid" id="skeletonGrid">
+        @for (int i = 0; i < 8; i++)
+        {
+            <div class="wl-skeleton">
+                <div class="wl-skeleton__img"></div>
+                <div class="wl-skeleton__info">
+                    <div class="wl-skeleton__line"></div>
+                    <div class="wl-skeleton__line"></div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- ── Actual grid (ẩn ban đầu, hiện sau khi JS load xong) ── -->
+    <div class="watchlist-grid" id="watchlistGrid" style="display:none;">
+        <!-- Populated by JavaScript from localStorage -->
+    </div>
+
+    <!-- ── Empty state ── -->
+    <div class="watchlist-empty" id="watchlistEmpty" style="display:none;">
+        <div class="watchlist-empty__icon">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+        </div>
+        <h2>Danh sách trống</h2>
+        <p>Bạn chưa lưu phim nào. Hãy duyệt qua kho phim và nhấn nút <strong>+ Danh Sách</strong> để thêm.</p>
+        <a href="/" class="btn btn-red">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            Về Trang Chủ
+        </a>
+    </div>
+
+</div>
+
+<!-- Toast notification -->
+<div class="wl-toast" id="wlToast"></div>
+
+@section Scripts {
+<script>
+(function () {
+    /* ─── helpers ─── */
+    function getWL() {
+        return JSON.parse(localStorage.getItem('filmix_watchlist') || '[]')
+            .map(x => x.toString()).filter(Boolean);
+    }
+    function saveWL(arr) {
+        localStorage.setItem('filmix_watchlist', JSON.stringify(arr));
+    }
+
+    function showToast(msg, isError = false) {
+        const t = document.getElementById('wlToast');
+        t.textContent = msg;
+        t.className = 'wl-toast' + (isError ? ' error' : '');
+        t.classList.add('show');
+        clearTimeout(t._timer);
+        t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    /* ─── card template ─── */
+    function makeCard(m) {
+        const isSeries = m.isTVSeries;
+        return `
+        <div class="wl-card" data-id="${m.id}" data-type="${isSeries ? 'series' : 'movie'}"
+             onclick="goDetail(event, ${m.id})">
+            <div class="wl-card__img-wrap">
+                <img class="wl-card__img"
+                     src="${m.imageUrl || '/images/movies/default.jpg'}"
+                     onerror="this.onerror=null;this.src='/images/movies/default.jpg'"
+                     alt="${m.title}" loading="lazy" />
+                <span class="wl-card__badge ${isSeries ? 'tv' : ''}">${isSeries ? 'TV Series' : 'Phim Lẻ'}</span>
+                <div class="wl-card__overlay">
+                    <button class="wl-card__play-btn" title="Xem ngay">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                    <button class="wl-card__remove-btn" title="Xóa khỏi danh sách"
+                            onclick="removeItem(event, ${m.id})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="wl-card__info">
+                <div class="wl-card__title">${m.title}</div>
+                <div class="wl-card__meta">
+                    <span class="wl-card__genre">${m.genre || ''}</span>
+                    <span>${m.year || ''}</span>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    /* ─── navigate to detail ─── */
+    window.goDetail = function(e, id) {
+        if (e.target.closest('.wl-card__remove-btn')) return;
+        window.location.href = '/Product/Detail/' + id;
+    };
+
+    /* ─── remove single ─── */
+    window.removeItem = function(e, id) {
+        e.stopPropagation();
+        let wl = getWL().filter(x => x !== id.toString());
+        saveWL(wl);
+        const card = document.querySelector(`.wl-card[data-id="${id}"]`);
+        if (card) {
+            card.style.transition = 'opacity 0.3s, transform 0.3s';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.85)';
+            setTimeout(() => { card.remove(); syncUI(); }, 300);
+        }
+        showToast('Đã xóa khỏi danh sách');
+    };
+
+    /* ─── clear all ─── */
+    window.clearAll = function() {
+        if (!confirm('Bạn có chắc muốn xóa toàn bộ danh sách?')) return;
+        saveWL([]);
+        document.getElementById('watchlistGrid').innerHTML = '';
+        syncUI();
+        showToast('Đã xóa tất cả phim khỏi danh sách');
+    };
+
+    /* ─── filter ─── */
+    window.filterWL = function(type, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.wl-card').forEach(c => {
+            const match = type === 'all' || c.dataset.type === type;
+            c.style.display = match ? '' : 'none';
+        });
+    };
+
+    /* ─── sync count & empty ─── */
+    function syncUI() {
+        const cards = document.querySelectorAll('.wl-card');
+        const visible = [...cards].filter(c => c.style.display !== 'none');
+        const count = cards.length;
+
+        document.getElementById('wlCount').textContent = count + ' phim';
+        document.getElementById('watchlistEmpty').style.display  = count === 0 ? '' : 'none';
+        document.getElementById('watchlistGrid').style.display   = count === 0 ? 'none' : '';
+        document.getElementById('clearAllBtn').style.display     = count === 0 ? 'none' : '';
+    }
+
+    /* ─── main load ─── */
+    async function loadWatchlist() {
+        const skeleton = document.getElementById('skeletonGrid');
+        const grid     = document.getElementById('watchlistGrid');
+
+        const ids = getWL();
+        if (ids.length === 0) {
+            skeleton.style.display = 'none';
+            grid.style.display = 'none';
+            document.getElementById('watchlistEmpty').style.display = '';
+            document.getElementById('wlCount').textContent = '0 phim';
+            return;
+        }
+
+        try {
+            const res  = await fetch('/api/watchlist?ids=' + ids.join(','));
+            const data = await res.json();
+
+            // preserve localStorage order
+            const ordered = ids
+                .map(id => data.find(m => m.id.toString() === id))
+                .filter(Boolean);
+
+            grid.innerHTML = ordered.map(makeCard).join('');
+
+            skeleton.style.display = 'none';
+            syncUI();
+        } catch (err) {
+            skeleton.style.display = 'none';
+            showToast('Không thể tải danh sách. Thử lại sau.', true);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadWatchlist);
+})();
+</script>
+}

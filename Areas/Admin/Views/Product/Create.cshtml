@@ -12,10 +12,17 @@
     <form asp-area="Admin" asp-controller="Product" asp-action="Create" method="post">
         @Html.AntiForgeryToken()
 
-        <div class="form-row">
-            <label asp-for="Title">Tiêu Đề</label>
-            <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề phim..." />
-            <span asp-validation-for="Title" class="text-danger"></span>
+        <div class="form-row-2col">
+            <div class="form-row">
+                <label asp-for="Title">Tiêu Đề</label>
+                <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề phim..." />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-row">
+                <label asp-for="Year">Năm Phát Hành</label>
+                <input asp-for="Year" type="number" class="form-control" placeholder="2024" min="1900" max="2100" />
+                <span asp-validation-for="Year" class="text-danger"></span>
+            </div>
         </div>
 
         <div class="form-row">
@@ -24,16 +31,35 @@
             <span asp-validation-for="ImageUrl" class="text-danger"></span>
         </div>
 
-        <div class="form-row">
-            <label asp-for="Year">Năm Phát Hành</label>
-            <input asp-for="Year" type="number" class="form-control" placeholder="2024" min="1900" max="2100" />
-            <span asp-validation-for="Year" class="text-danger"></span>
+        <div class="form-row-2col">
+            <div class="form-row">
+                <label asp-for="Genre">Thể Loại (mô tả)</label>
+                <input asp-for="Genre" class="form-control" placeholder="Action / Drama" />
+                <span asp-validation-for="Genre" class="text-danger"></span>
+            </div>
+            <div class="form-row">
+                <label asp-for="Director">Đạo Diễn</label>
+                <input asp-for="Director" class="form-control" placeholder="Christopher Nolan" />
+            </div>
         </div>
 
         <div class="form-row">
-            <label asp-for="Genre">Thể Loại (mô tả)</label>
-            <input asp-for="Genre" class="form-control" placeholder="Action / Drama" />
-            <span asp-validation-for="Genre" class="text-danger"></span>
+            <label asp-for="Cast">Diễn Viên</label>
+            <input asp-for="Cast" class="form-control" placeholder="Robert Downey Jr., Scarlett Johansson..." />
+        </div>
+
+        <div class="form-row">
+            <label asp-for="Description">Mô Tả / Nội Dung Phim</label>
+            <textarea asp-for="Description" class="form-control" rows="4"
+                      placeholder="Tóm tắt nội dung phim, không quá 500 ký tự..."></textarea>
+        </div>
+
+        <div class="form-row">
+            <label asp-for="TrailerUrl">
+                URL Trailer
+                <small style="color:#8892a4; font-weight:400; margin-left:6px;">(YouTube embed, VD: https://www.youtube.com/embed/XXXX)</small>
+            </label>
+            <input asp-for="TrailerUrl" class="form-control" placeholder="https://www.youtube.com/embed/..." />
         </div>
 
         <div class="check-row">
@@ -55,8 +81,24 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn-submit">Lưu Phim</button>
+            <button type="submit" class="btn-submit">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                Lưu Phim
+            </button>
             <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="btn-cancel">Hủy</a>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <style>
+        .form-row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 20px;
+        }
+        .form-row-2col .form-row { margin-bottom: 0; }
+        @@media (max-width: 600px) { .form-row-2col { grid-template-columns: 1fr; } }
+        textarea.form-control { resize: vertical; min-height: 100px; font-family: inherit; }
+    </style>
+}
