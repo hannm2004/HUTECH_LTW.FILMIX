@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] - FILMIX</title>
     <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/hover-preview.css" asp-append-version="true" />
     <script src="~/js/i18n.js"></script>
     <script src="~/js/auth-state.js"></script>
 </head>
@@ -19,7 +20,7 @@
             <a asp-area="" asp-controller="TVShows" asp-action="Index" data-i18n="nav.tvShows">TV Shows</a>
             <a asp-area="" asp-controller="Movies" asp-action="Index" data-i18n="nav.movies">Phim Lẻ</a>
             <a asp-area="" asp-controller="NewHot" asp-action="Index" data-i18n="nav.newHot">Mới &amp; Hot</a>
-            <a asp-area="" asp-controller="Product" asp-action="List" data-i18n="nav.watchlist">Danh Sách</a>
+            <a asp-area="" asp-controller="Watchlist" asp-action="Index" data-i18n="nav.watchlist">Danh Sách</a>
         </div>
 
         <div class="nav__right">
@@ -49,6 +50,10 @@
             <div class="nav__profile" id="navProfile" style="display:none;">
                 <div class="nav__avatar" id="navAvatar"></div>
                 <span class="nav__username" id="navUsername"></span>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="nav__admin-link" style="color: #fff; background: var(--red); padding: 7px 16px; border-radius: 4px; font-weight: 700; text-decoration: none; margin-right: 10px; font-size: 0.82rem; transition: all 0.25s;" onmouseover="this.style.background='#b00610'" onmouseout="this.style.background='var(--red)'">Quản Trị</a>
+                }
                 <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;margin:0;">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="nav__logout" data-i18n="nav.logout">Đăng Xuất</button>
@@ -145,9 +150,18 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/hover-preview.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     @* Sync server-side auth state to localStorage so client-side UI stays consistent *@
-    @if (User.Identity?.IsAuthenticated != true)
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script>
+            if (!localStorage.getItem('filmix_user')) {
+                localStorage.setItem('filmix_user', JSON.stringify({ name: '@User.Identity.Name', email: '@User.Identity.Name' }));
+            }
+        </script>
+    }
+    else
     {
         <script>localStorage.removeItem('filmix_user');</script>
     }

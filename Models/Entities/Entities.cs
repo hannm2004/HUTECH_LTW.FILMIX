@@ -20,11 +20,21 @@ namespace untitled1.Models.Entities
         public string Director { get; set; } = string.Empty;
         public string Cast { get; set; } = string.Empty;
 
+        /// <summary>Short description / synopsis shown on Detail page and Hover Preview popup.</summary>
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>YouTube embed URL for trailer (e.g. https://www.youtube.com/embed/XXXX).
+        /// Optional – hover preview falls back to a placeholder if empty.</summary>
+        public string TrailerUrl { get; set; } = string.Empty;
+
         // Many-to-many relationship with Categories via join table
         public ICollection<MovieCategory> MovieCategories { get; set; } = new List<MovieCategory>();
 
         // One-to-many relationship with Episodes
         public ICollection<Episode> Episodes { get; set; } = new List<Episode>();
+
+        // One-to-many relationship with MovieImages
+        public ICollection<MovieImage> MovieImages { get; set; } = new List<MovieImage>();
     }
 
     // Join Entity for Many-to-Many Movie <-> Category
@@ -45,6 +55,16 @@ namespace untitled1.Models.Entities
         public int EpisodeNumber { get; set; }
         public int SeasonNumber { get; set; }
         public string VideoUrl { get; set; } = string.Empty;
+
+        public int MovieId { get; set; }
+        public Movie Movie { get; set; } = null!;
+    }
+
+    // MovieImage Entity for One-to-Many Movie <-> MovieImage
+    public class MovieImage
+    {
+        public int Id { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
 
         public int MovieId { get; set; }
         public Movie Movie { get; set; } = null!;

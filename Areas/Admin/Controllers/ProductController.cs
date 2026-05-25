@@ -102,11 +102,15 @@ namespace untitled1.Areas.Admin.Controllers
                 var movie = await _context.Movies.FindAsync(id);
                 if (movie == null) return NotFound();
 
-                movie.Title     = movieData.Title;
-                movie.ImageUrl  = movieData.ImageUrl;
-                movie.Year      = movieData.Year;
-                movie.Genre     = movieData.Genre;
-                movie.IsTVSeries = movieData.IsTVSeries;
+                movie.Title       = movieData.Title;
+                movie.ImageUrl    = movieData.ImageUrl;
+                movie.Year        = movieData.Year;
+                movie.Genre       = movieData.Genre;
+                movie.IsTVSeries  = movieData.IsTVSeries;
+                movie.Director    = movieData.Director    ?? string.Empty;
+                movie.Cast        = movieData.Cast        ?? string.Empty;
+                movie.Description = movieData.Description ?? string.Empty;
+                movie.TrailerUrl  = movieData.TrailerUrl  ?? string.Empty;
 
                 var existing = _context.MovieCategories.Where(mc => mc.MovieId == id);
                 _context.MovieCategories.RemoveRange(existing);
@@ -142,7 +146,12 @@ namespace untitled1.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var movie = await _context.Movies.FindAsync(id);
+            var movie = await _context.Movies
+                .Include(m => m.MovieCategories)
+                .Include(m => m.Episodes)
+                .Include(m => m.MovieImages)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (movie != null)
             {
                 var title = movie.Title;
