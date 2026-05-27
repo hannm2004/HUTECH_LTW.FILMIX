@@ -33,8 +33,8 @@ public class HomeController : Controller
             .Take(20)
             .ToListAsync();
 
-        ViewBag.Trending  = trending;
-        ViewBag.AllMovies = allMovies;
+        ViewBag.Trending   = trending;
+        ViewBag.AllMovies  = allMovies;
 
         return View();
     }

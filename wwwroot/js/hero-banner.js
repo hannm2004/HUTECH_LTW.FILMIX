@@ -1,111 +1,126 @@
-/* ─────────────────────────────────────────────────────
-   FILMIX — Hero Banner Video Autoplay
-   • Auto-plays muted trailer after 2.5s
-   • Mute/Unmute toggle button (bottom-right)
-   • Play button → go to Detail page
-   • More Info button → go to Detail page
-   • Fades & shrinks banner on scroll (IntersectionObserver)
-   • Pauses video when banner leaves viewport (saves CPU/GPU)
-   ───────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   FILMIX — Hero Banner ViewComponent Single Logic
+═══════════════════════════════════════════════════════════ */
 
-(function () {
-  'use strict';
+document.addEventListener('DOMContentLoaded', () => {
+    const banner = document.getElementById('heroBanner');
+    if (!banner) return;
 
-  const AUTOPLAY_DELAY = 2500; // ms before video starts
-
-  // Sample trailer URL (BigBuckBunny as fallback demo)
-  const DEMO_VIDEO = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-
-  function initHeroBanner() {
-    const banner  = document.getElementById('heroBanner');
-    const videoEl = document.getElementById('heroBannerVideo');
+    const video = document.getElementById('heroBannerVideo');
     const muteBtn = document.getElementById('heroMuteBtn');
-    const playBtn = document.getElementById('heroPlayBtn');
-    const infoBtn = document.getElementById('heroInfoBtn');
+    const iconMute = muteBtn ? muteBtn.querySelector('.icon-mute') : null;
+    const iconUnmute = muteBtn ? muteBtn.querySelector('.icon-unmute') : null;
 
-    if (!banner || !videoEl) return;
+    let isVideoPlaying = false;
+    let isVideoMuted = true;
 
-    /* ── Autoplay after delay ── */
-    let autoplayTimer = setTimeout(() => {
-      videoEl.muted = true;
-      videoEl.play().catch(() => {}); // ignore autoplay policy errors
-      banner.classList.add('video-playing');
-    }, AUTOPLAY_DELAY);
+    // --- VIDEO INITIALIZATION ---
+    function initVideo() {
+        if (!video) return;
 
-    /* ── Mute / Unmute toggle ── */
-    if (muteBtn) {
-      muteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        videoEl.muted = !videoEl.muted;
-        muteBtn.classList.toggle('unmuted', !videoEl.muted);
-        muteBtn.setAttribute('aria-label', videoEl.muted ? 'Bật tiếng' : 'Tắt tiếng');
-        muteBtn.querySelector('.icon-mute').style.display   =  videoEl.muted ? 'block' : 'none';
-        muteBtn.querySelector('.icon-unmute').style.display = !videoEl.muted ? 'block' : 'none';
-      });
-    }
-
-    /* ── Play / Info buttons ── */
-    const heroLink = banner.dataset.detailUrl || '#';
-    if (playBtn) {
-      playBtn.addEventListener('click', () => {
-        window.location.href = heroLink;
-      });
-    }
-    if (infoBtn) {
-      infoBtn.addEventListener('click', () => {
-        window.location.href = heroLink;
-      });
-    }
-
-    /* ── IntersectionObserver: pause when off-screen, fade on scroll ── */
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          if (banner.classList.contains('video-playing')) {
-            videoEl.play().catch(() => {});
-          }
-          banner.classList.remove('hero-scrolled');
-        } else {
-          videoEl.pause();
-          banner.classList.add('hero-scrolled');
+        const trailerUrl = banner.dataset.videoUrl;
+        if (!trailerUrl) {
+            // No trailer, stay on background image
+            return;
         }
-      });
-    }, { threshold: 0.15 });
 
-    observer.observe(banner);
+        // We have a video, set src and prepare for playback
+        video.src = trailerUrl;
+        
+        // Show mute button if we have video
+        if (muteBtn) muteBtn.style.display = 'flex';
 
-    /* ── Parallax + fade on scroll ── */
+        // Autoplay logic (Netflix style: wait 3 seconds before playing)
+        setTimeout(() => {
+            playVideo();
+        }, 3000);
+    }
+
+    function playVideo() {
+        if (!video || !video.src) return;
+        
+        video.play().then(() => {
+            banner.classList.add('video-playing');
+            isVideoPlaying = true;
+        }).catch(err => {
+            console.warn("Autoplay prevented:", err);
+        });
+    }
+
+    function pauseVideo() {
+        if (!video) return;
+        video.pause();
+        isVideoPlaying = false;
+    }
+
+    // --- MUTE TOGGLE ---
+    if (muteBtn) {
+        muteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!video) return;
+
+            isVideoMuted = !isVideoMuted;
+            video.muted = isVideoMuted;
+
+            if (isVideoMuted) {
+                iconMute.style.display = 'block';
+                iconUnmute.style.display = 'none';
+            } else {
+                iconMute.style.display = 'none';
+                iconUnmute.style.display = 'block';
+            }
+        });
+    }
+
+    // --- PARALLAX & VISIBILITY ---
+    function handleScroll() {
+        const scrollY = window.scrollY;
+        if (scrollY > window.innerHeight) return; // Optimize: don't process if way below
+
+        // 1. Content Parallax
+        const content = document.getElementById('heroBannerContent');
+        if (content) {
+            content.style.transform = `translateY(${scrollY * 0.4}px)`;
+            content.style.opacity = Math.max(0, 1 - scrollY / 400);
+        }
+
+        // 2. Background darkening
+        const bg = document.querySelector('.hero-banner__bg');
+        if (bg) {
+            bg.style.filter = `brightness(${Math.max(0.3, 1 - scrollY / 600)})`;
+        }
+    }
+    
+    // Use requestAnimationFrame for smooth scroll parallax
     let ticking = false;
     window.addEventListener('scroll', () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const scrollY = window.scrollY;
-          const bannerH = banner.offsetHeight;
-          const progress = Math.min(scrollY / bannerH, 1);
-
-          // Fade out content
-          const content = banner.querySelector('.hero-banner__content');
-          if (content) {
-            content.style.opacity  = 1 - progress * 1.6;
-            content.style.transform = `translateY(${progress * 40}px)`;
-          }
-
-          // Darken video overlay as user scrolls
-          const overlay = banner.querySelector('.hero-banner__overlay');
-          if (overlay) {
-            overlay.style.opacity = 0.45 + progress * 0.55;
-          }
-
-          ticking = false;
-        });
-        ticking = true;
-      }
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                handleScroll();
+                ticking = false;
+            });
+            ticking = true;
+        }
     }, { passive: true });
-  }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHeroBanner);
-  } else {
-    initHeroBanner();
-  }
-})();
+    // --- INTERSECTION OBSERVER (Pause video when off-screen) ---
+    if (window.IntersectionObserver && video) {
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    if (!isVideoPlaying && banner.classList.contains('video-playing')) {
+                        video.play();
+                    }
+                } else {
+                    if (isVideoPlaying) {
+                        video.pause();
+                    }
+                }
+            });
+        }, { threshold: 0.1 });
+        obs.observe(banner);
+    }
+
+    // Start
+    initVideo();
+});

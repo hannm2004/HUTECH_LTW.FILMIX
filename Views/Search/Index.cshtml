@@ -1,0 +1,153 @@
+@using untitled1.Models.Entities
+@model IEnumerable<Movie>
+@{
+    ViewData["Title"] = "Tìm Kiếm - FILMIX";
+    var q    = ViewBag.Query as string ?? string.Empty;
+    var type = ViewBag.Type  as string ?? "all";
+    var year = ViewBag.Year  as int?;
+    var results = Model?.ToList() ?? new List<Movie>();
+}
+
+<div class="search-page">
+    <!-- Header -->
+    <div class="search-page__header">
+        @if (!string.IsNullOrEmpty(q))
+        {
+            <div class="search-page__query-label">Kết quả tìm kiếm cho</div>
+            <h1 class="search-page__title">
+                "<span>@q</span>"
+            </h1>
+            <p class="search-page__count">
+                @if (results.Any())
+                {
+                    <text>Tìm thấy <strong style="color:#fff;">@results.Count</strong> kết quả</text>
+                }
+                else
+                {
+                    <text>Không tìm thấy kết quả nào</text>
+                }
+            </p>
+        }
+        else
+        {
+            <h1 class="search-page__title">Tìm Kiếm Phim</h1>
+        }
+    </div>
+
+    <!-- Inline search bar -->
+    <form class="search-page__bar" action="/Search" method="get" role="search">
+        <input type="text"
+               name="q"
+               id="searchPageInput"
+               class="search-page__input"
+               placeholder="Tên phim, diễn viên, đạo diễn, thể loại..."
+               value="@q"
+               autocomplete="off"
+               aria-label="Tìm kiếm" />
+        <input type="hidden" name="type" value="@type" />
+        <button type="submit" class="search-page__btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            </svg>
+            Tìm
+        </button>
+    </form>
+
+    <!-- Filter Chips -->
+    <div class="search-filters" role="group" aria-label="Lọc kết quả">
+        <a href="/Search?q=@Uri.EscapeDataString(q)&type=all"
+           class="search-filter-chip @(type == "all" ? "active" : "")">
+           Tất Cả
+        </a>
+        <a href="/Search?q=@Uri.EscapeDataString(q)&type=movie"
+           class="search-filter-chip @(type == "movie" ? "active" : "")">
+           🎬 Phim Lẻ
+        </a>
+        <a href="/Search?q=@Uri.EscapeDataString(q)&type=series"
+           class="search-filter-chip @(type == "series" ? "active" : "")">
+           📺 TV Series
+        </a>
+        @{
+            // Top years from results
+            var years = results.Select(m => m.Year).Distinct().OrderByDescending(y => y).Take(5).ToList();
+        }
+        @foreach (var y in years)
+        {
+            <a href="/Search?q=@Uri.EscapeDataString(q)&type=@type&year=@y"
+               class="search-filter-chip @(year == y ? "active" : "")">
+               @y
+            </a>
+        }
+        @if (year.HasValue || type != "all")
+        {
+            <a href="/Search?q=@Uri.EscapeDataString(q)" class="search-filter-chip" style="border-color:rgba(229,9,20,0.4); color:#e50914;">
+                ✕ Xóa bộ lọc
+            </a>
+        }
+    </div>
+
+    <!-- Results Grid -->
+    <div class="search-results-grid" role="list">
+        @if (!results.Any() && !string.IsNullOrEmpty(q))
+        {
+            <div class="search-empty">
+                <div class="search-empty__icon">🔍</div>
+                <h2 class="search-empty__title">Không tìm thấy kết quả</h2>
+                <p class="search-empty__sub">
+                    Không có phim nào khớp với "<strong>@q</strong>".<br/>
+                    Hãy thử từ khóa khác hoặc kiểm tra chính tả.
+                </p>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(q))
+        {
+            @foreach (var movie in results)
+            {
+                <a href="/Product/Detail/@movie.Id" class="search-result-card" role="listitem" title="@movie.Title">
+                    <img class="search-result-card__img"
+                         src="@movie.ImageUrl"
+                         onerror="this.onerror=null;this.src='/images/movies/default.jpg'"
+                         alt="@movie.Title" loading="lazy" />
+                    <div class="search-result-card__overlay">
+                        <div class="search-result-card__play">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="search-result-card__info">
+                        <div class="search-result-card__title">@movie.Title</div>
+                        <div class="search-result-card__meta">
+                            <span>@movie.Year</span>
+                            <span class="search-result-card__type @(movie.IsTVSeries ? "type-series" : "type-movie")">
+                                @(movie.IsTVSeries ? "Series" : "Phim")
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            }
+        }
+        else
+        {
+            <!-- Search landing: show popular genres as suggestions -->
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #555;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">🎬</div>
+                <p style="font-size: 1.1rem; color: #888;">Nhập từ khóa để tìm kiếm phim, diễn viên hoặc thể loại</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Force navbar scrolled state on this page
+        const nav = document.getElementById('nav');
+        if (nav) nav.classList.add('scrolled');
+
+        // Focus search input on load
+        const searchInput = document.getElementById('searchPageInput');
+        if (searchInput && !'@q'.trim()) {
+            searchInput.focus();
+        }
+    </script>
+}
