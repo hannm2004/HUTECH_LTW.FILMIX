@@ -1,3 +1,4 @@
+@using System.Text.Encodings.Web
 @model Movie
 @{
     ViewData["Title"] = Model.Title + " - FILMIX";
@@ -251,6 +252,17 @@
                 video.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
                 modal.style.display = 'flex';
                 video.play();
+
+                // Start tracking progress
+                if (window.ContinueWatching) {
+                    window.ContinueWatching.track(video, {
+                        id: '@Model.Id',
+                        title: '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.Title))' + (title !== '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.Title))' ? ' - ' + title : ''),
+                        imageUrl: '@Model.ImageUrl',
+                        genre: '@Model.Genre',
+                        year: '@Model.Year'
+                    });
+                }
             }
         }
 
@@ -258,6 +270,10 @@
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('modalVideo');
             if (modal && video) {
+                // Stop tracking progress (saves current position)
+                if (window.ContinueWatching) {
+                    window.ContinueWatching.stop();
+                }
                 video.pause();
                 modal.style.display = 'none';
                 video.src = "";
