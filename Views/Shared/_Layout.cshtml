@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - FILMIX</title>
     <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/hero-banner.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/hover-preview.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/continue-watching.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/search.css" asp-append-version="true" />
     <script src="~/js/i18n.js"></script>
     <script src="~/js/auth-state.js"></script>
 </head>
@@ -24,6 +27,29 @@
         </div>
 
         <div class="nav__right">
+            <!-- Search Bar -->
+            <div class="nav__search" id="navSearch">
+                <button class="nav__search-toggle" id="searchToggle" aria-label="Tìm kiếm" title="Tìm kiếm" onclick="toggleNavSearch()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                </button>
+                <form class="nav__search-form" id="navSearchForm" action="/Search" method="get" role="search" autocomplete="off">
+                    <input type="text" name="q" id="navSearchInput"
+                           class="nav__search-input"
+                           placeholder="Tìm phim, diễn viên..."
+                           aria-label="Tìm kiếm phim"
+                           oninput="onNavSearchInput(this.value)"
+                           onkeydown="onNavSearchKey(event)" />
+                    <button type="submit" class="nav__search-submit" aria-label="Tìm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </button>
+                </form>
+                <div class="nav__search-dropdown" id="navSearchDropdown"></div>
+            </div>
+
             <!-- Language Switcher -->
             <div class="lang-switcher" id="langSwitcher">
                 <button class="lang-btn" id="langBtn" onclick="toggleLang()">
@@ -151,7 +177,111 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/hover-preview.js" asp-append-version="true"></script>
+    <script src="~/js/netflix-slider.js" asp-append-version="true"></script>
+    <script src="~/js/continue-watching.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+    /* ══════════════════════════════════════════
+       Navbar Search — Toggle + Autocomplete
+    ══════════════════════════════════════════ */
+    (function () {
+        let _debounceTimer = null;
+        let _selectedIdx   = -1;
+        let _suggestions   = [];
+
+        window.toggleNavSearch = function (forceOpen) {
+            const form     = document.getElementById('navSearchForm');
+            const input    = document.getElementById('navSearchInput');
+            const isOpen   = form.classList.contains('open');
+            const open     = forceOpen !== undefined ? forceOpen : !isOpen;
+            form.classList.toggle('open', open);
+            if (open) { setTimeout(() => input?.focus(), 80); }
+            else       { closeDropdown(); }
+        };
+
+        window.onNavSearchInput = function (val) {
+            clearTimeout(_debounceTimer);
+            _selectedIdx = -1;
+            if (!val || val.length < 2) { closeDropdown(); return; }
+            _debounceTimer = setTimeout(() => fetchSuggestions(val), 220);
+        };
+
+        window.onNavSearchKey = function (e) {
+            const dropdown = document.getElementById('navSearchDropdown');
+            const items    = dropdown.querySelectorAll('.search-suggest-item');
+            if (e.key === 'ArrowDown')  { e.preventDefault(); moveSel(items, 1);  }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); moveSel(items, -1); }
+            else if (e.key === 'Escape') { toggleNavSearch(false); }
+            else if (e.key === 'Enter' && _selectedIdx >= 0) {
+                e.preventDefault();
+                const link = items[_selectedIdx]?.getAttribute('href');
+                if (link) window.location.href = link;
+            }
+        };
+
+        function moveSel(items, dir) {
+            items.forEach(el => el.classList.remove('selected'));
+            _selectedIdx = Math.max(-1, Math.min(_selectedIdx + dir, items.length - 1));
+            if (_selectedIdx >= 0) {
+                items[_selectedIdx].classList.add('selected');
+                items[_selectedIdx].style.background = 'rgba(255,255,255,0.1)';
+            }
+        }
+
+        function closeDropdown() {
+            const dd = document.getElementById('navSearchDropdown');
+            if (dd) { dd.classList.remove('open'); dd.innerHTML = ''; }
+            _selectedIdx = -1;
+            _suggestions = [];
+        }
+
+        async function fetchSuggestions(q) {
+            try {
+                const res  = await fetch('/api/search/suggest?q=' + encodeURIComponent(q));
+                const data = await res.json();
+                renderDropdown(data, q);
+            } catch { closeDropdown(); }
+        }
+
+        function renderDropdown(items, q) {
+            const dd = document.getElementById('navSearchDropdown');
+            if (!dd) return;
+            if (!items || items.length === 0) { closeDropdown(); return; }
+
+            _suggestions = items;
+            const esc = (s) => s.replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+            const highlight = (text) => {
+                const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                return esc(text).replace(re, '<mark class="search-highlight">$1</mark>');
+            };
+
+            dd.innerHTML = items.map(m => `
+                <a class="search-suggest-item" href="/Product/Detail/${m.id}">
+                    <img src="${esc(m.imageUrl || '/images/movies/default.jpg')}" alt="${esc(m.title)}"
+                         onerror="this.src='/images/movies/default.jpg'" />
+                    <div class="search-suggest-item__info">
+                        <div class="search-suggest-item__title">${highlight(m.title)}</div>
+                        <div class="search-suggest-item__meta">${m.year} &bull; ${esc(m.genre || '')}</div>
+                    </div>
+                    <span class="search-suggest-item__badge ${m.isTVSeries ? 'badge-series' : 'badge-movie'}">
+                        ${m.isTVSeries ? 'Series' : 'Phim'}
+                    </span>
+                </a>
+            `).join('') +
+            `<a class="search-suggest-viewall" href="/Search?q=${encodeURIComponent(q)}">Xem tất cả kết quả &rarr;</a>`;
+
+            dd.classList.add('open');
+        }
+
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('navSearch');
+            if (wrap && !wrap.contains(e.target)) {
+                toggleNavSearch(false);
+            }
+        });
+    })();
+    </script>
     @* Sync server-side auth state to localStorage so client-side UI stays consistent *@
     @if (User.Identity?.IsAuthenticated == true)
     {
