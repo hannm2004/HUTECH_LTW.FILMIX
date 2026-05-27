@@ -1,0 +1,293 @@
+/* ═══════════════════════════════════════════════════════════════
+   FILMIX — Continue Watching Row + Progress Bar
+   Netflix-style: Red progress bar, resume overlay, remove button
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Section wrapper ── */
+.cw-section {
+    padding: 0 0 10px;
+    display: none; /* Hidden by default, JS shows when data exists */
+}
+
+.cw-section.has-items {
+    display: block;
+}
+
+/* ── Section Header ── */
+.cw-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5%;
+    margin-bottom: 0;
+}
+
+.cw-title {
+    font-family: 'Outfit', 'Netflix Sans', sans-serif;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cw-title__icon {
+    color: #e50914;
+    display: flex;
+    align-items: center;
+}
+
+.cw-clear-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+
+.cw-clear-btn:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+}
+
+/* ── Slider ── */
+.cw-slider-row {
+    position: relative;
+    overflow: visible;
+    margin-top: 6px;
+}
+
+.cw-slider-track {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 12px 5% 20px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    cursor: grab;
+    overflow-y: visible;
+}
+
+.cw-slider-track::-webkit-scrollbar {
+    display: none;
+}
+
+.cw-slider-track.grabbing {
+    cursor: grabbing;
+}
+
+/* ── Individual Continue-Watching Card ── */
+.cw-card {
+    position: relative;
+    flex: 0 0 220px;
+    height: 130px;
+    border-radius: 8px;
+    overflow: hidden;
+    scroll-snap-align: start;
+    cursor: pointer;
+    background: #1a1a1a;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), z-index 0s 0.35s, box-shadow 0.3s ease;
+    will-change: transform;
+    z-index: 1;
+    text-decoration: none;
+    display: block;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cw-card:first-child:hover {
+    transform-origin: left center;
+}
+
+.cw-card:last-child:hover {
+    transform-origin: right center;
+}
+
+.cw-card:hover {
+    transform: scale(1.1);
+    z-index: 10;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), z-index 0s 0s, box-shadow 0.3s ease;
+}
+
+/* ── Card Thumbnail ── */
+.cw-card__thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: filter 0.3s ease;
+}
+
+.cw-card:hover .cw-card__thumb {
+    filter: brightness(0.6);
+}
+
+/* ── Gradient Overlay ── */
+.cw-card__gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+    pointer-events: none;
+}
+
+/* ── Play Overlay (shown on hover) ── */
+.cw-card__play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.cw-card:hover .cw-card__play-overlay {
+    opacity: 1;
+}
+
+.cw-card__play-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.cw-card:hover .cw-card__play-icon {
+    transform: scale(1.1);
+}
+
+.cw-card__play-icon svg {
+    fill: #000;
+    width: 18px;
+    height: 18px;
+    margin-left: 2px; /* visual centering for play triangle */
+}
+
+/* ── Title at Bottom ── */
+.cw-card__title {
+    position: absolute;
+    bottom: 18px;
+    left: 10px;
+    right: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+    transition: bottom 0.3s ease;
+}
+
+/* ── Progress Container (always visible at bottom) ── */
+.cw-card__progress-wrap {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 0 0 8px 8px;
+}
+
+.cw-card__progress-bar {
+    height: 100%;
+    background: #e50914;
+    border-radius: 0 0 0 8px;
+    transition: width 0.4s ease;
+    min-width: 4px;
+}
+
+/* Progress > 90%: green (almost done) */
+.cw-card__progress-bar.almost-done {
+    background: #46d369;
+}
+
+/* ── Remove (X) Button ── */
+.cw-card__remove {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 26px;
+    height: 26px;
+    background: rgba(20, 20, 20, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    z-index: 20;
+}
+
+.cw-card:hover .cw-card__remove {
+    opacity: 1;
+}
+
+.cw-card__remove:hover {
+    background: #e50914;
+    border-color: #e50914;
+    transform: scale(1.15);
+}
+
+.cw-card__remove svg {
+    width: 12px;
+    height: 12px;
+    fill: #fff;
+    pointer-events: none;
+}
+
+/* ── Time Remaining Badge ── */
+.cw-card__time-left {
+    position: absolute;
+    bottom: 20px;
+    right: 8px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+    pointer-events: none;
+}
+
+/* ── Empty State ── */
+.cw-empty {
+    display: none;
+    text-align: center;
+    padding: 40px 5%;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .cw-card {
+        flex: 0 0 160px;
+        height: 100px;
+    }
+
+    .cw-card__title {
+        font-size: 0.72rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .cw-card {
+        flex: 0 0 135px;
+        height: 82px;
+    }
+}
