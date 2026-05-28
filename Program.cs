@@ -91,6 +91,10 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
 }
+
+// Custom status code pages (404, 500, etc.) — works in all environments
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
+
 app.UseRouting();
 
 app.UseAuthentication();
