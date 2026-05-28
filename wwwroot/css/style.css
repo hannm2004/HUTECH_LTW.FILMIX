@@ -2170,3 +2170,88 @@ body::after {
   }
 }
 
+/* ════════════════════════════════════════
+   SKELETON / SHIMMER LOADING STATES
+════════════════════════════════════════ */
+
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+/* Generic skeleton block */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #2a2a2a 0%,
+    #363636 40%,
+    #2a2a2a 80%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 4px;
+}
+
+/* Image wrapper loading state — add .img-loading to parent */
+.img-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.img-loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    #2a2a2a 0%,
+    #363636 40%,
+    #2a2a2a 80%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+/* Slider card skeleton — shown before JS initializes sliders */
+.slider-skeleton-card {
+  flex: 0 0 180px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.slider-skeleton-card__img {
+  aspect-ratio: 2/3;
+  background: linear-gradient(90deg, #2a2a2a 0%, #363636 40%, #2a2a2a 80%);
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 8px;
+}
+
+.slider-skeleton-card__title {
+  height: 14px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, #2a2a2a 0%, #363636 40%, #2a2a2a 80%);
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 4px;
+  width: 75%;
+}
+
+.slider-skeleton-card__sub {
+  height: 11px;
+  margin-top: 6px;
+  background: linear-gradient(90deg, #2a2a2a 0%, #363636 40%, #2a2a2a 80%);
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 4px;
+  width: 45%;
+}
+
+/* Stagger shimmer delay for natural feel */
+.slider-skeleton-card:nth-child(2) .slider-skeleton-card__img { animation-delay: 0.1s; }
+.slider-skeleton-card:nth-child(3) .slider-skeleton-card__img { animation-delay: 0.2s; }
+.slider-skeleton-card:nth-child(4) .slider-skeleton-card__img { animation-delay: 0.3s; }
+.slider-skeleton-card:nth-child(5) .slider-skeleton-card__img { animation-delay: 0.4s; }
+.slider-skeleton-card:nth-child(6) .slider-skeleton-card__img { animation-delay: 0.5s; }
