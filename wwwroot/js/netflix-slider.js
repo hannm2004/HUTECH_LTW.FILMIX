@@ -190,6 +190,23 @@
   // Init all elements
   function initAll() {
     document.querySelectorAll('.slider-row').forEach(initSlider);
+    applySkeletons();
+  }
+
+  // Apply shimmer skeleton to images that haven't loaded yet
+  function applySkeletons() {
+    document.querySelectorAll('.slider-track img, .similar-movies-section img').forEach(img => {
+      if (img.complete && img.naturalWidth > 0) return; // already loaded
+
+      const wrap = img.parentElement;
+      if (!wrap) return;
+
+      wrap.classList.add('img-loading');
+
+      const cleanup = () => wrap.classList.remove('img-loading');
+      img.addEventListener('load',  cleanup, { once: true });
+      img.addEventListener('error', cleanup, { once: true });
+    });
   }
 
   if (document.readyState === 'loading') {
@@ -198,5 +215,5 @@
     initAll();
   }
 
-  window.FilmixSlider = { init: initSlider, initAll };
+  window.FilmixSlider = { init: initSlider, initAll, applySkeletons };
 })();

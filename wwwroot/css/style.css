@@ -1810,11 +1810,16 @@ body::after {
 /* Slider row wrapper (position: relative for arrows) */
 .slider-row {
   position: relative;
+  overflow: visible; /* Allow hover scaling card overflow */
 }
 
 .slider-row:hover .slider-arrow {
   opacity: 1;
   pointer-events: all;
+}
+
+.slider-row:hover .slider-indicators {
+  opacity: 1;
 }
 
 /* Horizontal track */
@@ -1840,45 +1845,49 @@ body::after {
   scroll-behavior: auto;
 }
 
-/* Arrow buttons */
+/* Arrow buttons: Netflix Style (Full-height overlapping chevrons) */
 .slider-arrow {
   position: absolute;
-  top: 50%;
-  transform: translateY(-60%);
-  z-index: 20;
-  width: 50px;
-  height: 90px;
+  top: 14px;
+  bottom: 24px;
+  z-index: 15;
+  width: 4%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(20, 20, 20, 0.55);
   border: none;
   color: #fff;
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .25s, background .2s;
-  backdrop-filter: blur(6px);
+  transition: opacity .25s ease, background .2s ease, transform .2s ease;
+  backdrop-filter: blur(4px);
 }
 
 .slider-arrow svg {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
 .slider-arrow--prev {
   left: 0;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 4px 4px 0;
 }
 
 .slider-arrow--next {
   right: 0;
-  border-radius: 6px 0 0 6px;
+  border-radius: 4px 0 0 4px;
 }
 
 .slider-arrow:hover {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(20, 20, 20, 0.85);
+}
+
+.slider-arrow:hover svg {
+  transform: scale(1.25);
 }
 
 .slider-arrow.hidden {
@@ -1886,13 +1895,40 @@ body::after {
   pointer-events: none !important;
 }
 
-/* Cards inside slider */
+/* Pagination Indicators (Dashes) positioned absolutely at top right */
+.slider-indicators {
+  position: absolute;
+  top: -18px;
+  right: 5%;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 20;
+}
+
+.slider-indicator-dot {
+  width: 12px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.25);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.3s ease;
+}
+
+.slider-indicator-dot.active {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Cards inside slider (margin override from default card stacking) */
 .slider-track .t-card {
   flex: 0 0 185px;
   scroll-snap-align: start;
   position: relative;
   transition: transform .3s var(--ease-spring), z-index 0s .3s;
   z-index: 1;
+  margin-right: 0; /* Reset negative margin overlap */
 }
 
 .slider-track .t-card:hover {
@@ -2134,3 +2170,88 @@ body::after {
   }
 }
 
+/* ════════════════════════════════════════
+   SKELETON / SHIMMER LOADING STATES
+════════════════════════════════════════ */
+
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+/* Generic skeleton block */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #2a2a2a 0%,
+    #363636 40%,
+    #2a2a2a 80%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 4px;
+}
+
+/* Image wrapper loading state — add .img-loading to parent */
+.img-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.img-loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    #2a2a2a 0%,
+    #363636 40%,
+    #2a2a2a 80%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+/* Slider card skeleton — shown before JS initializes sliders */
+.slider-skeleton-card {
+  flex: 0 0 180px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.slider-skeleton-card__img {
+  aspect-ratio: 2/3;
+  background: linear-gradient(90deg, #2a2a2a 0%, #363636 40%, #2a2a2a 80%);
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 8px;
+}
+
+.slider-skeleton-card__title {
+  height: 14px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, #2a2a2a 0%, #363636 40%, #2a2a2a 80%);
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 4px;
+  width: 75%;
+}
+
+.slider-skeleton-card__sub {
+  height: 11px;
+  margin-top: 6px;
+  background: linear-gradient(90deg, #2a2a2a 0%, #363636 40%, #2a2a2a 80%);
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: 4px;
+  width: 45%;
+}
+
+/* Stagger shimmer delay for natural feel */
+.slider-skeleton-card:nth-child(2) .slider-skeleton-card__img { animation-delay: 0.1s; }
+.slider-skeleton-card:nth-child(3) .slider-skeleton-card__img { animation-delay: 0.2s; }
+.slider-skeleton-card:nth-child(4) .slider-skeleton-card__img { animation-delay: 0.3s; }
+.slider-skeleton-card:nth-child(5) .slider-skeleton-card__img { animation-delay: 0.4s; }
+.slider-skeleton-card:nth-child(6) .slider-skeleton-card__img { animation-delay: 0.5s; }
