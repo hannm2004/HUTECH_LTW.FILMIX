@@ -1,3 +1,5 @@
+using untitled1.Models.Entities;
+
 namespace untitled1.Models.Entities
 {
     public class Category
@@ -68,5 +70,40 @@ namespace untitled1.Models.Entities
 
         public int MovieId { get; set; }
         public Movie Movie { get; set; } = null!;
+    }
+
+    // ──────────────────────────────────────────
+    // SUBSCRIPTION / PAYMENT ENTITIES
+    // ──────────────────────────────────────────
+
+    public class SubscriptionPlan
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;          // e.g. "Cơ Bản"
+        public string Tagline { get; set; } = string.Empty;       // short subtitle
+        public decimal Price { get; set; }                        // VND / month
+        public string Resolution { get; set; } = string.Empty;   // "480p", "1080p", "4K"
+        public int MaxScreens { get; set; }                       // simultaneous screens
+        public bool IsPopular { get; set; }                       // highlight badge
+        public bool HasDownload { get; set; }                     // download feature
+        public bool HasSpatialAudio { get; set; }                 // spatial audio
+        public string AccentColor { get; set; } = "#e50914";     // card accent color
+
+        public ICollection<UserSubscription> Subscriptions { get; set; } = new List<UserSubscription>();
+    }
+
+    public class UserSubscription
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public ApplicationUser User { get; set; } = null!;
+        public int PlanId { get; set; }
+        public SubscriptionPlan Plan { get; set; } = null!;
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public bool IsActive { get; set; }
+        public string PaymentMethod { get; set; } = string.Empty; // "credit_card","momo","banking","zalopay"
+        public string TransactionId { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
     }
 }

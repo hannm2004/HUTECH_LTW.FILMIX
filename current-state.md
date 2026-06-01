@@ -1,4 +1,42 @@
-# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 28/05/2026
+# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 01/06/2026
+
+---
+
+## 📅 Nhật Ký Cập Nhật Hôm Nay (01/06/2026)
+
+Hôm nay đã hoàn thiện **hệ thống Thanh Toán & Đăng Ký Gói Premium** theo phong cách Netflix, tích hợp đầy đủ vào cơ sở dữ liệu.
+
+### 💳 8. Hệ Thống Thanh Toán & Gói Premium (Payment System)
+
+#### Entities & Database
+* **`SubscriptionPlan`**: Entity mới lưu 3 gói (Cơ Bản 79k, Tiêu Chuẩn 149k, Cao Cấp 219k) với các trường: `Price`, `Resolution`, `MaxScreens`, `HasDownload`, `HasSpatialAudio`, `AccentColor`, `IsPopular`.
+* **`UserSubscription`**: Entity lưu lịch sử đăng ký của từng user: `StartDate`, `EndDate`, `IsActive`, `PaymentMethod`, `TransactionId`.
+* **`ApplicationDbContext`**: Đăng ký 2 DbSet mới + quan hệ FK + seed 3 gói mặc định.
+* **`Program.cs`**: Thêm test query cho 2 bảng mới → tự động xóa & tạo lại DB khi phát hiện cấu trúc cũ.
+
+#### Controller — `SubscriptionController.cs`
+* `Plans()` — Hiển thị trang chọn gói, nhận diện gói đang dùng của user.
+* `Checkout(planId)` — Trang thanh toán (yêu cầu đăng nhập).
+* `ProcessPayment(planId, paymentMethod)` — POST: Hủy sub cũ → tạo sub mới → redirect thành công.
+* `Success(id)` — Trang xác nhận giao dịch thành công.
+* `MySubscription()` — Trang xem gói hiện tại.
+* `ApiStatus()` — JSON endpoint `/api/subscription/status` để client check trạng thái.
+
+#### Views & CSS
+* **`Plans.cshtml`**: Trang chọn gói glassmorphism với badge "Phổ Biến Nhất" nhấp nháy, bảng so sánh tính năng, nút CTA thông minh (nhận diện gói hiện tại).
+* **`Checkout.cshtml`**: Trang thanh toán premium 2 cột:
+  - **4 tab phương thức**: Thẻ Ngân Hàng, MoMo, ZaloPay, Chuyển Khoản
+  - **Thẻ 3D flip animation**: Card lật mặt sau khi focus vào ô CVV
+  - **Real-time card display**: Số thẻ, tên chủ thẻ, ngày hết hạn hiển thị trực tiếp trên card ảo
+  - **Cột tóm tắt đơn hàng**: Plan info + giá + nút xác nhận + security badges
+* **`Success.cshtml`**: Trang chúc mừng với hiệu ứng confetti 60 hạt màu sắc, animated checkmark, chi tiết giao dịch đầy đủ.
+* **`MySubscription.cshtml`**: Trang quản lý gói — hiển thị trạng thái, ngày hết hạn, phương thức TT, nút nâng cấp.
+* **`subscription.css`**: ~450 dòng CSS premium — glassmorphism cards, plan badges, card 3D flip, confetti, success animation, responsive layout.
+
+#### Layout Integration
+* **Navbar**: Thêm nút **👑 Premium** gradient đỏ nổi bật sau "Danh Sách".
+* **Footer**: Thêm link "Gói Đăng Ký" trong cột Tài Khoản.
+* **`_Layout.cshtml`**: Include `subscription.css` toàn cục.
 
 ---
 
