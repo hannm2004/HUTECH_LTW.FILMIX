@@ -1,0 +1,89 @@
+@model untitled1.Models.Entities.UserSubscription
+@{
+    ViewData["Title"] = "Gói Đăng Ký Của Tôi";
+    var planIcon = Model?.Plan?.Id == 1 ? "📺" : Model?.Plan?.Id == 2 ? "🎬" : "💎";
+    var methodLabel = Model?.PaymentMethod switch {
+        "momo"    => "MoMo",
+        "zalopay" => "ZaloPay",
+        "banking" => "Chuyển Khoản Ngân Hàng",
+        _         => "Thẻ Ngân Hàng"
+    };
+}
+
+<div class="mysub-page">
+    <div class="mysub-wrap">
+        <h1>Gói Đăng Ký Của Tôi</h1>
+        <p class="sub-title">Quản lý gói dịch vụ FILMIX của bạn</p>
+
+        @if (Model == null)
+        {
+            <div class="mysub-card no-sub-card">
+                <div class="no-sub-icon">🎬</div>
+                <div class="no-sub-title">Bạn Chưa Có Gói Đăng Ký</div>
+                <p class="no-sub-sub">Đăng ký ngay để xem phim không giới hạn, không quảng cáo!</p>
+                <a href="@Url.Action("Plans","Subscription")" class="no-sub-btn">Xem Các Gói →</a>
+            </div>
+        }
+        else
+        {
+            <!-- Status card -->
+            <div class="mysub-card">
+                <div class="mysub-plan-header">
+                    <div class="mysub-plan-icon">@planIcon</div>
+                    <div>
+                        <div class="mysub-plan-name">Gói @Model.Plan?.Name</div>
+                        <div class="mysub-plan-res">@Model.Plan?.Resolution</div>
+                    </div>
+                    @if (Model.IsActive && Model.EndDate > DateTime.Now)
+                    {
+                        <div class="mysub-badge-active">● Đang Hoạt Động</div>
+                    }
+                    else
+                    {
+                        <div class="mysub-badge-active" style="background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#ef4444">● Đã Hết Hạn</div>
+                    }
+                </div>
+
+                <div class="mysub-info-row">
+                    <span class="label">Phương thức thanh toán</span>
+                    <span class="value">@methodLabel</span>
+                </div>
+                <div class="mysub-info-row">
+                    <span class="label">Ngày đăng ký</span>
+                    <span class="value">@Model.StartDate.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+                <div class="mysub-info-row">
+                    <span class="label">Ngày hết hạn</span>
+                    <span class="value" style="@(Model.EndDate > DateTime.Now ? "color:#22c55e" : "color:#ef4444")">
+                        @Model.EndDate.ToString("dd/MM/yyyy HH:mm")
+                    </span>
+                </div>
+                <div class="mysub-info-row">
+                    <span class="label">Màn hình đồng thời</span>
+                    <span class="value">@Model.Plan?.MaxScreens màn hình</span>
+                </div>
+                <div class="mysub-info-row">
+                    <span class="label">Mã giao dịch</span>
+                    <span class="value" style="font-family:monospace;font-size:0.85rem">@Model.TransactionId</span>
+                </div>
+                @if (Model.Plan?.HasDownload == true)
+                {
+                    <div class="mysub-info-row">
+                        <span class="label">Tải xuống offline</span>
+                        <span class="value" style="color:#22c55e">✓ Có</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+                <a href="@Url.Action("Plans","Subscription")" class="no-sub-btn" style="font-size:0.9rem">
+                    🔄 Đổi / Nâng Cấp Gói
+                </a>
+                <a href="@Url.Action("Index","Home")" class="no-sub-btn" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);font-size:0.9rem">
+                    🎬 Xem Phim Ngay
+                </a>
+            </div>
+        }
+    </div>
+</div>

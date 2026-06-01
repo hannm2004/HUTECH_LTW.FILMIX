@@ -51,6 +51,8 @@ using (var scope = app.Services.CreateScope())
         _ = db.Episodes.OrderBy(e => e.Id).FirstOrDefault();
         _ = db.Movies.Select(m => new { m.Id, m.Director, m.Cast }).FirstOrDefault();
         _ = db.Users.FirstOrDefault();
+        _ = db.SubscriptionPlans.FirstOrDefault();   // triggers recreate if table missing
+        _ = db.UserSubscriptions.FirstOrDefault();   // triggers recreate if table missing
     }
     catch (Exception ex)
     {

@@ -16,6 +16,8 @@ namespace untitled1.Data
         public DbSet<MovieCategory> MovieCategories { get; set; }
         public DbSet<Episode> Episodes { get; set; }
         public DbSet<MovieImage> MovieImages { get; set; }
+        public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
+        public DbSet<UserSubscription> UserSubscriptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,6 +50,50 @@ namespace untitled1.Data
                 .WithMany(m => m.MovieImages)
                 .HasForeignKey(mi => mi.MovieId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure UserSubscription relationships
+            modelBuilder.Entity<UserSubscription>()
+                .HasOne(s => s.User)
+                .WithMany()
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserSubscription>()
+                .HasOne(s => s.Plan)
+                .WithMany(p => p.Subscriptions)
+                .HasForeignKey(s => s.PlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Seed SubscriptionPlans
+            modelBuilder.Entity<SubscriptionPlan>().HasData(
+                new SubscriptionPlan
+                {
+                    Id = 1, Name = "Cơ Bản",
+                    Tagline = "Xem phim chất lượng tốt",
+                    Price = 79000, Resolution = "480p SD",
+                    MaxScreens = 1, IsPopular = false,
+                    HasDownload = false, HasSpatialAudio = false,
+                    AccentColor = "#6b7280"
+                },
+                new SubscriptionPlan
+                {
+                    Id = 2, Name = "Tiêu Chuẩn",
+                    Tagline = "Full HD & Âm thanh không gian",
+                    Price = 149000, Resolution = "1080p Full HD",
+                    MaxScreens = 2, IsPopular = true,
+                    HasDownload = true, HasSpatialAudio = true,
+                    AccentColor = "#e50914"
+                },
+                new SubscriptionPlan
+                {
+                    Id = 3, Name = "Cao Cấp",
+                    Tagline = "4K Ultra HD + HDR + Dolby Atmos",
+                    Price = 219000, Resolution = "4K Ultra HD + HDR",
+                    MaxScreens = 4, IsPopular = false,
+                    HasDownload = true, HasSpatialAudio = true,
+                    AccentColor = "#f59e0b"
+                }
+            );
 
             // Seeding Categories
             modelBuilder.Entity<Category>().HasData(

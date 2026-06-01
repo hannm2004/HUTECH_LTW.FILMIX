@@ -1,0 +1,136 @@
+@model List<untitled1.Models.Entities.SubscriptionPlan>
+@{
+    ViewData["Title"] = "Chọn Gói Đăng Ký";
+    var activeSub = ViewBag.ActiveSubscription as untitled1.Models.Entities.UserSubscription;
+}
+
+<div class="sub-page">
+    <!-- Hero -->
+    <div class="plans-hero">
+        <div class="plans-hero__badge">👑 FILMIX PREMIUM</div>
+        <h1 class="plans-hero__title">Chọn Gói <span>Phù Hợp</span> Với Bạn</h1>
+        <p class="plans-hero__sub">Trải nghiệm hàng nghìn bộ phim & TV Series chất lượng cao, không quảng cáo.</p>
+    </div>
+
+    <!-- Plan cards -->
+    <div class="plans-grid">
+        @foreach (var plan in Model)
+        {
+            var isCurrent = activeSub?.PlanId == plan.Id;
+            var cardClass = plan.IsPopular ? "plan-card popular" : isCurrent ? "plan-card current-plan" : "plan-card";
+            var planIcon = plan.Id == 1 ? "📺" : plan.Id == 2 ? "🎬" : "💎";
+
+            <div class="@cardClass" style="--accent: @plan.AccentColor">
+                @if (plan.IsPopular)
+                {
+                    <div class="plan-badge">⭐ Phổ Biến Nhất</div>
+                }
+                @if (isCurrent)
+                {
+                    <div class="plan-badge" style="background: linear-gradient(135deg,#22c55e,#16a34a)">✓ Gói Hiện Tại</div>
+                }
+
+                <div class="plan-name">@planIcon @plan.Name</div>
+                <div class="plan-tagline">@plan.Tagline</div>
+
+                <div class="plan-price">
+                    <span class="plan-price__amount">@plan.Price.ToString("N0")</span>
+                    <span class="plan-price__currency">₫</span>
+                    <span class="plan-price__period">/ tháng</span>
+                </div>
+                <div class="plan-res">@plan.Resolution</div>
+
+                <ul class="plan-features">
+                    <li class="has">
+                        <span class="feat-icon">✓</span>
+                        @plan.MaxScreens màn hình đồng thời
+                    </li>
+                    <li class="has">
+                        <span class="feat-icon">✓</span>
+                        Không quảng cáo
+                    </li>
+                    @if (plan.HasDownload)
+                    {
+                        <li class="has"><span class="feat-icon">✓</span> Tải xuống xem offline</li>
+                    }
+                    else
+                    {
+                        <li class="not"><span class="feat-icon">✗</span> Tải xuống xem offline</li>
+                    }
+                    @if (plan.HasSpatialAudio)
+                    {
+                        <li class="has"><span class="feat-icon">✓</span> Âm thanh không gian</li>
+                    }
+                    else
+                    {
+                        <li class="not"><span class="feat-icon">✗</span> Âm thanh không gian</li>
+                    }
+                    @if (plan.Resolution.Contains("4K"))
+                    {
+                        <li class="has"><span class="feat-icon">✓</span> Ultra HD 4K + HDR</li>
+                    }
+                    else
+                    {
+                        <li class="not"><span class="feat-icon">✗</span> Ultra HD 4K + HDR</li>
+                    }
+                </ul>
+
+                @if (isCurrent)
+                {
+                    <span class="plan-cta current">✓ Đang Sử Dụng</span>
+                }
+                else if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="@Url.Action("Checkout", "Subscription", new { planId = plan.Id })" class="plan-cta">
+                        @(activeSub != null ? "Đổi Gói Này" : "Chọn Gói Này") →
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Auth", "Account", new { returnUrl = Url.Action("Checkout","Subscription", new { planId = plan.Id }) })" class="plan-cta">
+                        Đăng Nhập & Chọn →
+                    </a>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Comparison table -->
+    <div class="plans-compare">
+        <h3>So Sánh Chi Tiết Các Gói</h3>
+        <table class="compare-table">
+            <thead>
+                <tr>
+                    <th>Tính Năng</th>
+                    @foreach (var p in Model) { <th>@p.Name</th> }
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Chất lượng video</td>
+                    @foreach (var p in Model) { <td>@p.Resolution</td> }
+                </tr>
+                <tr>
+                    <td>Màn hình đồng thời</td>
+                    @foreach (var p in Model) { <td>@p.MaxScreens</td> }
+                </tr>
+                <tr>
+                    <td>Tải xuống offline</td>
+                    @foreach (var p in Model) { <td>@(p.HasDownload ? "<span class='tick'>✓</span>" : "<span class='cross'>✗</span>")</td> }
+                </tr>
+                <tr>
+                    <td>Âm thanh không gian</td>
+                    @foreach (var p in Model) { <td>@(p.HasSpatialAudio ? "<span class='tick'>✓</span>" : "<span class='cross'>✗</span>")</td> }
+                </tr>
+                <tr>
+                    <td>Ultra HD 4K + HDR</td>
+                    @foreach (var p in Model) { <td>@(p.Resolution.Contains("4K") ? "<span class='tick'>✓</span>" : "<span class='cross'>✗</span>")</td> }
+                </tr>
+                <tr>
+                    <td>Giá / tháng</td>
+                    @foreach (var p in Model) { <td style="font-weight:700;color:#fff">@p.Price.ToString("N0")₫</td> }
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

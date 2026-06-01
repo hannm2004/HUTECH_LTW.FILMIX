@@ -1,0 +1,89 @@
+@model untitled1.Models.Entities.UserSubscription
+@{
+    ViewData["Title"] = "Thanh Toán Thành Công!";
+    var planIcon = Model.Plan?.Id == 1 ? "📺" : Model.Plan?.Id == 2 ? "🎬" : "💎";
+    var methodLabel = Model.PaymentMethod switch {
+        "momo"    => "MoMo",
+        "zalopay" => "ZaloPay",
+        "banking" => "Chuyển Khoản Ngân Hàng",
+        _         => "Thẻ Ngân Hàng"
+    };
+}
+
+<!-- Confetti -->
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<div class="success-page">
+    <div class="success-wrap">
+        <div class="success-check">✓</div>
+        <h1 class="success-title">Thanh Toán Thành Công!</h1>
+        <p class="success-sub">Cảm ơn bạn đã đăng ký FILMIX @Model.Plan?.Name. Tận hưởng ngay nhé! 🎉</p>
+
+        <div class="success-card">
+            <div class="success-row">
+                <span class="sk">Gói đăng ký</span>
+                <span class="sv">@planIcon @Model.Plan?.Name</span>
+            </div>
+            <div class="success-row">
+                <span class="sk">Chất lượng</span>
+                <span class="sv">@Model.Plan?.Resolution</span>
+            </div>
+            <div class="success-row">
+                <span class="sk">Phương thức TT</span>
+                <span class="sv">@methodLabel</span>
+            </div>
+            <div class="success-row">
+                <span class="sk">Ngày bắt đầu</span>
+                <span class="sv">@Model.StartDate.ToString("dd/MM/yyyy")</span>
+            </div>
+            <div class="success-row">
+                <span class="sk">Ngày hết hạn</span>
+                <span class="sv green">@Model.EndDate.ToString("dd/MM/yyyy")</span>
+            </div>
+            <div class="success-row">
+                <span class="sk">Mã giao dịch</span>
+                <span class="sv" style="font-family:monospace;font-size:0.85rem">@Model.TransactionId</span>
+            </div>
+            <div class="success-row">
+                <span class="sk">Trạng thái</span>
+                <span class="sv green">● Đang Hoạt Động</span>
+            </div>
+        </div>
+
+        <div class="success-actions">
+            <a href="@Url.Action("Index","Home")" class="success-btn primary">
+                🎬 Bắt Đầu Xem Phim
+            </a>
+            <a href="@Url.Action("MySubscription","Subscription")" class="success-btn secondary">
+                📋 Xem Gói Của Tôi
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// Generate confetti
+(function() {
+    const wrap = document.getElementById('confettiWrap');
+    const colors = ['#e50914','#f59e0b','#22c55e','#3b82f6','#a855f7','#ec4899','#fff'];
+    for (let i = 0; i < 60; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'confetti-dot';
+        dot.style.cssText = `
+            left: ${Math.random()*100}%;
+            top: -10px;
+            background: ${colors[Math.floor(Math.random()*colors.length)]};
+            width: ${4 + Math.random()*8}px;
+            height: ${4 + Math.random()*8}px;
+            border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+            animation-duration: ${2 + Math.random()*3}s;
+            animation-delay: ${Math.random()*2}s;
+        `;
+        wrap.appendChild(dot);
+    }
+    // Remove confetti after 6s
+    setTimeout(() => wrap.remove(), 6000);
+})();
+</script>
+}
