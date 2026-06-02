@@ -7,18 +7,19 @@ namespace untitled1.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Authorize(Roles = "Admin")]
-    public class DashboardController : Controller
+    public class AnalyticsController : Controller
     {
         private readonly IAdminService _adminService;
 
-        public DashboardController(IAdminService adminService)
+        public AnalyticsController(IAdminService adminService)
         {
             _adminService = adminService;
         }
 
+        // GET: Admin/Analytics
         public async Task<IActionResult> Index()
         {
-            var vm = await _adminService.GetDashboardDataAsync();
+            var vm = await _adminService.GetAnalyticsAsync();
             return View(vm);
         }
     }

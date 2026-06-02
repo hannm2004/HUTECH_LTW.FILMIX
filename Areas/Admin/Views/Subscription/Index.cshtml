@@ -1,0 +1,130 @@
+@model untitled1.Models.ViewModels.SubscriptionIndexViewModel
+@{
+    ViewData["Title"] = "Quản Lý Gói Đăng Ký";
+    Layout = "_AdminLayout";
+}
+
+@* ── Summary KPI mini strip ── *@
+<div class="sub-kpi-strip">
+    <div class="sub-kpi">
+        <div class="sub-kpi-val">@Model.TotalCount</div>
+        <div class="sub-kpi-lbl">Tổng gói</div>
+    </div>
+    <div class="sub-kpi sub-kpi--green">
+        <div class="sub-kpi-val">@Model.ActiveCount</div>
+        <div class="sub-kpi-lbl">Đang hoạt động</div>
+    </div>
+    <div class="sub-kpi sub-kpi--muted">
+        <div class="sub-kpi-val">@Model.ExpiredCount</div>
+        <div class="sub-kpi-lbl">Đã hết hạn</div>
+    </div>
+    <div class="sub-kpi sub-kpi--gold">
+        <div class="sub-kpi-val">@Model.TotalRevenue.ToString("N0") ₫</div>
+        <div class="sub-kpi-lbl">Tổng doanh thu gói</div>
+    </div>
+</div>
+
+@* ── Toolbar ── *@
+<div class="page-toolbar">
+    <form method="get" class="toolbar-search">
+        <input type="hidden" name="filter" value="@Model.Filter" />
+        <input type="text"   name="search" value="@Model.Search"
+               placeholder="Tìm user, email, mã giao dịch…" class="search-input" />
+        <button type="submit" class="btn-search">🔍</button>
+    </form>
+
+    <div class="filter-tabs">
+        @foreach (var (val, lbl) in new[] { ("all","Tất cả"), ("active","Đang hoạt động"), ("expired","Đã hết hạn") })
+        {
+            <a href="?filter=@val&search=@Model.Search"
+               class="filter-tab @(Model.Filter == val ? "active" : "")">@lbl</a>
+        }
+    </div>
+
+    <div class="toolbar-info">@Model.TotalCount kết quả</div>
+</div>
+
+@* ── Table ── *@
+<div class="table-card">
+    <table class="admin-table admin-table--hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Người dùng</th>
+                <th>Gói</th>
+                <th>Giá</th>
+                <th>Phương thức</th>
+                <th>Bắt đầu</th>
+                <th>Hết hạn</th>
+                <th>Trạng thái</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var s in Model.Subscriptions)
+        {
+            <tr class="@(!s.IsActive ? "row-muted" : "")">
+                <td class="muted">#@s.Id</td>
+                <td>
+                    <div>@s.UserName</div>
+                    <div class="text-xs muted">@s.UserEmail</div>
+                </td>
+                <td><strong>@s.PlanName</strong></td>
+                <td>@s.Price.ToString("N0") ₫</td>
+                <td><span class="badge badge-neutral">@s.PaymentMethod</span></td>
+                <td>@s.StartDate.ToString("dd/MM/yy")</td>
+                <td>
+                    @{
+                        var daysLeft = (s.EndDate - DateTime.UtcNow).Days;
+                    }
+                    <span class="@(s.IsActive && daysLeft <= 7 ? "text-warn" : "")">
+                        @s.EndDate.ToString("dd/MM/yy")
+                        @if (s.IsActive && daysLeft <= 7 && daysLeft >= 0)
+                        { <small>(@daysLeft ngày)</small> }
+                    </span>
+                </td>
+                <td>
+                    @if (s.IsActive)
+                    { <span class="badge badge-active">✓ Hoạt động</span> }
+                    else
+                    { <span class="badge badge-cancelled">Hết hạn</span> }
+                </td>
+                <td>
+                    @if (s.IsActive)
+                    {
+                        <form asp-area="Admin" asp-controller="Subscription"
+                              asp-action="Deactivate" asp-route-id="@s.Id"
+                              method="post" style="display:inline"
+                              onsubmit="return confirm('Xác nhận hủy gói #@s.Id?')">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-sm btn-danger">Hủy</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        @if (!Model.Subscriptions.Any())
+        {
+            <tr><td colspan="9" class="text-center muted py-8">Không tìm thấy gói đăng ký nào.</td></tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@* ── Pagination ── *@
+@if (Model.TotalPages > 1)
+{
+    <div class="pagination">
+        @if (Model.Page > 1)
+        { <a href="?page=@(Model.Page-1)&filter=@Model.Filter&search=@Model.Search" class="page-btn">‹</a> }
+
+        @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+        {
+            <a href="?page=@i&filter=@Model.Filter&search=@Model.Search"
+               class="page-btn @(i == Model.Page ? "active" : "")">@i</a>
+        }
+
+        @if (Model.Page < Model.TotalPages)
+        { <a href="?page=@(Model.Page+1)&filter=@Model.Filter&search=@Model.Search" class="page-btn">›</a> }
+    </div>
+}

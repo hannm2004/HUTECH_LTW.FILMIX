@@ -77,20 +77,15 @@
 
                 @if (isCurrent)
                 {
-                    <span class="plan-cta current">✓ Đang Sử Dụng</span>
+                    <span class="plan-cta current" style="margin-bottom: 8px; display: block; text-align: center;">✓ Đang Sử Dụng</span>
                 }
-                else if (User.Identity?.IsAuthenticated == true)
-                {
-                    <a href="@Url.Action("Checkout", "Subscription", new { planId = plan.Id })" class="plan-cta">
-                        @(activeSub != null ? "Đổi Gói Này" : "Chọn Gói Này") →
-                    </a>
-                }
-                else
-                {
-                    <a href="@Url.Action("Auth", "Account", new { returnUrl = Url.Action("Checkout","Subscription", new { planId = plan.Id }) })" class="plan-cta">
-                        Đăng Nhập & Chọn →
-                    </a>
-                }
+                
+                <form asp-controller="Cart" asp-action="Add" method="post" style="width: 100%;">
+                    <input type="hidden" name="planId" value="@plan.Id" />
+                    <button type="submit" class="plan-cta" style="border: none; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; margin-top: 5px;">
+                        🛒 Thêm Vào Giỏ
+                    </button>
+                </form>
             </div>
         }
     </div>

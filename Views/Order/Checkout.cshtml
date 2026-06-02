@@ -1,0 +1,154 @@
+@model untitled1.Models.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Thanh Toán";
+}
+
+<div class="sub-page" style="padding-top: 100px; min-height: 80vh; max-width: 1100px; margin: 0 auto; padding-left: 20px; padding-right: 20px;">
+    <div style="margin-bottom: 30px;">
+        <h1 style="color: #fff; font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Thanh Toán</h1>
+        <p style="color: #aaa;">Vui lòng hoàn thành thông tin đơn hàng bên dưới.</p>
+    </div>
+
+    <form asp-controller="Order" asp-action="Checkout" method="post">
+        @Html.AntiForgeryToken()
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; align-items: start;" class="checkout-grid-resp">
+            <!-- Left: Checkout Form -->
+            <div style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                <h3 style="color: #fff; font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+                    Thông Tin Người Nhận
+                </h3>
+
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <label asp-for="FullName" style="color: #ccc; display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem;">Họ và Tên</label>
+                        <input asp-for="FullName" style="width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; font-family: inherit; font-size: 1rem; box-sizing: border-box;" placeholder="Nhập họ và tên..." />
+                        <span asp-validation-for="FullName" style="color: #e50914; font-size: 0.8rem; display: block; margin-top: 5px;"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Email" style="color: #ccc; display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem;">Địa chỉ Email</label>
+                        <input asp-for="Email" style="width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; font-family: inherit; font-size: 1rem; box-sizing: border-box;" placeholder="example@email.com" />
+                        <span asp-validation-for="Email" style="color: #e50914; font-size: 0.8rem; display: block; margin-top: 5px;"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="PhoneNumber" style="color: #ccc; display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem;">Số Điện Thoại</label>
+                        <input asp-for="PhoneNumber" style="width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; font-family: inherit; font-size: 1rem; box-sizing: border-box;" placeholder="Ví dụ: 0912345678" />
+                        <span asp-validation-for="PhoneNumber" style="color: #e50914; font-size: 0.8rem; display: block; margin-top: 5px;"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Address" style="color: #ccc; display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem;">Địa Chỉ Nhận Hàng / Kích Hoạt</label>
+                        <input asp-for="Address" style="width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; font-family: inherit; font-size: 1rem; box-sizing: border-box;" placeholder="Số nhà, tên đường, phường, quận..." />
+                        <span asp-validation-for="Address" style="color: #e50914; font-size: 0.8rem; display: block; margin-top: 5px;"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Notes" style="color: #ccc; display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem;">Ghi Chú</label>
+                        <textarea asp-for="Notes" rows="4" style="width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #fff; font-family: inherit; font-size: 1rem; box-sizing: border-box; resize: vertical;" placeholder="Nhập ghi chú hoặc yêu cầu đặc biệt..."></textarea>
+                        <span asp-validation-for="Notes" style="color: #e50914; font-size: 0.8rem; display: block; margin-top: 5px;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Order Items & Payment Method -->
+            <div style="display: flex; flex-direction: column; gap: 30px;">
+                <!-- Order Summary -->
+                <div style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <h3 style="color: #fff; font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+                        Tóm Tắt Đơn Hàng
+                    </h3>
+
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                        @foreach (var item in Model.CartItems)
+                        {
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem;">
+                                <div>
+                                    <span style="color: #fff; font-weight: 600;">Gói @item.PlanName</span>
+                                    <span style="color: #888; font-size: 0.85rem;">x @item.Quantity</span>
+                                </div>
+                                <span style="color: #fff;">@item.TotalPrice.ToString("N0") ₫</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 15px; margin-bottom: 5px;">
+                        <span style="color: #fff;">Tổng tiền:</span>
+                        <span style="color: #e50914;">@Model.TotalAmount.ToString("N0") ₫</span>
+                    </div>
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <h3 style="color: #fff; font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
+                        Phương Thức Thanh Toán
+                    </h3>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px;">
+                        <label class="pay-method-opt" style="display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" asp-for="PaymentMethod" value="COD" checked style="accent-color: #e50914;" />
+                            <div>
+                                <div style="color: #fff; font-weight: 600; font-size: 0.95rem;">📦 COD (Thanh toán khi nhận hàng)</div>
+                                <div style="color: #aaa; font-size: 0.8rem; margin-top: 2px;">Nhận thẻ kích hoạt Premium tại nhà</div>
+                            </div>
+                        </label>
+
+                        <label class="pay-method-opt" style="display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" asp-for="PaymentMethod" value="Banking" style="accent-color: #e50914;" />
+                            <div>
+                                <div style="color: #fff; font-weight: 600; font-size: 0.95rem;">🏦 Chuyển khoản ngân hàng</div>
+                                <div style="color: #aaa; font-size: 0.8rem; margin-top: 2px;">Chuyển khoản trực tiếp tới tài khoản FILMIX</div>
+                            </div>
+                        </label>
+
+                        <label class="pay-method-opt" style="display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" asp-for="PaymentMethod" value="VNPay" style="accent-color: #e50914;" />
+                            <div>
+                                <div style="color: #fff; font-weight: 600; font-size: 0.95rem;">💳 Cổng thanh toán VNPay (Mock)</div>
+                                <div style="color: #aaa; font-size: 0.8rem; margin-top: 2px;">Thanh toán online qua thẻ ATM/QR-Code</div>
+                            </div>
+                        </label>
+
+                        <label class="pay-method-opt" style="display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" asp-for="PaymentMethod" value="PayOS" style="accent-color: #e50914;" />
+                            <div>
+                                <div style="color: #fff; font-weight: 600; font-size: 0.95rem;">💸 Cổng thanh toán PayOS (Mock)</div>
+                                <div style="color: #aaa; font-size: 0.8rem; margin-top: 2px;">Thanh toán siêu tốc qua App Ngân Hàng</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="plan-cta" style="border: none; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; box-sizing: border-box;">
+                        Xác Nhận & Đặt Hàng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Add subtle highlighted border on payment method select
+            $('input[name="PaymentMethod"]').change(function() {
+                $('.pay-method-opt').css('border-color', 'rgba(255, 255, 255, 0.1)');
+                if ($(this).is(':checked')) {
+                    $(this).closest('.pay-method-opt').css('border-color', '#e50914');
+                }
+            });
+            // Initial border for checked radio
+            $('input[name="PaymentMethod"]:checked').closest('.pay-method-opt').css('border-color', '#e50914');
+        });
+    </script>
+}
+
+<style>
+    @@media (max-width: 850px) {
+        .checkout-grid-resp {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>

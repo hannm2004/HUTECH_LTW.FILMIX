@@ -1,139 +1,208 @@
+@model untitled1.Models.ViewModels.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
-    int totalMovies   = (int)(ViewBag.TotalMovies   ?? 0);
-    int totalTVSeries = (int)(ViewBag.TotalTVSeries  ?? 0);
-    int totalFilms    = (int)(ViewBag.TotalFilms     ?? 0);
-    int totalUsers    = (int)(ViewBag.TotalUsers     ?? 0);
-    var recentMovies  = ViewBag.RecentMovies as IEnumerable<untitled1.Models.Entities.Movie>
-                        ?? Enumerable.Empty<untitled1.Models.Entities.Movie>();
+    Layout = "_AdminLayout";
 }
 
-<div class="stats-grid">
-    <div class="stat-card red">
-        <div class="stat-card__label">Tổng Số Phim</div>
-        <div class="stat-card__value">@totalMovies</div>
-        <div class="stat-card__sub">Tất cả trong hệ thống</div>
+@* ── KPI Cards ── *@
+<div class="kpi-grid">
+    <div class="kpi-card kpi-red">
+        <div class="kpi-icon">🎬</div>
+        <div class="kpi-body">
+            <div class="kpi-value">@Model.TotalMovies</div>
+            <div class="kpi-label">Tổng Phim</div>
+            <div class="kpi-sub">@Model.TotalFilms phim lẻ · @Model.TotalTVSeries TV series</div>
+        </div>
     </div>
-    <div class="stat-card blue">
-        <div class="stat-card__label">TV Series</div>
-        <div class="stat-card__value">@totalTVSeries</div>
-        <div class="stat-card__sub">Phim nhiều tập</div>
+    <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-body">
+            <div class="kpi-value">@Model.TotalUsers</div>
+            <div class="kpi-label">Người Dùng</div>
+            <div class="kpi-sub">
+                @if (Model.UserGrowthPct > 0)
+                { <span class="trend-up">↑ @Model.UserGrowthPct%</span> }
+                else
+                { <span class="trend-neutral">ổn định</span> }
+                so tháng trước
+            </div>
+        </div>
     </div>
-    <div class="stat-card green">
-        <div class="stat-card__label">Phim Lẻ</div>
-        <div class="stat-card__value">@totalFilms</div>
-        <div class="stat-card__sub">Phim độc lập</div>
+    <div class="kpi-card kpi-gold">
+        <div class="kpi-icon">👑</div>
+        <div class="kpi-body">
+            <div class="kpi-value">@Model.ActiveSubscriptions</div>
+            <div class="kpi-label">Gói Premium Đang Hoạt Động</div>
+            <div class="kpi-sub">@Model.PendingOrders đơn hàng chờ xử lý</div>
+        </div>
     </div>
-    <div class="stat-card yellow">
-        <div class="stat-card__label">Người Dùng</div>
-        <div class="stat-card__value">@totalUsers</div>
-        <div class="stat-card__sub">Đã đăng ký</div>
+    <div class="kpi-card kpi-green">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-body">
+            <div class="kpi-value">@Model.MonthRevenue.ToString("N0") ₫</div>
+            <div class="kpi-label">Doanh Thu Tháng Này</div>
+            <div class="kpi-sub">
+                @if (Model.RevenueGrowthPct >= 0)
+                { <span class="trend-up">↑ @Model.RevenueGrowthPct%</span> }
+                else
+                { <span class="trend-down">↓ @Math.Abs(Model.RevenueGrowthPct)%</span> }
+                so tháng trước
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="dashboard-grid">
+@* ── Charts Row ── *@
+<div class="charts-row">
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">📈 Doanh Thu 6 Tháng</h3>
+        </div>
+        <canvas id="revenueChart" height="120"></canvas>
+    </div>
+    <div class="chart-card chart-card--sm">
+        <div class="chart-header">
+            <h3 class="chart-title">🔔 Đăng Ký Mới / Tháng</h3>
+        </div>
+        <canvas id="subChart" height="120"></canvas>
+    </div>
+</div>
 
-    <div class="admin-table-wrap">
-        <div class="table-section-head">
-            <span>Phim Mới Nhất</span>
-            <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="quick-link"
-               style="font-size:.78rem;text-transform:none;letter-spacing:0">Xem tất cả →</a>
+@* ── Recent Activity Row ── *@
+<div class="dash-row">
+
+    @* Recent Orders *@
+    <div class="dash-panel">
+        <div class="panel-header">
+            <span>🛒 Đơn Hàng Gần Đây</span>
+            <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="panel-link">Xem tất cả →</a>
         </div>
         <table class="admin-table">
-            <thead>
-                <tr>
-                    <th style="width:52px">Ảnh</th>
-                    <th>Tiêu Đề</th>
-                    <th style="width:70px">Năm</th>
-                    <th style="width:100px">Loại</th>
-                    <th style="width:70px"></th>
-                </tr>
-            </thead>
+            <thead><tr><th>#</th><th>Khách hàng</th><th>Số tiền</th><th>Trạng thái</th></tr></thead>
             <tbody>
-                @if (!recentMovies.Any())
-                {
-                    <tr>
-                        <td colspan="5">
-                            <div class="empty-state">
-                                <div class="empty-state__icon">🎬</div>
-                                <div class="empty-state__text">Chưa có phim nào.</div>
-                            </div>
-                        </td>
-                    </tr>
-                }
-                @foreach (var m in recentMovies)
-                {
-                    <tr>
-                        <td>
-                            @if (!string.IsNullOrEmpty(m.ImageUrl))
-                            {
-                                <img src="@m.ImageUrl" class="thumb" alt="@m.Title" />
-                            }
-                            else
-                            {
-                                <div class="no-thumb">N/A</div>
-                            }
-                        </td>
-                        <td>
-                            <div class="title-cell">
-                                <strong>@m.Title</strong>
-                                @if (!string.IsNullOrEmpty(m.Genre))
-                                {
-                                    <span class="title-cell__sub">@m.Genre</span>
-                                }
-                            </div>
-                        </td>
-                        <td>@m.Year</td>
-                        <td>
-                            @if (m.IsTVSeries)
-                            {
-                                <span class="badge badge-tv">TV Series</span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-movie">Phim Lẻ</span>
-                            }
-                        </td>
-                        <td>
-                            <a asp-area="Admin" asp-controller="Product" asp-action="Edit"
-                               asp-route-id="@m.Id" class="btn-edit">Sửa</a>
-                        </td>
-                    </tr>
-                }
+            @foreach (var o in Model.RecentOrders)
+            {
+                <tr>
+                    <td>#@o.Id</td>
+                    <td>@(o.User?.UserName ?? o.Email)</td>
+                    <td class="text-right">@o.TotalAmount.ToString("N0") ₫</td>
+                    <td>
+                        <span class="badge badge-@o.Status.ToString().ToLower()">@o.Status</span>
+                    </td>
+                </tr>
+            }
+            @if (!Model.RecentOrders.Any())
+            {
+                <tr><td colspan="4" class="text-center muted">Chưa có đơn hàng nào.</td></tr>
+            }
             </tbody>
         </table>
     </div>
 
-    <div class="admin-table-wrap">
-        <div class="table-section-head"><span>Truy Cập Nhanh</span></div>
+    @* Recent Subscriptions *@
+    <div class="dash-panel">
+        <div class="panel-header">
+            <span>👑 Gói Đăng Ký Gần Đây</span>
+            <a asp-area="Admin" asp-controller="Subscription" asp-action="Index" class="panel-link">Xem tất cả →</a>
+        </div>
         <table class="admin-table">
+            <thead><tr><th>Người dùng</th><th>Gói</th><th>Hết hạn</th><th>Trạng thái</th></tr></thead>
             <tbody>
+            @foreach (var s in Model.RecentSubscriptions)
+            {
                 <tr>
+                    <td>@(s.User?.UserName ?? "")</td>
+                    <td>@(s.Plan?.Name ?? "")</td>
+                    <td>@s.EndDate.ToString("dd/MM/yyyy")</td>
                     <td>
-                        <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="quick-link">
-                            → Danh sách phim
-                        </a>
+                        @if (s.IsActive && s.EndDate >= DateTime.UtcNow)
+                        { <span class="badge badge-active">Hoạt động</span> }
+                        else
+                        { <span class="badge badge-cancelled">Hết hạn</span> }
                     </td>
-                    <td class="text-muted-cell">@totalMovies phim</td>
                 </tr>
-                <tr>
-                    <td>
-                        <a asp-area="Admin" asp-controller="Product" asp-action="Create" class="quick-link">
-                            → Thêm phim mới
-                        </a>
-                    </td>
-                    <td class="text-muted-cell">—</td>
-                </tr>
-                <tr>
-                    <td>
-                        <a asp-area="" asp-controller="Home" asp-action="Index" class="quick-link">
-                            → Trang chủ công khai
-                        </a>
-                    </td>
-                    <td class="text-muted-cell">—</td>
-                </tr>
+            }
+            @if (!Model.RecentSubscriptions.Any())
+            {
+                <tr><td colspan="4" class="text-center muted">Chưa có gói đăng ký nào.</td></tr>
+            }
             </tbody>
         </table>
     </div>
-
 </div>
+
+@* ── Quick Stats Bar ── *@
+<div class="stats-bar">
+    <div class="stat-item">
+        <span class="stat-val">@Model.TotalOrders</span>
+        <span class="stat-lbl">Tổng đơn hàng</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <span class="stat-val">@Model.TotalRevenue.ToString("N0") ₫</span>
+        <span class="stat-lbl">Tổng doanh thu</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <span class="stat-val">@Model.PendingOrders</span>
+        <span class="stat-lbl">Đơn chờ xử lý</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <span class="stat-val">@Model.ActiveSubscriptions</span>
+        <span class="stat-lbl">Premium đang hoạt động</span>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const chartDefaults = {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: 'rgba(255,255,255,.07)' }, ticks: { color: '#aaa', font: { size: 11 } } },
+            y: { grid: { color: 'rgba(255,255,255,.07)' }, ticks: { color: '#aaa', font: { size: 11 } } }
+        }
+    };
+
+    // Revenue bar chart
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueChartLabels)),
+            datasets: [{
+                label: 'Doanh thu (₫)',
+                data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueChartData)),
+                backgroundColor: 'rgba(229,9,20,.75)',
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: { ...chartDefaults, plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: ctx => ctx.parsed.y.toLocaleString('vi-VN') + ' ₫' }
+        } } }
+    });
+
+    // Subscriptions line chart
+    new Chart(document.getElementById('subChart'), {
+        type: 'line',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.UserChartLabels)),
+            datasets: [{
+                label: 'Đăng ký mới',
+                data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.UserChartData)),
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245,158,11,.15)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#f59e0b',
+            }]
+        },
+        options: chartDefaults
+    });
+})();
+</script>
+}

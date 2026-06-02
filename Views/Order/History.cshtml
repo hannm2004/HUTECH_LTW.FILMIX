@@ -1,0 +1,103 @@
+@model IEnumerable<untitled1.Models.Entities.Order>
+@{
+    ViewData["Title"] = "Lịch Sử Đơn Hàng";
+}
+
+<div class="sub-page" style="padding-top: 100px; min-height: 80vh; max-width: 1000px; margin: 0 auto; padding-left: 20px; padding-right: 20px;">
+    <div style="margin-bottom: 30px;">
+        <h1 style="color: #fff; font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Lịch Sử Đơn Hàng</h1>
+        <p style="color: #aaa;">Theo dõi các giao dịch đăng ký gói Premium của bạn.</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 60px 20px; text-align: center; border: 1px dashed rgba(255, 255, 255, 0.1);">
+            <div style="font-size: 4rem; margin-bottom: 20px;">📋</div>
+            <h2 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">Bạn chưa thực hiện giao dịch nào</h2>
+            <p style="color: #aaa; margin-bottom: 30px;">Hãy nâng cấp tài khoản của bạn ngay hôm nay để tận hưởng các đặc quyền Premium.</p>
+            <a asp-controller="Subscription" asp-action="Plans" class="plan-cta" style="display: inline-block; max-width: 250px; text-decoration: none;">
+                Xem các gói Premium
+            </a>
+        </div>
+    }
+    else
+    {
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            @foreach (var order in Model)
+            {
+                var statusColor = order.Status switch
+                {
+                    untitled1.Models.Entities.OrderStatus.Paid => "#22c55e",
+                    untitled1.Models.Entities.OrderStatus.Completed => "#22c55e",
+                    untitled1.Models.Entities.OrderStatus.Pending => "#f59e0b",
+                    untitled1.Models.Entities.OrderStatus.Processing => "#3b82f6",
+                    untitled1.Models.Entities.OrderStatus.Shipping => "#a855f7",
+                    untitled1.Models.Entities.OrderStatus.Cancelled => "#ef4444",
+                    _ => "#888"
+                };
+
+                var statusText = order.Status switch
+                {
+                    untitled1.Models.Entities.OrderStatus.Paid => "Đã thanh toán",
+                    untitled1.Models.Entities.OrderStatus.Completed => "Hoàn thành",
+                    untitled1.Models.Entities.OrderStatus.Pending => "Chờ duyệt / Thanh toán",
+                    untitled1.Models.Entities.OrderStatus.Processing => "Đang xử lý",
+                    untitled1.Models.Entities.OrderStatus.Shipping => "Đang vận chuyển",
+                    untitled1.Models.Entities.OrderStatus.Cancelled => "Đã hủy",
+                    _ => order.Status.ToString()
+                };
+
+                <div style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.08); transition: border-color 0.25s;" onmouseover="this.style.borderColor='rgba(255, 255, 255, 0.15)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 15px;" class="history-card-header">
+                        <div>
+                            <div style="font-size: 1.1rem; font-weight: 700; color: #fff;">Đơn hàng #FX-ORD-@order.Id</div>
+                            <div style="color: #888; font-size: 0.85rem; margin-top: 4px;">Đặt lúc: @order.CreatedAt.ToString("HH:mm dd/MM/yyyy")</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: @statusColor; font-weight: 700; background: @(statusColor)20; border: 1px solid @(statusColor)40; padding: 4px 14px; border-radius: 20px; font-size: 0.82rem; display: inline-block;">
+                                @statusText
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px;" class="history-card-body">
+                        <div>
+                            <div style="color: #aaa; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Sản phẩm đăng ký</div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <div style="display: flex; align-items: center; gap: 10px; color: #fff;">
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: @item.Plan.AccentColor;"></span>
+                                        <strong>Gói @item.Plan.Name</strong> 
+                                        <span style="color: #888; font-size: 0.9rem;">(@item.Plan.Resolution) x @item.Quantity tháng</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; text-align: right;">
+                            <div style="color: #888; font-size: 0.85rem; margin-bottom: 5px;">Thanh toán qua: <strong>@order.PaymentMethod</strong></div>
+                            <div style="font-size: 1.3rem; font-weight: 800; color: #e50914;">@order.TotalAmount.ToString("N0") ₫</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    @@media (max-width: 650px) {
+        .history-card-header {
+            flex-direction: column !important;
+            gap: 15px;
+        }
+        .history-card-body {
+            grid-template-columns: 1fr !important;
+            gap: 15px;
+        }
+        .history-card-body div {
+            align-items: flex-start !important;
+            text-align: left !important;
+        }
+    }
+</style>

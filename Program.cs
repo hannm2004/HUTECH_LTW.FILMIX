@@ -8,6 +8,24 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Register HttpContextAccessor & Session support
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Register Custom Repositories & Services
+builder.Services.AddScoped<untitled1.Repositories.IOrderRepository, untitled1.Repositories.OrderRepository>();
+builder.Services.AddScoped<untitled1.Repositories.ISubscriptionPlanRepository, untitled1.Repositories.SubscriptionPlanRepository>();
+builder.Services.AddScoped<untitled1.Repositories.IUserRepository, untitled1.Repositories.UserRepository>();
+builder.Services.AddScoped<untitled1.Repositories.ISubscriptionRepository, untitled1.Repositories.SubscriptionRepository>();
+builder.Services.AddScoped<untitled1.Services.ICartService, untitled1.Services.CartService>();
+builder.Services.AddScoped<untitled1.Services.IOrderService, untitled1.Services.OrderService>();
+builder.Services.AddScoped<untitled1.Services.IAdminService, untitled1.Services.AdminService>();
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var dbProvider = builder.Configuration["DbProvider"] ?? "MySql";
 
@@ -53,6 +71,8 @@ using (var scope = app.Services.CreateScope())
         _ = db.Users.FirstOrDefault();
         _ = db.SubscriptionPlans.FirstOrDefault();   // triggers recreate if table missing
         _ = db.UserSubscriptions.FirstOrDefault();   // triggers recreate if table missing
+        _ = db.Orders.FirstOrDefault();              // triggers recreate if table missing
+        _ = db.OrderItems.FirstOrDefault();          // triggers recreate if table missing
     }
     catch (Exception ex)
     {
@@ -98,6 +118,7 @@ if (!app.Environment.IsDevelopment())
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseRouting();
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();

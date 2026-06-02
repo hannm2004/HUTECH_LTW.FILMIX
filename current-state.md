@@ -1,8 +1,52 @@
-# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 01/06/2026
+# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 02/06/2026
 
 ---
 
-## 📅 Nhật Ký Cập Nhật Hôm Nay (01/06/2026)
+## 📅 Nhật Ký Cập Nhật Hôm Nay (02/06/2026) — Admin Module v2
+
+Hôm nay đã hoàn thiện **Admin Module đầy đủ** với 5 section mới: Dashboard nâng cao, Quản lý Người dùng, Quản lý Gói đăng ký, Quản lý Đơn hàng, và Phân tích & Thống kê.
+
+### 🛠 Kiến Trúc Admin Module
+
+#### Repositories (mới)
+* **`IUserRepository` + `UserRepository`**: Truy xuất toàn bộ danh sách user, tìm theo ID, cập nhật.
+* **`ISubscriptionRepository` + `SubscriptionRepository`**: Truy vấn gói đăng ký (all, by user, active, by ID).
+
+#### Services (mới)
+* **`IAdminService` + `AdminService`**: Service tổng hợp cho toàn bộ admin:
+  - `GetDashboardDataAsync()` — KPI, chart data 6 tháng.
+  - `GetUsersAsync()` — Danh sách user với search/filter/pagination.
+  - `GetUserDetailAsync()` — Chi tiết 1 user: đơn hàng + gói đăng ký.
+  - `SetAdminRoleAsync()` — Cấp/thu hồi quyền Admin qua Identity.
+  - `TogglePremiumAsync()` — Kích hoạt/thu hồi Premium thủ công.
+  - `GetSubscriptionsAsync()` — Tất cả sub với filter active/expired.
+  - `DeactivateSubscriptionAsync()` — Hủy gói đăng ký cụ thể.
+  - `GetAnalyticsAsync()` — Dữ liệu 12 tháng cho tất cả biểu đồ.
+
+#### ViewModels (mới — `AdminViewModels.cs`)
+* `DashboardViewModel`, `UserIndexViewModel`, `UserListViewModel`, `UserDetailViewModel`, `SubscriptionIndexViewModel`, `SubscriptionRowViewModel`, `AnalyticsViewModel`.
+
+#### Controllers Admin Area (mới/nâng cấp)
+* **`DashboardController`** ✏️ Nâng cấp: sử dụng `IAdminService` thay vì raw DbContext.
+* **`UserController`** 🆕: List (search/filter/page) + Detail + SetAdmin + TogglePremium.
+* **`SubscriptionController`** 🆕: List (search/filter/page) + Deactivate.
+* **`AnalyticsController`** 🆕: Index action trả về `AnalyticsViewModel`.
+
+#### Views Admin Area (mới/nâng cấp)
+* **`Dashboard/Index.cshtml`** ✏️: 4 KPI cards (phim/user/premium/doanh thu), 2 biểu đồ Chart.js (revenue bar + sub line), 2 panel recent activity, stats-bar tổng kết.
+* **`User/Index.cshtml`** 🆕: Toolbar search + filter tabs (all/admin/premium/normal), bảng user với avatar, badge, pagination.
+* **`User/Detail.cshtml`** 🆕: 2 cột (profile card sticky + main content), action cards cấp Admin & Premium, lịch sử đăng ký & đơn hàng.
+* **`Subscription/Index.cshtml`** 🆕: KPI strip (tổng/active/expired/doanh thu), bảng đầy đủ với cảnh báo hết hạn sớm, nút Hủy inline.
+* **`Analytics/Index.cshtml`** 🆕: 4 KPI, biểu đồ dual-axis (doanh thu + đơn hàng 12 tháng), doughnut phân phối gói, horizontal bar phương thức TT, bar trend đăng ký.
+
+#### Layout & CSS
+* **`_AdminLayout.cshtml`**: Thêm 3 link sidebar mới (Người dùng, Gói đăng ký, Phân tích) trong section "Nâng cao".
+* **`admin.css`**: +~390 dòng mới — KPI cards, chart cards, toolbar, table-card, user cells, user-detail layout, action cards, subscription strip, analytics legend, extended badges, utilities.
+
+#### DI Registration
+* **`Program.cs`**: Đăng ký `IUserRepository`, `ISubscriptionRepository`, `IAdminService`.
+
+
 
 Hôm nay đã hoàn thiện **hệ thống Thanh Toán & Đăng Ký Gói Premium** theo phong cách Netflix, tích hợp đầy đủ vào cơ sở dữ liệu.
 
@@ -88,6 +132,54 @@ Hôm nay chúng ta đã tập trung hoàn thiện các tính năng tương tác 
 * **Hero Banner**: Banner động tự động phát trailer ẩn danh, Ken-burns zoom nền, tự pause khi cuộn trang ra ngoài vùng hiển thị.
 * **Netflix Slider**: Slider cuộn chuột, vuốt màn hình cảm ứng mượt mà kèm pagination indicators động.
 * **Continue Watching**: Ghi nhớ thời gian đã xem của từng phim định kỳ mỗi 5s, tự động phát tiếp khi mở lại, thanh tiến trình màu đỏ chuyên nghiệp.
+* **Checkout & Payment**: Giỏ hàng (Cart) sử dụng Session, trang Checkout xác thực DataAnnotations, quy trình thanh toán mô phỏng (COD, Chuyển khoản, VNPay, PayOS), tự kích hoạt Premium.
+* **Admin Dashboard & Lifecycle**: Quản lý đơn hàng, đổi trạng thái (Pending -> Paid / Completed / Cancelled), nút đồng bộ vòng đời gói dịch vụ, thông báo cảnh báo hết hạn Premium < 3 ngày.
+
+---
+
+## 📁 Cấu Trúc Các File Đã Thêm / Sửa Hôm Nay (02/06)
+
+```
+HUTECH_LTW.FILMIX/
+├── Areas/Admin/
+│   ├── Controllers/
+│   │   └── OrderController.cs       ✅ MỚI (Quản lý đơn hàng admin & kích hoạt premium)
+│   └── Views/
+│       └── Order/
+│           └── Index.cshtml         ✅ MỚI (Giao diện Quản lý Đơn hàng & Nút Đồng bộ vòng đời)
+├── Controllers/
+│   ├── AccountController.cs         ✅ SỬA (Thêm action Profile & authorization)
+│   ├── CartController.cs            ✅ MỚI (Xử lý giỏ hàng: thêm, xóa, cập nhật)
+│   └── OrderController.cs           ✅ MỚI (Xử lý Checkout, Payment instructions, Success, History)
+├── Models/
+│   ├── Entities/
+│   │   ├── ApplicationUser.cs       ✅ SỬA (PremiumStartDate, PremiumEndDate)
+│   │   └── Entities.cs              ✅ SỬA (OrderStatus, Order, OrderItem)
+│   └── ViewModels/
+│       └── CartViewModels.cs        ✅ MỚI (CartItemViewModel & CheckoutViewModel)
+├── Services/
+│   ├── CartService.cs               ✅ MỚI (Giỏ hàng lưu ISession)
+│   ├── ICartService.cs              ✅ MỚI (Interface giỏ hàng)
+│   ├── IOrderService.cs             ✅ MỚI (Interface dịch vụ đơn hàng & đồng bộ lifecycle)
+│   └── OrderService.cs              ✅ MỚI (Dịch vụ đơn hàng, lưu DB, kích hoạt premium & đồng bộ lifecycle)
+├── Views/
+│   ├── Account/
+│   │   └── Profile.cshtml           ✅ MỚI (Giao diện thông tin tài khoản, hạn Premium & Lịch sử mua hàng)
+│   ├── Cart/
+│   │   └── Index.cshtml             ✅ MỚI (Giao diện giỏ hàng Netflix dark theme)
+│   ├── Order/
+│   │   ├── Checkout.cshtml          ✅ MỚI (Giao diện điền thông tin đơn hàng & validation)
+│   │   ├── History.cshtml           ✅ MỚI (Giao diện lịch sử đơn hàng của người dùng)
+│   │   ├── Payment.cshtml           ✅ MỚI (Trang hướng dẫn thanh toán QR/mock ngân hàng)
+│   │   └── Success.cshtml           ✅ MỚI (Trang thanh toán thành công kèm hiệu ứng confetti)
+│   └── Shared/
+│   ├── css/
+│   │   └── style.css                ✅ SỬA (Bổ sung shimmer skeleton loading)
+│   └── js/
+│       └── netflix-slider.js        ✅ SỬA (Thêm logic applySkeletons chờ load ảnh)
+├── README.md                        ✅ MỚI (Tài liệu hướng dẫn dự án chuẩn)
+└── current-state.md                 ✅ SỬA (Cập nhật nhật ký ngày 28/05)
+```
 
 ---
 
