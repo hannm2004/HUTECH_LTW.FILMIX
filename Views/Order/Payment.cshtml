@@ -1,0 +1,128 @@
+@model untitled1.Models.Entities.Order
+@{
+    ViewData["Title"] = "Thanh Toán Đơn Hàng";
+}
+
+<div class="sub-page" style="padding-top: 100px; min-height: 80vh; max-width: 700px; margin: 0 auto; padding-left: 20px; padding-right: 20px; text-align: center;">
+    <div style="background: rgba(255, 255, 255, 0.03); border-radius: 16px; padding: 40px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+        
+        @if (Model.PaymentMethod == "COD")
+        {
+            <div style="font-size: 5rem; margin-bottom: 20px;">📦</div>
+            <h1 style="color: #fff; font-size: 2rem; font-weight: 800; margin-bottom: 15px;">Đơn Hàng Ghi Nhận Thành Công!</h1>
+            <p style="color: #ccc; line-height: 1.6; margin-bottom: 30px;">
+                Cảm ơn bạn đã lựa chọn gói Premium của FILMIX. Phương thức thanh toán bạn chọn là <strong>COD (Thanh toán khi nhận hàng)</strong>.
+                Chúng tôi sẽ tiến hành chuyển thẻ kích hoạt Premium đến địa chỉ của bạn: <br />
+                <strong style="color: #fff;">@Model.Address</strong>.
+            </p>
+            <div style="background: rgba(229, 9, 20, 0.1); border: 1px solid rgba(229, 9, 20, 0.2); border-radius: 8px; padding: 15px; margin-bottom: 30px; color: #fff; font-size: 0.9rem;">
+                Gói Premium của bạn sẽ được kích hoạt tự động ngay sau khi nhân viên giao hàng thu tiền và Admin duyệt đơn hàng.
+            </div>
+            
+            <a asp-controller="Order" asp-action="History" class="plan-cta" style="display: inline-block; max-width: 250px; text-decoration: none;">
+                Xem Lịch Sử Đơn Hàng
+            </a>
+        }
+        else if (Model.PaymentMethod == "Banking")
+        {
+            <div style="font-size: 4rem; margin-bottom: 20px;">🏦</div>
+            <h1 style="color: #fff; font-size: 1.8rem; font-weight: 800; margin-bottom: 15px;">Chuyển Khoản Ngân Hàng</h1>
+            <p style="color: #aaa; margin-bottom: 25px;">Vui lòng quét mã QR hoặc chuyển khoản đúng thông tin bên dưới:</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 30px; text-align: left;" class="banking-grid-resp">
+                <div style="display: flex; justify-content: center; align-items: center; background: #fff; padding: 10px; border-radius: 8px;">
+                    <!-- Generate mock QR using VietQR format API for visual excellence -->
+                    <img src="https://api.vietqr.io/image/970436-1023456789-Q4H2rpn.jpg?accountName=CONG%20TY%20FILMIX%20VIETNAM&amount=@((int)Model.TotalAmount)&addInfo=FILMIX%20DH%20@(Model.Id)" alt="QR Thanh toán" style="max-width: 100%; border-radius: 4px;" />
+                </div>
+                <div style="display: flex; flex-direction: column; justify-content: center; gap: 10px; font-size: 0.9rem;">
+                    <div>
+                        <span style="color: #aaa; display: block; font-size: 0.8rem;">Ngân hàng:</span>
+                        <strong style="color: #fff; font-size: 1rem;">Vietcombank (VCB)</strong>
+                    </div>
+                    <div>
+                        <span style="color: #aaa; display: block; font-size: 0.8rem;">Số tài khoản:</span>
+                        <strong style="color: #fff; font-size: 1.1rem; letter-spacing: 1px;">1023456789</strong>
+                    </div>
+                    <div>
+                        <span style="color: #aaa; display: block; font-size: 0.8rem;">Tên người thụ hưởng:</span>
+                        <strong style="color: #fff; font-size: 0.95rem;">CONG TY FILMIX VIETNAM</strong>
+                    </div>
+                    <div>
+                        <span style="color: #aaa; display: block; font-size: 0.8rem;">Số tiền:</span>
+                        <strong style="color: #e50914; font-size: 1.2rem;">@Model.TotalAmount.ToString("N0") ₫</strong>
+                    </div>
+                    <div>
+                        <span style="color: #aaa; display: block; font-size: 0.8rem;">Nội dung chuyển khoản:</span>
+                        <strong style="color: #22c55e; font-size: 1.1rem; letter-spacing: 1px;">FILMIX DH @Model.Id</strong>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-controller="Order" asp-action="ProcessMockPayment" method="post">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                @Html.AntiForgeryToken()
+                <button type="submit" class="plan-cta" style="border: none; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: 700; box-sizing: border-box;">
+                    Xác Nhận Đã Chuyển Khoản ✓
+                </button>
+            </form>
+        }
+        else if (Model.PaymentMethod == "VNPay")
+        {
+            <div style="background: linear-gradient(135deg, #005baa, #008cd6); padding: 30px; border-radius: 12px; margin-bottom: 30px; color: #fff;">
+                <div style="font-size: 2.2rem; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px;">VNPAY</div>
+                <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8;">Cổng thanh toán điện tử</div>
+                
+                <div style="height: 1px; background: rgba(255, 255, 255, 0.2); margin: 20px 0;"></div>
+                
+                <div style="font-size: 1rem;">Mã đơn hàng: <strong style="color: #fff;">#VNP_@Model.Id</strong></div>
+                <div style="font-size: 1.8rem; font-weight: 800; margin-top: 10px; color: #fff;">@Model.TotalAmount.ToString("N0") ₫</div>
+                
+                <div style="margin-top: 20px; font-size: 0.85rem; opacity: 0.9; background: rgba(0, 0, 0, 0.15); padding: 12px; border-radius: 6px;">
+                    Đây là môi trường thử nghiệm thanh toán giả lập (VNPay Sandbox).
+                </div>
+            </div>
+
+            <form asp-controller="Order" asp-action="ProcessMockPayment" method="post">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                @Html.AntiForgeryToken()
+                <button type="submit" class="plan-cta" style="border: none; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: 700; background: #005baa; box-sizing: border-box;" onmouseover="this.style.background='#004480'" onmouseout="this.style.background='#005baa'">
+                    Thanh Toán Qua VNPAY (Giả Lập Sandbox) →
+                </button>
+            </form>
+        }
+        else if (Model.PaymentMethod == "PayOS")
+        {
+            <div style="background: linear-gradient(135deg, #1f2937, #111827); padding: 30px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #ff5f00; color: #fff;">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 2.2rem; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px;">
+                    <span style="color: #ff5f00;">pay</span><span>OS</span>
+                </div>
+                <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; color: #ff5f00;">Thanh Toán Kênh Ngân Hàng</div>
+                
+                <div style="height: 1px; background: rgba(255, 95, 0, 0.2); margin: 20px 0;"></div>
+                
+                <div style="font-size: 1rem;">Mã giao dịch: <strong style="color: #fff;">#POS_@Model.Id</strong></div>
+                <div style="font-size: 1.8rem; font-weight: 800; margin-top: 10px; color: #ff5f00;">@Model.TotalAmount.ToString("N0") ₫</div>
+                
+                <div style="margin-top: 20px; font-size: 0.85rem; opacity: 0.9; background: rgba(255, 95, 0, 0.05); border: 1px dashed rgba(255, 95, 0, 0.3); padding: 12px; border-radius: 6px;">
+                    Đây là môi trường thử nghiệm thanh toán giả lập (PayOS Mock Link).
+                </div>
+            </div>
+
+            <form asp-controller="Order" asp-action="ProcessMockPayment" method="post">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                @Html.AntiForgeryToken()
+                <button type="submit" class="plan-cta" style="border: none; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: 700; background: #ff5f00; box-sizing: border-box;" onmouseover="this.style.background='#e04f00'" onmouseout="this.style.background='#ff5f00'">
+                    Thanh Toán Qua PayOS (Giả Lập) →
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<style>
+    @@media (max-width: 600px) {
+        .banking-grid-resp {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>

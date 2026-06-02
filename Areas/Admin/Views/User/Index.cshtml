@@ -1,0 +1,102 @@
+@model untitled1.Models.ViewModels.UserIndexViewModel
+@{
+    ViewData["Title"] = "Quản Lý Người Dùng";
+    Layout = "_AdminLayout";
+}
+
+@* ── Toolbar ── *@
+<div class="page-toolbar">
+    <form method="get" class="toolbar-search" id="userSearchForm">
+        <input type="hidden" name="filter" value="@Model.Filter" />
+        <input type="text" name="search" value="@Model.Search" placeholder="Tìm tên, email…"
+               class="search-input" id="userSearchInput" />
+        <button type="submit" class="btn-search">🔍</button>
+    </form>
+
+    <div class="filter-tabs">
+        @foreach (var (val, lbl) in new[] { ("all","Tất cả"), ("admin","Admin"), ("premium","Premium"), ("normal","Thường") })
+        {
+            <a href="?filter=@val&search=@Model.Search"
+               class="filter-tab @(Model.Filter == val ? "active" : "")">@lbl</a>
+        }
+    </div>
+
+    <div class="toolbar-info">
+        @Model.TotalCount người dùng
+    </div>
+</div>
+
+@* ── Table ── *@
+<div class="table-card">
+    <table class="admin-table admin-table--hover">
+        <thead>
+            <tr>
+                <th>Người dùng</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Premium</th>
+                <th>Đơn hàng</th>
+                <th>Chi tiêu</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var u in Model.Users)
+        {
+            <tr>
+                <td>
+                    <div class="user-cell">
+                        <div class="user-avatar-sm">@(u.UserName.Length > 0 ? char.ToUpper(u.UserName[0]) : '?')</div>
+                        <span>@(string.IsNullOrWhiteSpace(u.FullName) ? u.UserName : u.FullName)</span>
+                    </div>
+                </td>
+                <td class="muted">@u.Email</td>
+                <td>
+                    @if (u.IsAdmin)
+                    { <span class="badge badge-admin">Admin</span> }
+                    else
+                    { <span class="badge badge-user">User</span> }
+                </td>
+                <td>
+                    @if (u.IsPremium)
+                    {
+                        <span class="badge badge-active">👑 Premium</span>
+                        if (u.PremiumEndDate.HasValue)
+                        { <div class="text-xs muted">đến @u.PremiumEndDate.Value.ToString("dd/MM/yyyy")</div> }
+                    }
+                    else
+                    { <span class="badge badge-neutral">Thường</span> }
+                </td>
+                <td class="text-center">@u.OrderCount</td>
+                <td>@u.TotalSpent.ToString("N0") ₫</td>
+                <td>
+                    <a asp-area="Admin" asp-controller="User" asp-action="Detail"
+                       asp-route-id="@u.Id" class="btn-sm btn-outline">Chi tiết</a>
+                </td>
+            </tr>
+        }
+        @if (!Model.Users.Any())
+        {
+            <tr><td colspan="7" class="text-center muted py-8">Không tìm thấy người dùng nào.</td></tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@* ── Pagination ── *@
+@if (Model.TotalPages > 1)
+{
+    <div class="pagination">
+        @if (Model.Page > 1)
+        { <a href="?page=@(Model.Page-1)&filter=@Model.Filter&search=@Model.Search" class="page-btn">‹</a> }
+
+        @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+        {
+            <a href="?page=@i&filter=@Model.Filter&search=@Model.Search"
+               class="page-btn @(i == Model.Page ? "active" : "")">@i</a>
+        }
+
+        @if (Model.Page < Model.TotalPages)
+        { <a href="?page=@(Model.Page+1)&filter=@Model.Filter&search=@Model.Search" class="page-btn">›</a> }
+    </div>
+}

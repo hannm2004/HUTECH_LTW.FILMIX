@@ -106,4 +106,45 @@ namespace untitled1.Models.Entities
         public string TransactionId { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
+
+    public enum OrderStatus
+    {
+        Pending,
+        Paid,
+        Processing,
+        Shipping,
+        Completed,
+        Cancelled
+    }
+
+    public class Order
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public ApplicationUser User { get; set; } = null!;
+        public decimal TotalAmount { get; set; }
+        public string PaymentMethod { get; set; } = string.Empty; // "COD", "Banking", "VNPay", "PayOS"
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // Customer details for Checkout
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string? Notes { get; set; }
+
+        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    }
+
+    public class OrderItem
+    {
+        public int Id { get; set; }
+        public int OrderId { get; set; }
+        public Order Order { get; set; } = null!;
+        public int PlanId { get; set; }
+        public SubscriptionPlan Plan { get; set; } = null!;
+        public int Quantity { get; set; }
+        public decimal Price { get; set; }
+    }
 }

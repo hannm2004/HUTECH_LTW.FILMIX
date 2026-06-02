@@ -18,6 +18,8 @@ namespace untitled1.Data
         public DbSet<MovieImage> MovieImages { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<UserSubscription> UserSubscriptions { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -62,6 +64,25 @@ namespace untitled1.Data
                 .HasOne(s => s.Plan)
                 .WithMany(p => p.Subscriptions)
                 .HasForeignKey(s => s.PlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure Order relationships
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.User)
+                .WithMany()
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Plan)
+                .WithMany()
+                .HasForeignKey(oi => oi.PlanId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Seed SubscriptionPlans

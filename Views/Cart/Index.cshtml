@@ -1,0 +1,111 @@
+@model List<untitled1.Models.ViewModels.CartItemViewModel>
+@{
+    ViewData["Title"] = "Giỏ Hàng";
+}
+
+<div class="sub-page" style="padding-top: 100px; min-height: 80vh; max-width: 1000px; margin: 0 auto; padding-left: 20px; padding-right: 20px;">
+    <div style="margin-bottom: 30px;">
+        <h1 style="color: #fff; font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Giỏ Hàng Của Bạn</h1>
+        <p style="color: #aaa;">Xem lại các gói Premium trước khi thanh toán.</p>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 60px 20px; text-align: center; border: 1px dashed rgba(255, 255, 255, 0.1);">
+            <div style="font-size: 4rem; margin-bottom: 20px;">🛒</div>
+            <h2 style="color: #fff; font-size: 1.5rem; margin-bottom: 15px;">Giỏ hàng của bạn đang trống</h2>
+            <p style="color: #aaa; margin-bottom: 30px; max-width: 400px; margin-left: auto; margin-right: auto;">
+                Hãy chọn một trong các gói Premium chất lượng cao của FILMIX để nâng tầm trải nghiệm xem phim của bạn.
+            </p>
+            <a asp-controller="Subscription" asp-action="Plans" class="plan-cta" style="display: inline-block; max-width: 250px; text-decoration: none;">
+                Xem các gói Premium
+            </a>
+        </div>
+    }
+    else
+    {
+        <div style="display: grid; grid-template-columns: 1fr 350px; gap: 30px; align-items: start;" class="cart-grid-resp">
+            <!-- Left: List of items -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                @foreach (var item in Model)
+                {
+                    <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; gap: 20px; position: relative;">
+                        <!-- Color Accent Bar -->
+                        <div style="width: 6px; position: absolute; left: 0; top: 0; bottom: 0; border-top-left-radius: 12px; border-bottom-left-radius: 12px; background: @item.AccentColor;"></div>
+                        
+                        <div style="flex: 1; padding-left: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <span style="font-size: 1.25rem; font-weight: 700; color: #fff;">Gói @item.PlanName</span>
+                                <span style="font-size: 0.75rem; background: rgba(255, 255, 255, 0.1); color: #ccc; padding: 2px 8px; border-radius: 20px;">@item.Resolution</span>
+                            </div>
+                            <div style="color: #e50914; font-weight: 700; font-size: 1.1rem;">
+                                @item.Price.ToString("N0") ₫ <span style="color: #aaa; font-weight: 400; font-size: 0.85rem;">/ tháng</span>
+                            </div>
+                        </div>
+
+                        <!-- Quantity control -->
+                        <div style="display: flex; align-items: center; gap: 10px; background: rgba(0, 0, 0, 0.3); padding: 5px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" style="display: inline;">
+                                <input type="hidden" name="planId" value="@item.PlanId" />
+                                <input type="hidden" name="quantity" value="@(item.Quantity - 1)" />
+                                <button type="submit" style="background: none; border: none; color: #fff; width: 24px; height: 24px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">-</button>
+                            </form>
+                            <span style="color: #fff; font-weight: bold; min-width: 20px; text-align: center;">@item.Quantity</span>
+                            <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" style="display: inline;">
+                                <input type="hidden" name="planId" value="@item.PlanId" />
+                                <input type="hidden" name="quantity" value="@(item.Quantity + 1)" />
+                                <button type="submit" style="background: none; border: none; color: #fff; width: 24px; height: 24px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">+</button>
+                            </form>
+                        </div>
+
+                        <!-- Item Total -->
+                        <div style="text-align: right; min-width: 120px;">
+                            <div style="font-size: 1.2rem; font-weight: 800; color: #fff;">@item.TotalPrice.ToString("N0") ₫</div>
+                        </div>
+
+                        <!-- Delete button -->
+                        <form asp-controller="Cart" asp-action="Remove" method="post" style="margin-left: 10px;">
+                            <input type="hidden" name="planId" value="@item.PlanId" />
+                            <button type="submit" style="background: none; border: none; color: #777; cursor: pointer; font-size: 1.2rem; transition: color 0.2s;" onmouseover="this.style.color='#e50914'" onmouseout="this.style.color='#777'">
+                                ✕
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+
+            <!-- Right: Order summary card -->
+            <div style="background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.08); position: sticky; top: 100px;">
+                <h3 style="color: #fff; font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">Tóm Tắt Đơn Hàng</h3>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: #aaa;">
+                    <span>Tổng sản phẩm:</span>
+                    <span style="color: #fff; font-weight: 600;">@Model.Sum(i => i.Quantity)</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 1.2rem; font-weight: 700;">
+                    <span style="color: #fff;">Tổng cộng:</span>
+                    <span style="color: #e50914;">@(((decimal)ViewBag.TotalAmount).ToString("N0")) ₫</span>
+                </div>
+
+                <a asp-controller="Order" asp-action="Checkout" class="plan-cta" style="display: block; text-align: center; text-decoration: none; width: 100%; box-sizing: border-box;">
+                    Tiến Hành Thanh Toán →
+                </a>
+
+                <div style="margin-top: 20px; text-align: center;">
+                    <a asp-controller="Subscription" asp-action="Plans" style="color: #aaa; text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#aaa'">
+                        ← Tiếp tục chọn gói
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    @@media (max-width: 768px) {
+        .cart-grid-resp {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>

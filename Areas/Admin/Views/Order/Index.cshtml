@@ -1,0 +1,149 @@
+@model IEnumerable<untitled1.Models.Entities.Order>
+@{
+    ViewData["Title"] = "Quản Lý Đơn Hàng";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+    <h1 style="margin: 0;">Quản Lý <span>Đơn Hàng</span></h1>
+    <form asp-area="Admin" asp-controller="Order" asp-action="SyncLifecycles" method="post" style="margin: 0;">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #e50914, #b0000d); border: none; color: #fff; padding: 10px 20px; border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            🔄 Đồng Bộ Vòng Đời (Sync Lifecycles)
+        </button>
+    </form>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" style="margin-bottom: 20px; padding: 12px 20px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 6px; color: #22c55e; display: flex; align-items: center; gap: 10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" style="margin-bottom: 20px; padding: 12px 20px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #ef4444; display: flex; align-items: center; gap: 10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th style="width:60px">ID</th>
+                <th>Khách Hàng</th>
+                <th>Gói Đăng Ký</th>
+                <th style="width:120px">Tổng Tiền</th>
+                <th style="width:110px">Thanh Toán</th>
+                <th style="width:150px">Trạng Thái</th>
+                <th style="width:200px">Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <div class="empty-state__icon">📋</div>
+                            <div class="empty-state__text">Chưa có đơn hàng nào trong hệ thống.</div>
+                        </div>
+                    </td>
+                </tr>
+            }
+            @foreach (var order in Model)
+            {
+                var statusColor = order.Status switch
+                {
+                    untitled1.Models.Entities.OrderStatus.Paid => "#22c55e",
+                    untitled1.Models.Entities.OrderStatus.Completed => "#22c55e",
+                    untitled1.Models.Entities.OrderStatus.Pending => "#f59e0b",
+                    untitled1.Models.Entities.OrderStatus.Processing => "#3b82f6",
+                    untitled1.Models.Entities.OrderStatus.Shipping => "#a855f7",
+                    untitled1.Models.Entities.OrderStatus.Cancelled => "#ef4444",
+                    _ => "#888"
+                };
+
+                var statusText = order.Status switch
+                {
+                    untitled1.Models.Entities.OrderStatus.Paid => "Đã thanh toán",
+                    untitled1.Models.Entities.OrderStatus.Completed => "Hoàn thành",
+                    untitled1.Models.Entities.OrderStatus.Pending => "Chờ duyệt / thanh toán",
+                    untitled1.Models.Entities.OrderStatus.Processing => "Đang xử lý",
+                    untitled1.Models.Entities.OrderStatus.Shipping => "Đang vận chuyển",
+                    untitled1.Models.Entities.OrderStatus.Cancelled => "Đã hủy",
+                    _ => order.Status.ToString()
+                };
+
+                <tr>
+                    <td><strong>#@order.Id</strong></td>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <strong>@order.FullName</strong>
+                            <span style="font-size: 0.8rem; color: #888;">@order.Email</span>
+                            <span style="font-size: 0.8rem; color: #888;">SĐT: @order.PhoneNumber</span>
+                            <span style="font-size: 0.75rem; color: #aaa; margin-top: 4px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@order.Address">ĐC: @order.Address</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            @foreach (var item in order.OrderItems)
+                            {
+                                <div style="font-size: 0.88rem;">
+                                    <strong>Gói @item.Plan.Name</strong> <span style="color: #aaa;">(x @item.Quantity tháng)</span>
+                                </div>
+                            }
+                        </div>
+                    </td>
+                    <td><strong style="color: #e50914;">@order.TotalAmount.ToString("N0") ₫</strong></td>
+                    <td><span style="font-size: 0.9rem;">@order.PaymentMethod</span></td>
+                    <td>
+                        <span style="color: @statusColor; font-weight: 700; background: @(statusColor)20; border: 1px solid @(statusColor)40; padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; display: inline-block;">
+                            @statusText
+                        </span>
+                        <div style="font-size: 0.72rem; color: #888; margin-top: 4px;">Đặt: @order.CreatedAt.ToString("dd/MM HH:mm")</div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            @if (order.Status == untitled1.Models.Entities.OrderStatus.Pending || order.Status == untitled1.Models.Entities.OrderStatus.Processing)
+                            {
+                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@order.Id" />
+                                    <input type="hidden" name="status" value="Paid" />
+                                    <button type="submit" class="btn-edit" style="background: #22c55e; border-color: #22c55e; color: #fff; cursor: pointer; padding: 5px 10px; font-size: 0.78rem;">Duyệt</button>
+                                </form>
+                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@order.Id" />
+                                    <input type="hidden" name="status" value="Cancelled" />
+                                    <button type="submit" class="btn-del" style="background: #ef4444; border-color: #ef4444; color: #fff; cursor: pointer; padding: 5px 10px; font-size: 0.78rem;">Hủy</button>
+                                </form>
+                            }
+                            else if (order.Status == untitled1.Models.Entities.OrderStatus.Paid)
+                            {
+                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@order.Id" />
+                                    <input type="hidden" name="status" value="Completed" />
+                                    <button type="submit" class="btn-edit" style="background: #3b82f6; border-color: #3b82f6; color: #fff; cursor: pointer; padding: 5px 10px; font-size: 0.78rem;">Hoàn thành</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span style="font-size: 0.8rem; color: #666; font-style: italic;">Không có thao tác</span>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

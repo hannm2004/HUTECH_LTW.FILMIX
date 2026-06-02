@@ -1,0 +1,184 @@
+@model untitled1.Models.ViewModels.UserDetailViewModel
+@{
+    ViewData["Title"] = "Chi Tiết Người Dùng";
+    Layout = "_AdminLayout";
+    var u = Model.User;
+    var avatar = u.UserName?.Length > 0 ? char.ToUpper(u.UserName[0]).ToString() : "?";
+}
+
+<div class="user-detail-layout">
+
+    @* ── Left: Profile Card ── *@
+    <aside class="user-profile-card">
+        <div class="profile-avatar-lg">@avatar</div>
+        <div class="profile-name">@(string.IsNullOrWhiteSpace(u.FullName) ? u.UserName : u.FullName)</div>
+        <div class="profile-email muted">@u.Email</div>
+
+        <div class="profile-badges">
+            @if (Model.IsAdmin)
+            { <span class="badge badge-admin">🛡 Admin</span> }
+            @if (u.PremiumEndDate.HasValue && u.PremiumEndDate >= DateTime.UtcNow)
+            { <span class="badge badge-active">👑 Premium</span> }
+            else
+            { <span class="badge badge-neutral">Thành viên thường</span> }
+        </div>
+
+        <div class="profile-stats-mini">
+            <div class="mini-stat">
+                <div class="mini-stat-val">@Model.TotalOrders</div>
+                <div class="mini-stat-lbl">Đơn hàng</div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-val">@Model.TotalSpent.ToString("N0") ₫</div>
+                <div class="mini-stat-lbl">Tổng chi tiêu</div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-val">@Model.Subscriptions.Count()</div>
+                <div class="mini-stat-lbl">Gói đã đăng ký</div>
+            </div>
+        </div>
+
+        @if (u.PremiumEndDate.HasValue)
+        {
+            <div class="profile-info-row">
+                <span class="info-lbl">Premium đến</span>
+                <span class="info-val">@u.PremiumEndDate.Value.ToString("dd/MM/yyyy")</span>
+            </div>
+        }
+        <div class="profile-info-row">
+            <span class="info-lbl">Username</span>
+            <span class="info-val">@u.UserName</span>
+        </div>
+        <div class="profile-info-row">
+            <span class="info-lbl">Phone</span>
+            <span class="info-val">@(u.PhoneNumber ?? "—")</span>
+        </div>
+    </aside>
+
+    @* ── Right: Actions + Tables ── *@
+    <div class="user-detail-main">
+
+        @* Action Cards *@
+        <div class="action-cards">
+
+            @* Toggle Admin Role *@
+            <div class="action-card">
+                <div class="action-card-title">🛡 Quản lý quyền Admin</div>
+                <p class="action-card-desc">
+                    @if (Model.IsAdmin)
+                    { <span>Người dùng đang có quyền <strong>Admin</strong>.</span> }
+                    else
+                    { <span>Người dùng hiện là <strong>thành viên thường</strong>.</span> }
+                </p>
+                <form asp-area="Admin" asp-controller="User" asp-action="SetAdmin" method="post" class="inline-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="userId" value="@u.Id" />
+                    <input type="hidden" name="grantAdmin" value="@(!Model.IsAdmin)" />
+                    <button type="submit" class="btn-sm @(Model.IsAdmin ? "btn-danger" : "btn-primary")">
+                        @(Model.IsAdmin ? "Thu hồi quyền Admin" : "Cấp quyền Admin")
+                    </button>
+                </form>
+            </div>
+
+            @* Toggle Premium *@
+            <div class="action-card">
+                <div class="action-card-title">👑 Quản lý Premium</div>
+                @{
+                    bool hasPremium = u.PremiumEndDate.HasValue && u.PremiumEndDate >= DateTime.UtcNow;
+                }
+                <p class="action-card-desc">
+                    @if (hasPremium)
+                    { <span>Premium còn hiệu lực đến <strong>@u.PremiumEndDate!.Value.ToString("dd/MM/yyyy")</strong>.</span> }
+                    else
+                    { <span>Người dùng chưa có gói Premium.</span> }
+                </p>
+                @if (!hasPremium)
+                {
+                    <form asp-area="Admin" asp-controller="User" asp-action="TogglePremium" method="post" class="inline-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId"   value="@u.Id" />
+                        <input type="hidden" name="activate" value="true" />
+                        <select name="days" class="select-sm">
+                            <option value="7">7 ngày</option>
+                            <option value="30" selected>30 ngày</option>
+                            <option value="90">90 ngày</option>
+                            <option value="365">365 ngày</option>
+                        </select>
+                        <button type="submit" class="btn-sm btn-gold">Kích hoạt Premium</button>
+                    </form>
+                }
+                else
+                {
+                    <form asp-area="Admin" asp-controller="User" asp-action="TogglePremium" method="post" class="inline-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId"   value="@u.Id" />
+                        <input type="hidden" name="activate" value="false" />
+                        <button type="submit" class="btn-sm btn-danger">Thu hồi Premium</button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        @* Subscription History *@
+        <div class="detail-section">
+            <h3 class="section-title">👑 Lịch Sử Gói Đăng Ký</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr><th>#</th><th>Gói</th><th>Bắt đầu</th><th>Hết hạn</th><th>Phương thức</th><th>Trạng thái</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var s in Model.Subscriptions)
+                {
+                    <tr>
+                        <td class="muted">#@s.Id</td>
+                        <td><strong>@(s.Plan?.Name ?? "—")</strong></td>
+                        <td>@s.StartDate.ToString("dd/MM/yyyy")</td>
+                        <td>@s.EndDate.ToString("dd/MM/yyyy")</td>
+                        <td><span class="badge badge-neutral">@s.PaymentMethod</span></td>
+                        <td>
+                            @if (s.IsActive && s.EndDate >= DateTime.UtcNow)
+                            { <span class="badge badge-active">Hoạt động</span> }
+                            else
+                            { <span class="badge badge-cancelled">Hết hạn</span> }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Subscriptions.Any())
+                {
+                    <tr><td colspan="6" class="text-center muted">Chưa có lịch sử đăng ký.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        @* Order History *@
+        <div class="detail-section">
+            <h3 class="section-title">🛒 Lịch Sử Đơn Hàng</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr><th>#</th><th>Ngày</th><th>Số tiền</th><th>Phương thức</th><th>Trạng thái</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var o in Model.Orders)
+                {
+                    <tr>
+                        <td class="muted">#@o.Id</td>
+                        <td>@o.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@o.TotalAmount.ToString("N0") ₫</td>
+                        <td><span class="badge badge-neutral">@o.PaymentMethod</span></td>
+                        <td><span class="badge badge-@o.Status.ToString().ToLower()">@o.Status</span></td>
+                    </tr>
+                }
+                @if (!Model.Orders.Any())
+                {
+                    <tr><td colspan="5" class="text-center muted">Chưa có đơn hàng nào.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="back-row">
+            <a asp-area="Admin" asp-controller="User" asp-action="Index" class="btn-sm btn-outline">← Quay lại danh sách</a>
+        </div>
+    </div>
+</div>

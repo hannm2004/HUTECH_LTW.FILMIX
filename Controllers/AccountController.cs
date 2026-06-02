@@ -1,5 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using untitled1.Models.Entities;
 using untitled1.Models.ViewModels;
 
@@ -76,6 +82,28 @@ namespace untitled1.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Profile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            var db = HttpContext.RequestServices.GetRequiredService<untitled1.Data.ApplicationDbContext>();
+            var activeSub = await db.UserSubscriptions
+                .Include(s => s.Plan)
+                .Where(s => s.UserId == user.Id && s.IsActive && s.EndDate > DateTime.Now)
+                .OrderByDescending(s => s.EndDate)
+                .FirstOrDefaultAsync();
+
+            ViewBag.ActiveSubscription = activeSub;
+
+            var orderRepo = HttpContext.RequestServices.GetRequiredService<untitled1.Repositories.IOrderRepository>();
+            var orders = await orderRepo.GetByUserIdAsync(user.Id);
+            ViewBag.Orders = orders;
+
+            return View(user);
         }
     }
 }
