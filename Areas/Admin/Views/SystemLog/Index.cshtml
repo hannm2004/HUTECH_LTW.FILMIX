@@ -1,0 +1,136 @@
+@model untitled1.Models.ViewModels.SystemLogIndexViewModel
+@{
+    ViewData["Title"] = "System Logs";
+    Layout = "_AdminLayout";
+}
+
+@* ── Toolbar ── *@
+<div class="page-toolbar">
+    <form method="get" class="toolbar-search" id="logSearchForm">
+        <input type="hidden" name="actionType" value="@Model.ActionFilter" />
+        <input type="text" name="search" value="@Model.Search" placeholder="Tìm theo user, mô tả, IP…"
+               class="search-input" id="logSearchInput" />
+        <button type="submit" class="btn-search">🔍</button>
+    </form>
+
+    <div class="filter-tabs" style="flex-wrap: wrap; gap: 6px;">
+        <a href="?actionType=all&search=@Model.Search"
+           class="filter-tab @(Model.ActionFilter == "all" ? "active" : "")">Tất cả</a>
+        @foreach (var action in Model.ActionTypes)
+        {
+            <a href="?actionType=@Uri.EscapeDataString(action)&search=@Model.Search"
+               class="filter-tab @(Model.ActionFilter == action ? "active" : "")">@action</a>
+        }
+    </div>
+
+    <div class="toolbar-info">
+        @Model.TotalCount bản ghi
+    </div>
+</div>
+
+@* ── Table ── *@
+<div class="table-card">
+    <table class="admin-table admin-table--hover">
+        <thead>
+            <tr>
+                <th style="width: 55px;">#</th>
+                <th style="width: 160px;">Thời Gian</th>
+                <th style="width: 140px;">Hành Động</th>
+                <th>Người Dùng</th>
+                <th>Mô Tả</th>
+                <th style="width: 120px;">IP Address</th>
+                <th style="width: 80px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in Model.Logs)
+            {
+                <tr>
+                    <td class="muted" style="font-size:0.78rem;">@log.Id</td>
+                    <td style="white-space:nowrap; font-size:0.8rem; color:#888;">
+                        @log.CreatedAt.ToString("dd/MM HH:mm:ss")
+                    </td>
+                    <td>
+                        @{
+                            var (badgeClass, icon) = log.Action switch
+                            {
+                                "Login"                 => ("badge-active",   "🔑"),
+                                "Login Failed"          => ("badge-danger",   "🚫"),
+                                "Logout"                => ("badge-neutral",  "🚪"),
+                                "Register"              => ("badge-info",     "📝"),
+                                "Register Failed"       => ("badge-danger",   "❌"),
+                                "Add Movie"             => ("badge-info",     "🎬"),
+                                "Edit Movie"            => ("badge-warning",  "✏️"),
+                                "Delete Movie"          => ("badge-danger",   "🗑️"),
+                                "Buy Premium"           => ("badge-gold",     "👑"),
+                                "Grant Admin"           => ("badge-admin",    "🛡️"),
+                                "Revoke Admin"          => ("badge-danger",   "🔓"),
+                                "Grant Premium"         => ("badge-gold",     "⭐"),
+                                "Revoke Premium"        => ("badge-warning",  "⚠️"),
+                                "Deactivate Subscription" => ("badge-warning","🚫"),
+                                _                       => ("badge-neutral",  "📋")
+                            };
+                        }
+                        <span class="badge @badgeClass" style="font-size:0.72rem; white-space:nowrap;">
+                            @icon @log.Action
+                        </span>
+                    </td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-sm" style="width:26px;height:26px;font-size:0.7rem;">
+                                @(string.IsNullOrEmpty(log.UserName) ? "?" : char.ToUpper(log.UserName[0]))
+                            </div>
+                            <div>
+                                <div style="font-size:0.82rem; color:#ccc;">@(log.UserName ?? "Anonymous")</div>
+                                @if (!string.IsNullOrEmpty(log.UserId))
+                                {
+                                    <div class="text-xs muted" style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="@log.UserId">@log.UserId[..Math.Min(8, log.UserId.Length)]…</div>
+                                }
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-size:0.82rem; color:#bbb; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="@log.Description">
+                        @log.Description
+                    </td>
+                    <td class="muted" style="font-size:0.78rem; font-family:monospace;">
+                        @(log.IpAddress ?? "—")
+                    </td>
+                    <td>
+                        <a asp-area="Admin" asp-controller="SystemLog" asp-action="Detail"
+                           asp-route-id="@log.Id" class="btn-sm btn-outline">Chi tiết</a>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Logs.Any())
+            {
+                <tr>
+                    <td colspan="7" class="text-center muted py-8" style="padding:40px 0;">
+                        🗂️ Chưa có log nào được ghi nhận.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@* ── Pagination ── *@
+@if (Model.TotalPages > 1)
+{
+    <div class="pagination">
+        @if (Model.Page > 1)
+        {
+            <a href="?page=@(Model.Page - 1)&actionType=@Model.ActionFilter&search=@Model.Search"
+               class="page-btn">‹</a>
+        }
+        @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+        {
+            <a href="?page=@i&actionType=@Model.ActionFilter&search=@Model.Search"
+               class="page-btn @(i == Model.Page ? "active" : "")">@i</a>
+        }
+        @if (Model.Page < Model.TotalPages)
+        {
+            <a href="?page=@(Model.Page + 1)&actionType=@Model.ActionFilter&search=@Model.Search"
+               class="page-btn">›</a>
+        }
+    </div>
+}

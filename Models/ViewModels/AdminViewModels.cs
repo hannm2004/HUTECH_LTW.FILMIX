@@ -136,5 +136,21 @@ namespace untitled1.Models.ViewModels
         public int     TotalOrders                { get; set; }
         public int     TotalActiveSubscriptions   { get; set; }
         public double  SubscriptionConversionRate { get; set; }  // premium users / total users %
+
+        // Top Viewing History Stats
+        public List<CategoryWatchStatDto> TopGenres { get; set; } = new();
+        public List<MovieWatchStatDto> TopMovies    { get; set; } = new();
+    }
+
+    public class CategoryWatchStatDto
+    {
+        public string CategoryName { get; set; } = string.Empty;
+        public int WatchCount      { get; set; }
+    }
+
+    public class MovieWatchStatDto
+    {
+        public Movie Movie    { get; set; } = null!;
+        public int WatchCount { get; set; }
     }
 }

@@ -11,11 +11,16 @@ namespace untitled1.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly untitled1.Services.ILogService _logService;
 
-        public SubscriptionController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public SubscriptionController(
+            ApplicationDbContext context, 
+            UserManager<ApplicationUser> userManager,
+            untitled1.Services.ILogService logService)
         {
             _context = context;
             _userManager = userManager;
+            _logService = logService;
         }
 
         // GET /Subscription/Plans
@@ -66,6 +71,16 @@ namespace untitled1.Controllers
             };
             _context.UserSubscriptions.Add(sub);
             await _context.SaveChangesAsync();
+
+            var user = await _userManager.FindByIdAsync(uid);
+            await _logService.LogAsync(
+                uid, 
+                user?.Email, 
+                "Buy Premium", 
+                $"Đăng ký gói Premium: Gói \"{plan.Name}\", Phương thức: {paymentMethod}, Mã GD: {sub.TransactionId}", 
+                HttpContext.Connection.RemoteIpAddress?.ToString()
+            );
+
             return RedirectToAction("Success", new { id = sub.Id });
         }
 

@@ -415,6 +415,52 @@ namespace untitled1.Services
                 .Sum(o => o.TotalAmount);
             var paidOrderCount = orders.Count(o => o.Status == OrderStatus.Completed || o.Status == OrderStatus.Paid);
 
+            // Compute Top 10 Genres from ViewingHistories
+            var topGenres = await _context.ViewingHistories
+                .Include(vh => vh.Movie)
+                    .ThenInclude(m => m.MovieCategories)
+                        .ThenInclude(mc => mc.Category)
+                .Select(vh => vh.Movie)
+                .Where(m => m != null)
+                .SelectMany(m => m.MovieCategories)
+                .GroupBy(mc => mc.Category.Name)
+                .Select(g => new CategoryWatchStatDto
+                {
+                    CategoryName = g.Key,
+                    WatchCount = g.Count()
+                })
+                .OrderByDescending(x => x.WatchCount)
+                .Take(10)
+                .ToListAsync();
+
+            // Compute Top 10 Movies from ViewingHistories
+            var topMovieStats = await _context.ViewingHistories
+                .GroupBy(vh => vh.MovieId)
+                .Select(g => new
+                {
+                    MovieId = g.Key,
+                    WatchCount = g.Count()
+                })
+                .OrderByDescending(x => x.WatchCount)
+                .Take(10)
+                .ToListAsync();
+
+            var topMovieIds = topMovieStats.Select(s => s.MovieId).ToList();
+            var topMoviesList = await _context.Movies
+                .Include(m => m.MovieCategories)
+                    .ThenInclude(mc => mc.Category)
+                .Where(m => topMovieIds.Contains(m.Id))
+                .ToListAsync();
+
+            var topMovies = topMovieStats
+                .Select(s => new MovieWatchStatDto
+                {
+                    Movie = topMoviesList.FirstOrDefault(m => m.Id == s.MovieId)!,
+                    WatchCount = s.WatchCount
+                })
+                .Where(r => r.Movie != null)
+                .ToList();
+
             return new AnalyticsViewModel
             {
                 MonthlyLabels       = monthlyLabels,
@@ -431,6 +477,8 @@ namespace untitled1.Services
                 TotalOrders         = orders.Count,
                 TotalActiveSubscriptions = premiumUsers,
                 SubscriptionConversionRate = totalUsers == 0 ? 0 : Math.Round((double)premiumUsers / totalUsers * 100, 1),
+                TopGenres           = topGenres,
+                TopMovies           = topMovies
             };
         }
     }

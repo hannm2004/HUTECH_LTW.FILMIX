@@ -651,6 +651,12 @@ body.admin-body {
 .badge-admin      { background: rgba(229,9,20,.14);   color: #f87171; border: 1px solid rgba(229,9,20,.28); }
 .badge-user       { background: rgba(255,255,255,.06); color: var(--a-muted); border: 1px solid var(--a-border); }
 .badge-neutral    { background: rgba(255,255,255,.06); color: rgba(255,255,255,.5); border: 1px solid var(--a-border); }
+/* system log badges */
+.badge-danger     { background: rgba(239,68,68,.13);  color: #f87171; border: 1px solid rgba(239,68,68,.28); }
+.badge-info       { background: rgba(59,130,246,.13); color: #60a5fa; border: 1px solid rgba(59,130,246,.28); }
+.badge-warning    { background: rgba(245,158,11,.13); color: #fbbf24; border: 1px solid rgba(245,158,11,.28); }
+.badge-gold       { background: rgba(251,191,36,.13); color: #fcd34d; border: 1px solid rgba(251,191,36,.28); }
+
 
 /* ═══════════════════════════════════════════════════════════════
    USER MANAGEMENT

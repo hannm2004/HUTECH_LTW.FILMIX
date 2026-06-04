@@ -223,11 +223,35 @@
         _saveNow();
     }
 
+    function logToServerHistory(movieId, watchTime) {
+        const params = new URLSearchParams();
+        params.append('movieId', movieId);
+        params.append('watchTime', Math.round(watchTime));
+
+        fetch('/ViewingHistory/Log', {
+            method: 'POST',
+            body: params,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('[History] Logged watch history to server.');
+            }
+        })
+        .catch(err => console.warn('[History] Error logging history to server:', err));
+    }
+
     function _saveNow() {
         if (!_videoEl || !_movieMeta) return;
         const time = _videoEl.currentTime;
         const duration = _videoEl.duration || 0;
         if (time < 3) return; // Don't save if barely started
+
+        // Send watch history log to server
+        logToServerHistory(_movieMeta.id, time);
 
         const pct = duration > 0 ? (time / duration) * 100 : 0;
         // Remove from CW if >95% (finished)
@@ -250,7 +274,13 @@
 
     function _onEnded() {
         // Finished: remove from CW
-        if (_movieMeta) removeProgress(_movieMeta.id);
+        if (_movieMeta) {
+            removeProgress(_movieMeta.id);
+            // Log final progress as complete
+            if (_videoEl) {
+                logToServerHistory(_movieMeta.id, _videoEl.duration || 0);
+            }
+        }
     }
 
     // Save on page unload
