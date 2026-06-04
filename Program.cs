@@ -22,9 +22,13 @@ builder.Services.AddScoped<untitled1.Repositories.IOrderRepository, untitled1.Re
 builder.Services.AddScoped<untitled1.Repositories.ISubscriptionPlanRepository, untitled1.Repositories.SubscriptionPlanRepository>();
 builder.Services.AddScoped<untitled1.Repositories.IUserRepository, untitled1.Repositories.UserRepository>();
 builder.Services.AddScoped<untitled1.Repositories.ISubscriptionRepository, untitled1.Repositories.SubscriptionRepository>();
+builder.Services.AddScoped<untitled1.Repositories.IViewingHistoryRepository, untitled1.Repositories.ViewingHistoryRepository>();
+builder.Services.AddScoped<untitled1.Repositories.ILogRepository, untitled1.Repositories.LogRepository>();
 builder.Services.AddScoped<untitled1.Services.ICartService, untitled1.Services.CartService>();
 builder.Services.AddScoped<untitled1.Services.IOrderService, untitled1.Services.OrderService>();
 builder.Services.AddScoped<untitled1.Services.IAdminService, untitled1.Services.AdminService>();
+builder.Services.AddScoped<untitled1.Services.IRecommendationService, untitled1.Services.RecommendationService>();
+builder.Services.AddScoped<untitled1.Services.ILogService, untitled1.Services.LogService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var dbProvider = builder.Configuration["DbProvider"] ?? "MySql";
@@ -73,6 +77,8 @@ using (var scope = app.Services.CreateScope())
         _ = db.UserSubscriptions.FirstOrDefault();   // triggers recreate if table missing
         _ = db.Orders.FirstOrDefault();              // triggers recreate if table missing
         _ = db.OrderItems.FirstOrDefault();          // triggers recreate if table missing
+        _ = db.ViewingHistories.FirstOrDefault();    // triggers recreate if table missing
+        _ = db.SystemLogs.FirstOrDefault();          // triggers recreate if table missing
     }
     catch (Exception ex)
     {

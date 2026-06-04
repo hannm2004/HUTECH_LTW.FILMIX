@@ -20,6 +20,8 @@ namespace untitled1.Data
         public DbSet<UserSubscription> UserSubscriptions { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<ViewingHistory> ViewingHistories { get; set; }
+        public DbSet<SystemLog> SystemLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -83,6 +85,19 @@ namespace untitled1.Data
                 .HasOne(oi => oi.Plan)
                 .WithMany()
                 .HasForeignKey(oi => oi.PlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure ViewingHistory relationships
+            modelBuilder.Entity<ViewingHistory>()
+                .HasOne(vh => vh.User)
+                .WithMany()
+                .HasForeignKey(vh => vh.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ViewingHistory>()
+                .HasOne(vh => vh.Movie)
+                .WithMany()
+                .HasForeignKey(vh => vh.MovieId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Seed SubscriptionPlans

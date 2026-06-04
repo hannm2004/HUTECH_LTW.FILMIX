@@ -1,4 +1,94 @@
-# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 02/06/2026
+# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 04/06/2026
+
+---
+
+## 📅 Nhật Ký Cập Nhật Tối (04/06/2026) — Hệ Thống Audit Log (System Logs)
+
+Đã hoàn thiện **tính năng Audit Log** theo đúng kiến trúc Repository + Service Pattern hiện có, tự động ghi nhận 12 loại hành động quan trọng của hệ thống và cung cấp giao diện quản lý đầy đủ trong Admin Area.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### Entities & Database
+* **`SystemLog`** (`Models/Entities/Entities.cs`): Thực thể mới với các trường `Id`, `UserId`, `UserName`, `Action`, `Description`, `CreatedAt`, `IpAddress`. Không thiết lập FK cứng với `ApplicationUser` để đảm bảo audit trail tồn tại ngay cả khi tài khoản bị xóa.
+* **`ApplicationDbContext`**: Đăng ký `DbSet<SystemLog> SystemLogs`.
+* **`Program.cs`**: Thêm check query `db.SystemLogs.FirstOrDefault()` vào block kiểm tra schema tự động.
+
+#### Repository & Service Layer
+* **`ILogRepository`** + **`LogRepository`** (`Repositories/`):
+  - `AddAsync` + `SaveAsync`: Ghi log mới.
+  - `GetAllAsync(search, actionType, page, pageSize)`: Truy vấn phân trang, lọc theo loại hành động và tìm kiếm full-text trên `UserName`, `Description`, `IpAddress`, `Action`.
+  - `GetTotalCountAsync`: Đếm tổng kết quả với cùng filter.
+  - `GetActionTypesAsync`: Lấy danh sách loại hành động distinct để render filter tabs.
+* **`ILogService`** + **`LogService`** (`Services/`):
+  - `LogAsync(userId, userName, action, description, ipAddress)`: Entry point để ghi log từ bất kỳ controller nào.
+  - `GetLogsAsync(search, actionType, page, pageSize)`: Đóng gói kết quả vào `SystemLogIndexViewModel`.
+  - `GetLogDetailAsync(id)`: Lấy chi tiết một bản ghi.
+* **DI Registration** (`Program.cs`): Đăng ký `ILogRepository → LogRepository` và `ILogService → LogService`.
+
+#### Tích Hợp Logging Vào Controllers (12 hành động)
+| Action Key | Controller | Mô tả |
+|---|---|---|
+| `Login` | AccountController | Đăng nhập thành công |
+| `Login Failed` | AccountController | Đăng nhập thất bại |
+| `Register` | AccountController | Đăng ký tài khoản mới |
+| `Register Failed` | AccountController | Đăng ký thất bại |
+| `Logout` | AccountController | Đăng xuất |
+| `Add Movie` | Admin/ProductController | Thêm phim mới |
+| `Edit Movie` | Admin/ProductController | Sửa thông tin phim |
+| `Delete Movie` | Admin/ProductController | Xóa phim |
+| `Buy Premium` | SubscriptionController | Mua gói Premium |
+| `Grant Admin` | Admin/UserController | Cấp quyền Admin |
+| `Revoke Admin` | Admin/UserController | Thu hồi quyền Admin |
+| `Grant Premium` | Admin/UserController | Cấp Premium thủ công |
+| `Revoke Premium` | Admin/UserController | Thu hồi Premium thủ công |
+| `Deactivate Subscription` | Admin/SubscriptionController | Hủy gói đăng ký |
+
+#### Admin Area — System Logs UI
+* **`SystemLogController`** (`Areas/Admin/Controllers/`): 2 action — `Index` (danh sách + filter + phân trang) và `Detail` (xem chi tiết).
+* **`SystemLogIndexViewModel`** (`Models/ViewModels/`): ViewModel chứa danh sách logs, thông tin filter, pagination và danh sách action types.
+* **`Areas/Admin/Views/SystemLog/Index.cshtml`**: Giao diện danh sách log với:
+  - Thanh tìm kiếm full-text.
+  - Filter tabs động theo loại hành động (lấy từ DB).
+  - Bảng log hiển thị thời gian, hành động (badge màu), thông tin user, mô tả, IP.
+  - Phân trang chuẩn.
+* **`Areas/Admin/Views/SystemLog/Detail.cshtml`**: Card chi tiết một bản ghi log, hiển thị đầy đủ tất cả trường, có nút liên kết đến hồ sơ người dùng tương ứng.
+* **`_AdminLayout.cshtml`**: Thêm link **"System Logs"** vào sidebar với icon shield (🛡️).
+* **`admin.css`**: Thêm 4 badge variant mới: `.badge-danger`, `.badge-info`, `.badge-warning`, `.badge-gold`.
+
+#### Build Status
+* **✅ Build succeeded — 0 Errors, 1 Warning** (warning cũ ở `List.cshtml`, không liên quan).
+
+---
+
+## 📅 Nhật Ký Cập Nhật Hôm Nay (04/06/2026) — Hệ Thống Đề Xuất Phim & Thống Kê Xem Phim
+
+Hôm nay đã hoàn thiện **Hệ thống Đề xuất Phim (Recommendation System)** dựa trên lịch sử xem của người dùng, tích hợp cơ chế ghi nhận tự động watch progress từ trình phát phim, và bổ sung Dashboard Analytics cho Admin để theo dõi Top 10 Thể Loại & Top 10 Phim xem nhiều nhất.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### Entities & Database Configuration
+* **`ViewingHistory`**: Thực thể mới lưu thông tin lịch sử xem gồm `UserId`, `MovieId`, `WatchTime` (thời lượng đã xem), và `WatchedAt` (thời gian xem).
+* **`ApplicationDbContext`**: Cấu hình DbSet `ViewingHistories` và thiết lập ràng buộc khóa ngoại (Cascading Delete khi xóa User hoặc Movie).
+* **`Program.cs`**: Tích hợp check-query kiểm tra sự tồn tại của bảng `ViewingHistories` để tự động tái tạo DB cấu trúc mới nếu phát hiện phiên bản cũ.
+
+#### Repositories & Services
+* **`IViewingHistoryRepository` + `ViewingHistoryRepository`**: Cung cấp các thao tác ghi nhận bản ghi xem phim mới, truy vấn lịch sử theo UserId (kèm nạp Eager Loading các Categories), và lấy toàn bộ lịch sử để phục vụ phân tích.
+* **`IRecommendationService` + `RecommendationService`**: Chứa logic phân tích và đề xuất phim:
+  - `LogWatchHistoryAsync()`: Ghi nhận lịch sử xem phim của người dùng. Nếu người dùng đã xem phim này trước đó, cập nhật lại thời lượng (`WatchTime`) và mốc thời gian xem mới nhất (`WatchedAt`).
+  - `GetRecommendationsAsync()`: Phân tích tối đa 3 thể loại (Genre) được người dùng xem nhiều nhất trong lịch sử, truy xuất các bộ phim chưa xem thuộc các thể loại này. Tự động fallback về các bộ phim mới nhất nếu chưa có lịch sử xem hoặc cần bù đắp danh sách đề xuất cho đủ số lượng.
+  - `GetTopGenresAsync()` & `GetTopMoviesAsync()`: Tổng hợp số lượt xem của từng thể loại và từng bộ phim trên toàn bộ hệ thống.
+* **DI Registration**: Đăng ký các repository và service mới trong `Program.cs`.
+
+#### Controllers & Views (Public)
+* **`ViewingHistoryController`**: API Controller (`/ViewingHistory/Log`) xử lý nhận dữ liệu gửi về từ client-side để cập nhật tiến độ xem của người dùng đang đăng nhập vào database.
+* **`HomeController`**: Tích hợp gọi `IRecommendationService.GetRecommendationsAsync()` để lấy danh sách phim đề xuất cho người dùng hiện tại và truyền qua `ViewBag.Recommendations`.
+* **`Views/Home/Index.cshtml`**: Thiết kế section **"Đề Xuất Dành Cho Bạn"** theo chuẩn thiết kế Netflix Slider, hỗ trợ responsive, hiệu ứng zoom scale khi hover và overlay hiển thị thông tin phim mượt mà.
+* **`continue-watching.js`**: Tích hợp thêm hàm AJAX `logToServerHistory` gọi lên API `/ViewingHistory/Log` mỗi khi phát hiện video đang phát (định kỳ mỗi 5 giây qua timer hiện có và khi kết thúc video/unload trang).
+
+#### Admin Dashboard Analytics
+* **`AnalyticsViewModel`**: Mở rộng thuộc tính `TopGenres` và `TopMovies` để vận chuyển dữ liệu thống kê xem phim.
+* **`AdminService.cs`**: Cập nhật phương thức `GetAnalyticsAsync()` thực hiện tổng hợp truy vấn dữ liệu từ bảng `ViewingHistories` để tính toán Top 10 thể loại được xem nhiều nhất và Top 10 phim được xem nhiều nhất.
+* **`Areas/Admin/Views/Analytics/Index.cshtml`**: Bổ sung hai bảng dữ liệu side-by-side hiển thị trực quan xếp hạng **Top 10 Thể Loại** và **Top 10 Phim** kèm lượt xem thực tế, ảnh thumbnail phim, hiệu ứng hover và highlight Top 3 vị trí dẫn đầu bằng màu đỏ đặc trưng.
 
 ---
 

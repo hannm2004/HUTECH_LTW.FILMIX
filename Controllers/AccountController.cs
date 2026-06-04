@@ -15,11 +15,16 @@ namespace untitled1.Controllers
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly untitled1.Services.ILogService _logService;
 
-        public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+        public AccountController(
+            SignInManager<ApplicationUser> signInManager, 
+            UserManager<ApplicationUser> userManager,
+            untitled1.Services.ILogService logService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _logService = logService;
         }
 
         public IActionResult Auth()
@@ -40,8 +45,16 @@ namespace untitled1.Controllers
                 model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 
             if (result.Succeeded)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user != null)
+                {
+                    await _logService.LogAsync(user.Id, user.Email, "Login", "Đăng nhập thành công", HttpContext.Connection.RemoteIpAddress?.ToString());
+                }
                 return Json(new { success = true, redirectUrl = "/" });
+            }
 
+            await _logService.LogAsync(null, model.Email, "Login Failed", $"Đăng nhập thất bại với email {model.Email}", HttpContext.Connection.RemoteIpAddress?.ToString());
             return Json(new { success = false, message = "Email hoặc mật khẩu không đúng" });
         }
 
@@ -68,11 +81,13 @@ namespace untitled1.Controllers
 
             if (result.Succeeded)
             {
+                await _logService.LogAsync(user.Id, user.Email, "Register", "Đăng ký tài khoản mới thành công", HttpContext.Connection.RemoteIpAddress?.ToString());
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return Json(new { success = true, redirectUrl = "/" });
             }
 
             var identityErrors = string.Join("; ", result.Errors.Select(e => e.Description));
+            await _logService.LogAsync(null, model.Email, "Register Failed", $"Đăng ký thất bại: {identityErrors}", HttpContext.Connection.RemoteIpAddress?.ToString());
             return Json(new { success = false, message = identityErrors });
         }
 
@@ -80,6 +95,11 @@ namespace untitled1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                await _logService.LogAsync(user.Id, user.Email, "Logout", "Đăng xuất tài khoản", HttpContext.Connection.RemoteIpAddress?.ToString());
+            }
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }

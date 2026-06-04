@@ -11,11 +11,18 @@ namespace untitled1.Areas.Admin.Controllers
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> _userManager;
+        private readonly untitled1.Services.ILogService _logService;
         private const int PageSize = 10;
 
-        public ProductController(ApplicationDbContext context)
+        public ProductController(
+            ApplicationDbContext context, 
+            Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager,
+            untitled1.Services.ILogService logService)
         {
             _context = context;
+            _userManager = userManager;
+            _logService = logService;
         }
 
         // GET: Admin/Product
@@ -67,6 +74,9 @@ namespace untitled1.Areas.Admin.Controllers
                 foreach (var catId in selectedCategories)
                     _context.MovieCategories.Add(new MovieCategory { MovieId = movie.Id, CategoryId = catId });
                 await _context.SaveChangesAsync();
+
+                var admin = await _userManager.GetUserAsync(User);
+                await _logService.LogAsync(admin?.Id, admin?.Email, "Add Movie", $"Thêm phim mới: \"{movie.Title}\" (ID: {movie.Id})", HttpContext.Connection.RemoteIpAddress?.ToString());
 
                 TempData["Success"] = $"Đã thêm phim \"{movie.Title}\" thành công.";
                 return RedirectToAction(nameof(Index));
@@ -120,6 +130,9 @@ namespace untitled1.Areas.Admin.Controllers
 
                 await _context.SaveChangesAsync();
 
+                var admin = await _userManager.GetUserAsync(User);
+                await _logService.LogAsync(admin?.Id, admin?.Email, "Edit Movie", $"Sửa thông tin phim: \"{movie.Title}\" (ID: {movie.Id})", HttpContext.Connection.RemoteIpAddress?.ToString());
+
                 TempData["Success"] = $"Đã cập nhật phim \"{movie.Title}\" thành công.";
                 return RedirectToAction(nameof(Index));
             }
@@ -157,6 +170,10 @@ namespace untitled1.Areas.Admin.Controllers
                 var title = movie.Title;
                 _context.Movies.Remove(movie);
                 await _context.SaveChangesAsync();
+
+                var admin = await _userManager.GetUserAsync(User);
+                await _logService.LogAsync(admin?.Id, admin?.Email, "Delete Movie", $"Xóa phim: \"{title}\" (ID: {id})", HttpContext.Connection.RemoteIpAddress?.ToString());
+
                 TempData["Success"] = $"Đã xóa phim \"{title}\" thành công.";
             }
             return RedirectToAction(nameof(Index));
