@@ -2,6 +2,40 @@
 
 ---
 
+## 📅 Nhật Ký Cập Nhật Tối (05/06/2026) — Xây Dựng RESTful Products API & Tích Hợp Swagger UI
+
+Đã hoàn thành thiết kế và xây dựng **RESTful Products API** dành cho quản trị viên, tích hợp công cụ tài liệu hóa **Swagger UI** phân nhóm tài liệu rõ ràng và cấu hình xác thực Cookie-based Identity bảo mật.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### DTOs & Validation Layer
+* **`MovieDtos.cs`** (`Models/DTOs/MovieDtos.cs`): Định nghĩa các request/response DTOs cho thực thể Movie:
+  - `MovieListDto`: Trả về danh sách phim thu gọn.
+  - `MovieDetailDto`: Chi tiết phim kèm danh mục thể loại liên kết.
+  - `CreateMovieDto`: Ràng buộc nhập liệu khi thêm mới phim (Validation qua DataAnnotations: Title, ImageUrl, Year, Genre).
+  - `UpdateMovieDto`: Ràng buộc nhập liệu khi cập nhật thông tin phim.
+
+#### RESTful Controller API Layer
+* **`ProductsApiController.cs`** (`Controllers/ProductsApiController.cs`): Controller mới xử lý CRUD tài nguyên phim thông qua các phương thức REST chuẩn:
+  - `GET /api/products`: Lấy danh sách phim kèm tìm kiếm theo tên và phân trang (`page`, `pageSize`).
+  - `GET /api/products/{id}`: Lấy chi tiết bộ phim cụ thể (Eager Loading thể loại liên kết).
+  - `POST /api/products`: Thêm mới phim và liên kết danh mục thể loại trong bảng trung gian. Ghi log hoạt động "Add Movie".
+  - `PUT /api/products/{id}`: Cập nhật thông tin phim, ghi đè danh mục thể loại cũ và ghi log "Edit Movie".
+  - `DELETE /api/products/{id}`: Xóa phim cùng các thực thể phụ thuộc liên quan (Episodes, MovieImages) và ghi log "Delete Movie".
+
+#### Bảo Mật Với Cookie-Based Auth & Identity
+* **Phân quyền truy cập:** Thêm `[Authorize(Roles = "Admin")]` cho `ProductsApiController` để đảm bảo chỉ những tài khoản Admin mới có quyền thao tác trên tài nguyên phim.
+* **Tích hợp Audit Log:** Tự động bắt thông tin Admin đang đăng nhập thông qua `UserManager<ApplicationUser>` để ghi log hệ thống chi tiết vào DB.
+
+#### Cấu Hình Swagger UI & API Explorer (`Program.cs`)
+* Đăng ký SwaggerGen chia thành 2 nhóm tài liệu riêng biệt:
+  - **`FILMIX Cart API v1`**: Gom các endpoints chứa `CartApi` dùng cho giỏ hàng.
+  - **`FILMIX Products API v1`**: Gom các endpoints chứa `ProductsApi` dùng cho quản lý phim của Admin.
+* Cấu hình định nghĩa bảo mật `cookieAuth` loại `ApiKey` trong Cookie nhằm hỗ trợ kiểm thử tiện lợi trên giao diện Swagger UI sau khi đăng nhập tài khoản.
+* Tự động ẩn schemas models mặc định để tăng tính thẩm mỹ (`DefaultModelsExpandDepth(-1)`).
+
+---
+
 ## 📅 Nhật Ký Cập Nhật Sáng (05/06/2026) — Xây Dựng RESTful Cart API Hoàn Chỉnh
 
 Đã hoàn thành phân tích dự án FILMIX ASP.NET Core MVC 8 hiện tại và xây dựng hệ thống **RESTful Cart API** hoàn chỉnh sử dụng kiến trúc Repository + Service hiện có, đảm bảo không ảnh hưởng đến `CartController` MVC cũ.
@@ -267,24 +301,26 @@ Hôm nay chúng ta đã tập trung hoàn thiện các tính năng tương tác 
 HUTECH_LTW.FILMIX/
 ├── Controllers/
 │   ├── CartApiController.cs         ✅ MỚI (RESTful Cart API Controller)
+│   ├── ProductsApiController.cs     ✅ MỚI (RESTful Products API Controller)
 │   ├── AccountController.cs         ✅ SỬA (Thêm action Profile & authorization)
 │   ├── CartController.cs            ✅ MỚI (Xử lý giỏ hàng: thêm, xóa, cập nhật)
 │   └── OrderController.cs           ✅ MỚI (Xử lý Checkout, Payment instructions, Success, History)
 ├── Models/
 │   ├── DTOs/
-│   │   └── CartDtos.cs              ✅ MỚI (DTOs & ApiResponse cho Cart API)
+│   │   ├── CartDtos.cs              ✅ MỚI (DTOs & ApiResponse cho Cart API)
+│   │   └── MovieDtos.cs             ✅ MỚI (DTOs cho Products API)
 │   ├── Entities/
 │   │   ├── ApplicationUser.cs       ✅ SỬA (PremiumStartDate, PremiumEndDate)
 │   │   └── Entities.cs              ✅ SỬA (OrderStatus, Order, OrderItem)
 │   └── ViewModels/
 │       └── CartViewModels.cs        ✅ MỚI (CartItemViewModel & CheckoutViewModel)
-├── Program.cs                       ✅ SỬA (Cấu hình custom API Model Validation Response)
+├── Program.cs                       ✅ SỬA (Cấu hình custom API Model Validation Response, Swagger UI)
 ├── Services/
 │   ├── CartService.cs               ✅ MỚI (Giỏ hàng lưu ISession)
 │   ├── ICartService.cs              ✅ MỚI (Interface giỏ hàng)
 │   ├── IOrderService.cs             ✅ MỚI (Interface dịch vụ đơn hàng & đồng bộ lifecycle)
 │   └── OrderService.cs              ✅ MỚI (Dịch vụ đơn hàng, lưu DB, kích hoạt premium & đồng bộ lifecycle)
-├── README.md                        ✅ MỚI (Tài liệu hướng dẫn dự án chuẩn)
+├── README.md                        ✅ SỬA (Cập nhật tài liệu hướng dẫn và các tính năng mới)
 └── current-state.md                 ✅ SỬA (Cập nhật nhật ký phát triển)
 ```
 
