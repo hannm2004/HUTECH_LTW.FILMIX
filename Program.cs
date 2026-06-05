@@ -1,12 +1,83 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using untitled1.Data;
 using untitled1.Models.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            var response = untitled1.Models.DTOs.ApiResponse<object>.ErrorResponse("Dữ liệu đầu vào không hợp lệ.", errors);
+            return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(response);
+        };
+    });
+
+// ── Swagger / OpenAPI ─────────────────────────────────────────────────────
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Cart API group
+    c.SwaggerDoc("cart", new OpenApiInfo
+    {
+        Title        = "FILMIX – Cart API",
+        Version      = "v1",
+        Description  = "RESTful API quản lý giỏ hàng (Session-based) cho FILMIX.",
+        Contact      = new OpenApiContact { Name = "FILMIX Dev Team" }
+    });
+
+    // Products API group
+    c.SwaggerDoc("products", new OpenApiInfo
+    {
+        Title        = "FILMIX – Products API",
+        Version      = "v1",
+        Description  = "RESTful CRUD API quản lý phim/sản phẩm dành cho Admin.",
+        Contact      = new OpenApiContact { Name = "FILMIX Dev Team" }
+    });
+
+    // Cookie-based auth annotation
+    c.AddSecurityDefinition("cookieAuth", new OpenApiSecurityScheme
+    {
+        Type   = SecuritySchemeType.ApiKey,
+        In     = ParameterLocation.Cookie,
+        Name   = ".AspNetCore.Identity.Application",
+        Description = "ASP.NET Core Identity cookie (đăng nhập trước tại /Account/Auth, sau đó cookie sẽ được tự động gửi kèm)."
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        [
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "cookieAuth" }
+            }
+        ] = Array.Empty<string>()
+    });
+
+    // Route the controllers into correct doc groups
+    c.DocInclusionPredicate((docName, apiDesc) =>
+    {
+        if (!apiDesc.TryGetMethodInfo(out var mi)) return false;
+        var controllerName = mi.DeclaringType?.Name ?? string.Empty;
+        return docName switch
+        {
+            "cart"     => controllerName.Contains("CartApi"),
+            "products" => controllerName.Contains("ProductsApi"),
+            _          => false
+        };
+    });
+});
 
 // Register HttpContextAccessor & Session support
 builder.Services.AddHttpContextAccessor();
@@ -115,7 +186,20 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    // ── Swagger UI (chỉ hiện trong môi trường Development) ────────────────
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/cart/swagger.json",     "FILMIX Cart API v1");
+        c.SwaggerEndpoint("/swagger/products/swagger.json", "FILMIX Products API v1");
+        c.RoutePrefix = "swagger"; // truy cập tại /swagger
+        c.DocumentTitle = "FILMIX API Explorer";
+        c.DefaultModelsExpandDepth(-1); // ẩn schema models mặc định
+    });
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
 }

@@ -1,4 +1,38 @@
-# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 04/06/2026
+# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 05/06/2026
+
+---
+
+## 📅 Nhật Ký Cập Nhật Sáng (05/06/2026) — Xây Dựng RESTful Cart API Hoàn Chỉnh
+
+Đã hoàn thành phân tích dự án FILMIX ASP.NET Core MVC 8 hiện tại và xây dựng hệ thống **RESTful Cart API** hoàn chỉnh sử dụng kiến trúc Repository + Service hiện có, đảm bảo không ảnh hưởng đến `CartController` MVC cũ.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### DTOs & Validation Layer
+* **`CartDtos.cs`** (`Models/DTOs/CartDtos.cs`): Định nghĩa các request/response DTOs chuẩn hóa:
+  - `AddToCartDto`: Request thêm sản phẩm (chỉ cần `PlanId` bắt buộc).
+  - `UpdateQuantityDto`: Request cập nhật số lượng (giới hạn từ 1 đến 100).
+  - `ApiResponse<T>`: Cấu trúc JSON chuẩn hóa chung (`Success`, `Message`, `Data`, `Errors`).
+  - `CartDto`, `CartItemDto`, `UserInfoDto`: DTOs đóng gói dữ liệu giỏ hàng và thông tin người dùng hiện tại phục vụ client-side.
+
+#### RESTful Controller API Layer
+* **`CartApiController.cs`** (`Controllers/CartApiController.cs`): Controller mới kế thừa `ControllerBase` với attribute `[ApiController]` xử lý các API:
+  - `GET /api/cart`: Lấy thông tin giỏ hàng hiện tại.
+  - `POST /api/cart/items`: Thêm gói dịch vụ vào giỏ hàng (nhận `AddToCartDto` trong request body).
+  - `PUT /api/cart/items/{planId}`: Cập nhật số lượng của một gói cụ thể (nhận `UpdateQuantityDto` trong request body).
+  - `DELETE /api/cart/items/{planId}`: Xóa một gói cụ thể ra khỏi giỏ hàng.
+  - `DELETE /api/cart`: Xóa sạch toàn bộ giỏ hàng.
+
+#### Tích Hợp ASP.NET Identity & Session
+* **Xác định User hiện tại:** Sử dụng `UserManager<ApplicationUser>` kết hợp `User.Identity.IsAuthenticated` để phát hiện và tự động điền thông tin chi tiết của người dùng đang đăng nhập (bao gồm trạng thái Premium) vào trường `User` của `CartDto`.
+* **Tái sử dụng Service:** Kế thừa nguyên vẹn `ICartService` và `CartService` lưu trữ trong HTTP Session để đảm bảo dữ liệu giỏ hàng trên API đồng bộ 100% với giao diện MVC truyền thống.
+
+#### Cấu Hình API Validation & DI (`Program.cs`)
+* Tích hợp cấu hình `ConfigureApiBehaviorOptions` tùy biến `InvalidModelStateResponseFactory`. Khi client gửi dữ liệu không hợp lệ (ví dụ số lượng ngoài khoảng 1-100), hệ thống sẽ tự động chặn từ middleware và trả về HTTP 400 Bad Request kèm format lỗi chuẩn `ApiResponse`.
+
+#### Build & Tài Liệu
+* **✅ Build Succeeded 100% — 0 Errors, 1 Warning.**
+* **Tài Liệu Chi Tiết:** Đã biên soạn tài liệu đặc tả API đầy đủ kèm ví dụ Request/Response JSON tại `C:\Users\HP\.gemini\antigravity\brain\847bfc9d-88b2-494b-8a25-f3996b1cb2a0/cart_api_documentation.md`.
 
 ---
 
@@ -227,48 +261,31 @@ Hôm nay chúng ta đã tập trung hoàn thiện các tính năng tương tác 
 
 ---
 
-## 📁 Cấu Trúc Các File Đã Thêm / Sửa Hôm Nay (02/06)
+## 📁 Cấu Trúc Các File Đã Thêm / Sửa Hôm Nay (05/06)
 
 ```
 HUTECH_LTW.FILMIX/
-├── Areas/Admin/
-│   ├── Controllers/
-│   │   └── OrderController.cs       ✅ MỚI (Quản lý đơn hàng admin & kích hoạt premium)
-│   └── Views/
-│       └── Order/
-│           └── Index.cshtml         ✅ MỚI (Giao diện Quản lý Đơn hàng & Nút Đồng bộ vòng đời)
 ├── Controllers/
+│   ├── CartApiController.cs         ✅ MỚI (RESTful Cart API Controller)
 │   ├── AccountController.cs         ✅ SỬA (Thêm action Profile & authorization)
 │   ├── CartController.cs            ✅ MỚI (Xử lý giỏ hàng: thêm, xóa, cập nhật)
 │   └── OrderController.cs           ✅ MỚI (Xử lý Checkout, Payment instructions, Success, History)
 ├── Models/
+│   ├── DTOs/
+│   │   └── CartDtos.cs              ✅ MỚI (DTOs & ApiResponse cho Cart API)
 │   ├── Entities/
 │   │   ├── ApplicationUser.cs       ✅ SỬA (PremiumStartDate, PremiumEndDate)
 │   │   └── Entities.cs              ✅ SỬA (OrderStatus, Order, OrderItem)
 │   └── ViewModels/
 │       └── CartViewModels.cs        ✅ MỚI (CartItemViewModel & CheckoutViewModel)
+├── Program.cs                       ✅ SỬA (Cấu hình custom API Model Validation Response)
 ├── Services/
 │   ├── CartService.cs               ✅ MỚI (Giỏ hàng lưu ISession)
 │   ├── ICartService.cs              ✅ MỚI (Interface giỏ hàng)
 │   ├── IOrderService.cs             ✅ MỚI (Interface dịch vụ đơn hàng & đồng bộ lifecycle)
 │   └── OrderService.cs              ✅ MỚI (Dịch vụ đơn hàng, lưu DB, kích hoạt premium & đồng bộ lifecycle)
-├── Views/
-│   ├── Account/
-│   │   └── Profile.cshtml           ✅ MỚI (Giao diện thông tin tài khoản, hạn Premium & Lịch sử mua hàng)
-│   ├── Cart/
-│   │   └── Index.cshtml             ✅ MỚI (Giao diện giỏ hàng Netflix dark theme)
-│   ├── Order/
-│   │   ├── Checkout.cshtml          ✅ MỚI (Giao diện điền thông tin đơn hàng & validation)
-│   │   ├── History.cshtml           ✅ MỚI (Giao diện lịch sử đơn hàng của người dùng)
-│   │   ├── Payment.cshtml           ✅ MỚI (Trang hướng dẫn thanh toán QR/mock ngân hàng)
-│   │   └── Success.cshtml           ✅ MỚI (Trang thanh toán thành công kèm hiệu ứng confetti)
-│   └── Shared/
-│   ├── css/
-│   │   └── style.css                ✅ SỬA (Bổ sung shimmer skeleton loading)
-│   └── js/
-│       └── netflix-slider.js        ✅ SỬA (Thêm logic applySkeletons chờ load ảnh)
 ├── README.md                        ✅ MỚI (Tài liệu hướng dẫn dự án chuẩn)
-└── current-state.md                 ✅ SỬA (Cập nhật nhật ký ngày 28/05)
+└── current-state.md                 ✅ SỬA (Cập nhật nhật ký phát triển)
 ```
 
 ---

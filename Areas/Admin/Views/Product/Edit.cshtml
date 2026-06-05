@@ -102,4 +102,69 @@
         @@media (max-width: 600px) { .form-row-2col { grid-template-columns: 1fr; } }
         textarea.form-control { resize: vertical; min-height: 100px; font-family: inherit; }
     </style>
+    <script>
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('.btn-submit');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Đang xử lý...';
+            
+            const id = parseInt(document.getElementById('Id').value);
+            
+            const categoryIds = [];
+            document.querySelectorAll('input[name="selectedCategories"]:checked').forEach(cb => {
+                categoryIds.push(parseInt(cb.value));
+            });
+            
+            const payload = {
+                id: id,
+                title: document.getElementById('Title').value,
+                year: parseInt(document.getElementById('Year').value),
+                imageUrl: document.getElementById('ImageUrl').value,
+                genre: document.getElementById('Genre').value,
+                director: document.getElementById('Director').value,
+                cast: document.getElementById('Cast').value,
+                description: document.getElementById('Description').value,
+                trailerUrl: document.getElementById('TrailerUrl').value,
+                isTVSeries: document.getElementById('IsTVSeries').checked,
+                categoryIds: categoryIds
+            };
+            
+            try {
+                const response = await fetch(`/api/products/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert(result.message || 'Cập nhật phim thành công!');
+                    window.location.href = '/Admin/Product';
+                } else {
+                    let errMsg = result.message || 'Đã có lỗi xảy ra.';
+                    if (result.errors) {
+                        const errorsList = [];
+                        for (const key in result.errors) {
+                            if (result.errors.hasOwnProperty(key)) {
+                                errorsList.push(result.errors[key].join('\n'));
+                            }
+                        }
+                        errMsg += '\n' + errorsList.join('\n');
+                    }
+                    alert(errMsg);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Không thể kết nối đến máy chủ.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+    </script>
 }
