@@ -193,6 +193,39 @@ builder.Services.AddAuthentication()
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
             ClockSkew = TimeSpan.Zero
         };
+
+        // ── Trả JSON thay vì HTML khi JWT xác thực thất bại ──────────────
+        options.Events = new JwtBearerEvents
+        {
+            // 401 — Token không có hoặc không hợp lệ
+            OnChallenge = async context =>
+            {
+                context.HandleResponse(); // Ngăn handler mặc định chạy
+                context.Response.StatusCode  = 401;
+                context.Response.ContentType = "application/json; charset=utf-8";
+                var body = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    success    = false,
+                    message    = "Unauthorized. Vui lòng cung cấp JWT Token hợp lệ.",
+                    statusCode = 401
+                });
+                await context.Response.WriteAsync(body);
+            },
+
+            // 403 — Token hợp lệ nhưng không đủ quyền (Role)
+            OnForbidden = async context =>
+            {
+                context.Response.StatusCode  = 403;
+                context.Response.ContentType = "application/json; charset=utf-8";
+                var body = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    success    = false,
+                    message    = "Forbidden. Bạn không có quyền truy cập tài nguyên này.",
+                    statusCode = 403
+                });
+                await context.Response.WriteAsync(body);
+            }
+        };
     });
 
 var app = builder.Build();
@@ -270,7 +303,11 @@ else
 }
 
 // Custom status code pages (404, 500, etc.) — works in all environments
-app.UseStatusCodePagesWithReExecute("/Error/{0}");
+// Bỏ qua redirect HTML cho các API request — trả thẳng status code
+app.UseWhen(
+    context => !context.Request.Path.StartsWithSegments("/api"),
+    appBuilder => appBuilder.UseStatusCodePagesWithReExecute("/Error/{0}")
+);
 
 app.UseRouting();
 app.UseSession();
