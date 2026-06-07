@@ -370,3 +370,9 @@ HUTECH_LTW.FILMIX/
   - Các API profile, products và cart yêu cầu JWT Bearer xác thực chính xác, trả về mã 401 khi không truyền Token.
   - Các trang MVC chạy Cookie Authentication truyền thống hoạt động bình thường, không bị ảnh hưởng hay xung đột.
 * **Tiến Độ Dự Án**: 🏆 **Hoàn thành 100%** toàn bộ các tính năng theo yêu cầu mở rộng về REST API JWT Authentication!
+  - Homepage & Hero Banner hoạt động hoàn hảo.
+  - Search & Suggestion dropdown mượt mà, không lỗi giao diện.
+  - Trang chi tiết hiển thị dữ liệu DB thực, slider phim tương tự cuộn tốt.
+  - Watchlist quản lý dữ liệu động & skeleton loading chạy chuẩn.
+  - Các trang lỗi bắt lỗi định tuyến chính xác và hiển thị đẹp mắt.
+* **Tiến Độ Dự Án**: 🏆 **Hoàn thành 100%** toàn bộ các tính năng cốt lõi và bổ sung nâng cao! Dự án ở trạng thái ổn định nhất để bàn giao/bảo vệ.
