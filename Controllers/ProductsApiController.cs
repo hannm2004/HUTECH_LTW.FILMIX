@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using untitled1.Data;
 using untitled1.Models.DTOs;
 using untitled1.Models.Entities;
@@ -15,7 +16,7 @@ namespace untitled1.Controllers
 {
     [ApiController]
     [Route("api/products")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public class ProductsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
