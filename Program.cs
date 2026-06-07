@@ -4,6 +4,11 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using untitled1.Data;
 using untitled1.Models.Entities;
+using untitled1.Models.Settings;
+using untitled1.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +34,15 @@ builder.Services.AddControllersWithViews()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    // Auth API group
+    c.SwaggerDoc("auth", new OpenApiInfo
+    {
+        Title        = "FILMIX – Auth API",
+        Version      = "v1",
+        Description  = "RESTful API xác thực và quản lý tài khoản bằng JWT cho FILMIX.",
+        Contact      = new OpenApiContact { Name = "FILMIX Dev Team" }
+    });
+
     // Cart API group
     c.SwaggerDoc("cart", new OpenApiInfo
     {
@@ -55,14 +69,34 @@ builder.Services.AddSwaggerGen(c =>
         Name   = ".AspNetCore.Identity.Application",
         Description = "ASP.NET Core Identity cookie (đăng nhập trước tại /Account/Auth, sau đó cookie sẽ được tự động gửi kèm)."
     });
+
+    // JWT Bearer auth annotation
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Nhập 'Bearer [space] <your token>' bên dưới.\nVí dụ: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    });
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
-        [
+        {
             new OpenApiSecurityScheme
             {
                 Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "cookieAuth" }
-            }
-        ] = Array.Empty<string>()
+            },
+            Array.Empty<string>()
+        },
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            Array.Empty<string>()
+        }
     });
 
     // Route the controllers into correct doc groups
@@ -72,6 +106,7 @@ builder.Services.AddSwaggerGen(c =>
         var controllerName = mi.DeclaringType?.Name ?? string.Empty;
         return docName switch
         {
+            "auth"     => controllerName.Contains("AuthApi"),
             "cart"     => controllerName.Contains("CartApi"),
             "products" => controllerName.Contains("ProductsApi"),
             _          => false
@@ -100,6 +135,10 @@ builder.Services.AddScoped<untitled1.Services.IOrderService, untitled1.Services.
 builder.Services.AddScoped<untitled1.Services.IAdminService, untitled1.Services.AdminService>();
 builder.Services.AddScoped<untitled1.Services.IRecommendationService, untitled1.Services.RecommendationService>();
 builder.Services.AddScoped<untitled1.Services.ILogService, untitled1.Services.LogService>();
+
+// Register JWT configuration and services
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var dbProvider = builder.Configuration["DbProvider"] ?? "MySql";
@@ -130,6 +169,31 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Auth";
 });
+
+// Configure JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+if (jwtSettings == null)
+{
+    throw new InvalidOperationException("Cấu hình JwtSettings chưa được khai báo trong appsettings.json");
+}
+
+builder.Services.AddAuthentication()
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
 var app = builder.Build();
 
@@ -192,6 +256,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
+        c.SwaggerEndpoint("/swagger/auth/swagger.json",     "FILMIX Auth API v1");
         c.SwaggerEndpoint("/swagger/cart/swagger.json",     "FILMIX Cart API v1");
         c.SwaggerEndpoint("/swagger/products/swagger.json", "FILMIX Products API v1");
         c.RoutePrefix = "swagger"; // truy cập tại /swagger

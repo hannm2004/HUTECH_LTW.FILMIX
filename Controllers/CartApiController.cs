@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using untitled1.Models.DTOs;
@@ -12,6 +14,7 @@ namespace untitled1.Controllers
 {
     [ApiController]
     [Route("api/cart")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CartApiController : ControllerBase
     {
         private readonly ICartService _cartService;
