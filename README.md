@@ -17,9 +17,10 @@
 | 🔐 **Authentication** | Đăng nhập / Đăng ký với ASP.NET Identity, CSRF token bảo mật |
 | 👑 **Admin Dashboard v2** | Thống kê nâng cao, KPI tổng quan, biểu đồ trực quan, quản lý người dùng, đơn hàng, gói đăng ký |
 | 🎭 **Detail Page** | Mô tả thực từ DB, diễn viên, đạo diễn, Similar Movies slider |
-| 🛡️ **Swagger UI** | Phân nhóm tài liệu API (Cart/Products), tích hợp kiểm thử xác thực Cookie-based Identity |
-| 🛒 **Cart API** | RESTful Cart API (Session-based) CRUD quản lý giỏ hàng nhanh |
-| 🎬 **Products API** | RESTful CRUD API phim dành cho Admin được phân quyền bảo mật chặt chẽ |
+| 🛡️ **Swagger UI** | Phân nhóm tài liệu API (Auth/Cart/Products), hỗ trợ kiểm thử xác thực Bearer Token & Cookie |
+| 🔑 **JWT Auth API** | Xác thực REST API bằng JSON Web Token, tách biệt hoàn toàn với Cookie của MVC |
+| 🛒 **Cart API** | RESTful Cart API (Session-based) bảo mật bằng JWT |
+| 🎬 **Products API** | RESTful CRUD API phim dành cho Admin bảo mật bằng JWT |
 | 💳 **Payment System** | Quy trình thanh toán Premium 3D flip card, confetti thành công, quản lý gói cước |
 | 🪵 **Audit Logging** | Centralized System Logs ghi lại 12+ hành động của người dùng/Admin |
 | 🧠 **Recommendation** | Đề xuất phim cá nhân hóa dựa trên lịch sử xem của người dùng |
@@ -103,8 +104,9 @@ HUTECH_LTW.FILMIX/
 │   └── Views/                    # Dashboard, User, Subscription, Analytics views
 ├── Controllers/
 │   ├── AccountController.cs      # Login / Register / Logout / Profile
-│   ├── CartApiController.cs      # API giỏ hàng (RESTful Session-based)
-│   ├── ProductsApiController.cs  # API CRUD phim (RESTful Admin-only)
+│   ├── AuthApiController.cs      # API JWT xác thực (Login & Profile)
+│   ├── CartApiController.cs      # API giỏ hàng (RESTful JWT-secured)
+│   ├── ProductsApiController.cs  # API CRUD phim (RESTful Admin JWT-secured)
 │   ├── ErrorController.cs        # Custom 404 / 500
 │   ├── HomeController.cs         # Đề xuất phim cá nhân hóa & Trang chủ
 │   ├── MovieController.cs
@@ -118,15 +120,21 @@ HUTECH_LTW.FILMIX/
 │   └── DbSeeder.cs               # Seed roles & admin accounts
 ├── Models/
 │   ├── Entities/
+│   │   ├── ApplicationUser.cs
 │   │   └── Entities.cs           # Movie, Episode, Category, SubscriptionPlan, UserSubscription, SystemLog
+│   ├── Settings/
+│   │   └── JwtSettings.cs        # Cấu hình cài đặt JWT
 │   ├── DTOs/
-│   │   ├── CartDtos.cs           # Cart request DTOs & ApiResponse
+│   │   ├── AuthDtos.cs           # DTOs cho JWT auth
+│   │   ├── CartDtos.cs           # Cart request DTOs & ApiResponse dùng chung
 │   │   └── MovieDtos.cs          # Products request DTOs
 │   └── ViewModels/
 │       ├── AdminViewModels.cs    # ViewModels cho dashboard & quản trị
 │       └── CartViewModels.cs     # ViewModels cho thanh toán
 ├── Services/
 │   ├── CartService.cs            # Logic giỏ hàng Session
+│   ├── IJwtService.cs            # Interface sinh Token JWT
+│   ├── JwtService.cs             # Logic Claims & sinh Token JWT
 │   ├── OrderService.cs           # Đơn hàng, thanh toán, kích hoạt Premium
 │   ├── RecommendationService.cs  # Đề xuất cá nhân hóa & Top analytics
 │   └── LogService.cs             # Ghi log hoạt động hệ thống (SystemLog)
@@ -164,6 +172,7 @@ HUTECH_LTW.FILMIX/
 |--------|-------|
 | `main` | Stable production code |
 | `feature/api-swagger-integration` | RESTful Cart & Products APIs + Swagger UI integration |
+| `feature/jwt-authentication` | JWT Bearer Authentication for REST APIs |
 
 ---
 
@@ -177,6 +186,7 @@ HUTECH_LTW.FILMIX/
 - [x] Phase 6: Premium Payment + Subscription Management
 - [x] Phase 7: Analytics, System Audit Logs & Recommendation System
 - [x] Phase 8: RESTful API Development (Cart & Products) & Swagger UI
+- [x] Phase 9: RESTful API JWT Authentication & API Authorization
 
 ---
 

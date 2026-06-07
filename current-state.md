@@ -283,6 +283,47 @@ Hôm nay chúng ta đã tập trung hoàn thiện các tính năng tương tác 
 
 ---
 
+## 📅 Nhật Ký Cập Nhật Chiều (07/06/2026) — Tích Hợp JWT Authentication Cho REST APIs
+
+Đã triển khai thành công hệ thống **JWT Authentication** dành riêng cho REST APIs (`CartApiController`, `ProductsApiController`, `AuthApiController`), giữ nguyên hệ thống **Cookie Authentication & ASP.NET Identity** hiện có cho các trang MVC.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### JWT Configuration & Settings
+* **`appsettings.json`**: Thêm cấu hình `"JwtSettings"` chứa `Secret`, `Issuer`, `Audience` và `ExpiryInMinutes`.
+* **`JwtSettings.cs`** (`Models/Settings/JwtSettings.cs`): Lớp settings ánh xạ trực tiếp từ cấu hình JSON phục vụ tiêm dependency (`IOptions<JwtSettings>`).
+
+#### DTOs & Validation Layer
+* **`AuthDtos.cs`** (`Models/DTOs/AuthDtos.cs`):
+  - `LoginRequestDto`: Request nhận `Email` và `Password` kèm ràng buộc Validation.
+  - `LoginResponseDto`: Response trả về `Token`, `ExpiresAt`, `UserName`, và `Roles`.
+  - `UserProfileDto`: Response trả về thông tin người dùng đăng nhập hiện tại và quyền hạn.
+
+#### JWT Service Layer
+* **`IJwtService.cs`** & **`JwtService.cs`** (`Services/`): Interface & Service phụ trách xử lý mã hóa JWT Token, tự động truy vấn danh sách Roles của người dùng để đính kèm vào các Claims của Token (`ClaimTypes.Role`).
+
+#### RESTful Controller API Layer
+* **`AuthApiController.cs`** (`Controllers/AuthApiController.cs`): Controller xác thực RESTful API mới:
+  - `POST /api/auth/login`: Xác thực thông tin tài khoản qua `UserManager` (không tạo Cookie), ghi log Audit tương ứng, sinh ra JWT Token trả về cho Client.
+  - `GET /api/auth/profile`: API lấy thông tin người dùng được bảo vệ bằng JWT (`[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]`).
+
+#### Cấu Hình Phân Quyền & Swagger UI (`Program.cs`)
+* **`Program.cs`**:
+  - Đăng ký `IJwtService` và tiêm cấu hình `JwtSettings` vào DI Container.
+  - Đăng ký thêm scheme `AddJwtBearer` cùng các tham số Validate chặt chẽ (Issuer, Audience, Lifetime, Signing Key).
+  - Tích hợp nhóm Swagger Doc mới là `"auth"` dành riêng cho các API xác thực.
+  - Cấu hình định nghĩa bảo mật `Bearer` để kích hoạt nút **Authorize** hỗ trợ kiểm thử trực tiếp các REST API bằng Bearer Token trên giao diện Swagger UI.
+* **Cập nhật Phân quyền**:
+  - `ProductsApiController`: Cập nhật class thành `[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]` để yêu cầu JWT Token của Admin khi truy xuất phim.
+  - `CartApiController`: Cập nhật class thành `[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]` để yêu cầu JWT Token khi thao tác giỏ hàng API.
+
+#### Tích Hợp Audit Logging
+* **`AuthApiController.cs`**: Tự động ghi lại log hoạt động vào database:
+  - Thành công: Ghi Audit Log hành động `"API Login"`.
+  - Thất bại: Ghi Audit Log hành động `"API Login Failed"`.
+
+---
+
 ## ✅ Các Tính Năng Đã Hoàn Thành Trước Đó (Tóm tắt)
 
 * **Phase 1 & 2 (Identity + Auth)**: Đăng ký, đăng nhập bảo mật bằng Identity, phân quyền Admin/User đầy đủ.
@@ -292,36 +333,31 @@ Hôm nay chúng ta đã tập trung hoàn thiện các tính năng tương tác 
 * **Continue Watching**: Ghi nhớ thời gian đã xem của từng phim định kỳ mỗi 5s, tự động phát tiếp khi mở lại, thanh tiến trình màu đỏ chuyên nghiệp.
 * **Checkout & Payment**: Giỏ hàng (Cart) sử dụng Session, trang Checkout xác thực DataAnnotations, quy trình thanh toán mô phỏng (COD, Chuyển khoản, VNPay, PayOS), tự kích hoạt Premium.
 * **Admin Dashboard & Lifecycle**: Quản lý đơn hàng, đổi trạng thái (Pending -> Paid / Completed / Cancelled), nút đồng bộ vòng đời gói dịch vụ, thông báo cảnh báo hết hạn Premium < 3 ngày.
+* **RESTful Cart & Products APIs**: Các endpoints RESTful dùng để quản lý giỏ hàng và dữ liệu phim của Admin.
 
 ---
 
-## 📁 Cấu Trúc Các File Đã Thêm / Sửa Hôm Nay (05/06)
+## 📁 Cấu Trúc Các File Đã Thêm / Sửa Hôm Nay (07/06)
 
 ```
 HUTECH_LTW.FILMIX/
 ├── Controllers/
-│   ├── CartApiController.cs         ✅ MỚI (RESTful Cart API Controller)
-│   ├── ProductsApiController.cs     ✅ MỚI (RESTful Products API Controller)
-│   ├── AccountController.cs         ✅ SỬA (Thêm action Profile & authorization)
-│   ├── CartController.cs            ✅ MỚI (Xử lý giỏ hàng: thêm, xóa, cập nhật)
-│   └── OrderController.cs           ✅ MỚI (Xử lý Checkout, Payment instructions, Success, History)
+│   ├── AuthApiController.cs         ✅ MỚI (RESTful JWT Auth Controller)
+│   ├── CartApiController.cs         ✅ SỬA (Thêm Authorize JWT Scheme)
+│   └── ProductsApiController.cs     ✅ SỬA (Thêm Authorize JWT Scheme & Admin Role)
 ├── Models/
 │   ├── DTOs/
-│   │   ├── CartDtos.cs              ✅ MỚI (DTOs & ApiResponse cho Cart API)
-│   │   └── MovieDtos.cs             ✅ MỚI (DTOs cho Products API)
-│   ├── Entities/
-│   │   ├── ApplicationUser.cs       ✅ SỬA (PremiumStartDate, PremiumEndDate)
-│   │   └── Entities.cs              ✅ SỬA (OrderStatus, Order, OrderItem)
-│   └── ViewModels/
-│       └── CartViewModels.cs        ✅ MỚI (CartItemViewModel & CheckoutViewModel)
-├── Program.cs                       ✅ SỬA (Cấu hình custom API Model Validation Response, Swagger UI)
+│   │   ├── AuthDtos.cs              ✅ MỚI (DTOs phục vụ JWT login & profile)
+│   │   └── CartDtos.cs              ✅ SỬA (ApiResponse dùng chung)
+│   └── Settings/
+│       └── JwtSettings.cs           ✅ MỚI (Cấu hình ánh xạ cài đặt JWT)
 ├── Services/
-│   ├── CartService.cs               ✅ MỚI (Giỏ hàng lưu ISession)
-│   ├── ICartService.cs              ✅ MỚI (Interface giỏ hàng)
-│   ├── IOrderService.cs             ✅ MỚI (Interface dịch vụ đơn hàng & đồng bộ lifecycle)
-│   └── OrderService.cs              ✅ MỚI (Dịch vụ đơn hàng, lưu DB, kích hoạt premium & đồng bộ lifecycle)
-├── README.md                        ✅ SỬA (Cập nhật tài liệu hướng dẫn và các tính năng mới)
-└── current-state.md                 ✅ SỬA (Cập nhật nhật ký phát triển)
+│   ├── IJwtService.cs               ✅ MỚI (Interface dịch vụ sinh JWT)
+│   └── JwtService.cs                ✅ MỚI (Dịch vụ xử lý Claims & sinh JWT)
+├── Program.cs                       ✅ SỬA (Cấu hình AddJwtBearer, Swagger Authorize, và Đăng ký DI)
+├── appsettings.json                 ✅ SỬA (Bổ sung cấu hình Secret, Issuer, Audience, Expiry)
+├── README.md                        ✅ SỬA (Bổ sung tài liệu hướng dẫn xác thực JWT)
+└── current-state.md                 ✅ SỬA (Cập nhật nhật ký phát triển JWT)
 ```
 
 ---
@@ -330,9 +366,7 @@ HUTECH_LTW.FILMIX/
 
 * **Trình Biên Dịch**: ✅ **Build Succeeded 100%** — 0 Errors, 0 Warnings!
 * **Kiểm Thử Thực Tế (Live Tested)**: ✅ **PASSED 100%** trên port `http://localhost:5241`.
-  - Homepage & Hero Banner hoạt động hoàn hảo.
-  - Search & Suggestion dropdown mượt mà, không lỗi giao diện.
-  - Trang chi tiết hiển thị dữ liệu DB thực, slider phim tương tự cuộn tốt.
-  - Watchlist quản lý dữ liệu động & skeleton loading chạy chuẩn.
-  - Các trang lỗi bắt lỗi định tuyến chính xác và hiển thị đẹp mắt.
-* **Tiến Độ Dự Án**: 🏆 **Hoàn thành 100%** toàn bộ các tính năng cốt lõi và bổ sung nâng cao! Dự án ở trạng thái ổn định nhất để bàn giao/bảo vệ.
+  - Tích hợp JWT Bearer hoạt động trơn tru. API đăng nhập trả về Token đúng cấu trúc.
+  - Các API profile, products và cart yêu cầu JWT Bearer xác thực chính xác, trả về mã 401 khi không truyền Token.
+  - Các trang MVC chạy Cookie Authentication truyền thống hoạt động bình thường, không bị ảnh hưởng hay xung đột.
+* **Tiến Độ Dự Án**: 🏆 **Hoàn thành 100%** toàn bộ các tính năng theo yêu cầu mở rộng về REST API JWT Authentication!
