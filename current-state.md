@@ -1,4 +1,32 @@
-# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 05/06/2026
+# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 08/06/2026
+
+---
+
+## 📅 Nhật Ký Cập Nhật Hôm Nay (08/06/2026) — Nâng Cấp Hệ Thống Sẵn Sàng Bảo Vệ Đồ Án (Premium Fix, Database Migration & UI Smart Trailer)
+
+Đã hoàn thành các hạng mục sửa lỗi critical, chuẩn bị dữ liệu và nâng cấp trải nghiệm người dùng trước buổi bảo vệ đồ án.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### 1. Sửa lỗi kích hoạt tài khoản Premium (Critical Fix)
+* **`SubscriptionController.cs`**: Bổ sung cập nhật trực tiếp `PremiumStartDate` và `PremiumEndDate` vào `ApplicationUser` khi thanh toán thành công, thực hiện `UpdateAsync` thông qua `UserManager` trước khi lưu CSDL.
+* **`ApplicationUser.cs`**: Tích hợp thuộc tính tính toán `IsPremium` dựa trên `PremiumEndDate` để hệ thống tự động xác nhận quyền hạn Premium theo thời gian thực (real-time).
+
+#### 2. Dọn dẹp logic cơ sở dữ liệu & Cập nhật EF Migration
+* **`Program.cs`**: Loại bỏ hoàn toàn khối lệnh `EnsureDeleted()` tự động reset DB không an toàn trong block catch lỗi khởi tạo.
+* **EF Core Migration**: Tạo bản migration `AddMovieRatingAndLocalTrailer` để thêm các cột `Rating`, `TrailerVideoUrl`, `PremiumStartDate`, `PremiumEndDate` và các bảng phụ thuộc khác vào SQL Server một cách chính thống qua `dotnet ef database update`.
+
+#### 3. Bổ sung dữ liệu phim thực tế chất lượng cao (DbSeeder)
+* **`ApplicationDbContext.cs`**: Nạp dữ liệu của 18 bộ phim & series nổi tiếng (Breaking Bad, Game of Thrones, Interstellar, Dune 2, Inception...) kèm theo mô tả chi tiết tiếng Việt, đạo diễn, diễn viên, điểm IMDb thực tế và liên kết Trailer.
+* **Danh mục thể loại**: Bổ sung thêm hai thể loại mới là "Hoạt Hình" và "Phiêu Lưu" để mở rộng cơ sở dữ liệu phân loại phim.
+
+#### 4. Nâng cấp Hero Banner & Trình phát Trailer thông minh
+* **`HeroBannerViewComponent.cs`**: Chuyển đổi từ thuật toán chọn phim ngẫu nhiên (gây nhấp nháy giao diện khi tải trang) sang việc lấy top 5 phim có Rating cao nhất và xoay vòng theo giờ hệ thống.
+* **Giao diện Hero Banner (`Default.cshtml`)**: Thêm badge điểm đánh giá vàng (⭐ Rating/10) ngay dưới tiêu đề phim.
+* **Trình phát Video thông minh (`Detail.cshtml` & `hero-banner.js`)**: Thiết lập cơ chế fallback 3 cấp độ phát video trailer:
+  1. Phát file MP4 cục bộ (`TrailerVideoUrl` đặt tại `/videos/trailers/`) nếu có.
+  2. Fallback phát iframe nhúng YouTube (`TrailerUrl`).
+  3. Fallback phát clip Big Buck Bunny mẫu nếu không cấu hình trailer.
 
 ---
 
@@ -337,27 +365,33 @@ Hôm nay chúng ta đã tập trung hoàn thiện các tính năng tương tác 
 
 ---
 
-## 📁 Cấu Trúc Các File Đã Thêm / Sửa Hôm Nay (07/06)
+## 📁 Cấu Trúc Các File Đã Thêm / Sửa Hôm Nay (08/06)
 
 ```
 HUTECH_LTW.FILMIX/
 ├── Controllers/
-│   ├── AuthApiController.cs         ✅ MỚI (RESTful JWT Auth Controller)
-│   ├── CartApiController.cs         ✅ SỬA (Thêm Authorize JWT Scheme)
-│   └── ProductsApiController.cs     ✅ SỬA (Thêm Authorize JWT Scheme & Admin Role)
+│   ├── ProductsApiController.cs     ✅ SỬA (Đồng bộ các trường Rating và TrailerVideoUrl mới)
+│   └── SubscriptionController.cs    ✅ SỬA (Sửa lỗi Premium không cập nhật cho User)
 ├── Models/
 │   ├── DTOs/
-│   │   ├── AuthDtos.cs              ✅ MỚI (DTOs phục vụ JWT login & profile)
-│   │   └── CartDtos.cs              ✅ SỬA (ApiResponse dùng chung)
-│   └── Settings/
-│       └── JwtSettings.cs           ✅ MỚI (Cấu hình ánh xạ cài đặt JWT)
-├── Services/
-│   ├── IJwtService.cs               ✅ MỚI (Interface dịch vụ sinh JWT)
-│   └── JwtService.cs                ✅ MỚI (Dịch vụ xử lý Claims & sinh JWT)
-├── Program.cs                       ✅ SỬA (Cấu hình AddJwtBearer, Swagger Authorize, và Đăng ký DI)
-├── appsettings.json                 ✅ SỬA (Bổ sung cấu hình Secret, Issuer, Audience, Expiry)
-├── README.md                        ✅ SỬA (Bổ sung tài liệu hướng dẫn xác thực JWT)
-└── current-state.md                 ✅ SỬA (Cập nhật nhật ký phát triển JWT)
+│   │   └── MovieDtos.cs             ✅ SỬA (Thêm trường Rating và TrailerVideoUrl vào DTOs)
+│   └── Entities/
+│       ├── ApplicationUser.cs       ✅ SỬA (Thêm thuộc tính tính toán IsPremium)
+│       └── Entities.cs              │   (Bổ sung Rating và TrailerVideoUrl vào Movie)
+├── ViewComponents/
+│   └── HeroBannerViewComponent.cs   ✅ SỬA (Lấy top 5 phim có Rating cao nhất thay vì random)
+├── Views/
+│   ├── Product/
+│   │   └── Detail.cshtml            ✅ SỬA (Tích hợp Smart Trailer và Badge Rating)
+│   └── Shared/Components/HeroBanner/
+│       └── Default.cshtml           ✅ SỬA (Thêm Rating badge lên Banner)
+├── wwwroot/js/
+│   └── hero-banner.js               ✅ SỬA (Tối ưu phát video trailer cục bộ)
+├── Migrations/
+│   └── *AddMovieRatingAndLocalTrailer* ✅ MỚI (Tạo database migration cho các cột mới)
+├── Program.cs                       ✅ SỬA (Loại bỏ EnsureDeleted reset DB nguy hiểm)
+├── README.md                        ✅ SỬA (Cập nhật sơ đồ nhánh Git)
+└── current-state.md                 ✅ SỬA (Cập nhật nhật ký phát triển ngày 08/06)
 ```
 
 ---
@@ -365,7 +399,11 @@ HUTECH_LTW.FILMIX/
 ## 🟢 Trạng Thái Hiện Tại Của Hệ Thống
 
 * **Trình Biên Dịch**: ✅ **Build Succeeded 100%** — 0 Errors, 0 Warnings!
+* **Cơ Sở Dữ Liệu**: ✅ **Migrations Applied Successfully** — Đã nạp 18 phim thật và các bảng thanh toán qua EF.
 * **Kiểm Thử Thực Tế (Live Tested)**: ✅ **PASSED 100%** trên port `http://localhost:5241`.
+  - Quy trình đăng ký, mua gói Premium và cập nhật hạn dùng hoạt động chuẩn xác.
+  - Hero Banner hiển thị phim nổi bật theo đánh giá sao kèm trailer thông minh.
+* **Tiến Độ Dự Án**: 🏆 **Sẵn sàng bảo vệ đồ án 100%** với cấu trúc kiến trúc vững chắc và trải nghiệm người dùng tối ưu!
   - Tích hợp JWT Bearer hoạt động trơn tru. API đăng nhập trả về Token đúng cấu trúc.
   - Các API profile, products và cart yêu cầu JWT Bearer xác thực chính xác, trả về mã 401 khi không truyền Token.
   - Các trang MVC chạy Cookie Authentication truyền thống hoạt động bình thường, không bị ảnh hưởng hay xung đột.
