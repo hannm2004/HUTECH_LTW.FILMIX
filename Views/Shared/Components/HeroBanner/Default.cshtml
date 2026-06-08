@@ -2,9 +2,14 @@
 
 @if (Model != null)
 {
-    var hasVideo = !string.IsNullOrWhiteSpace(Model.TrailerUrl);
+    var hasYouTube = !string.IsNullOrWhiteSpace(Model.TrailerUrl);
+    var hasLocalVideo = !string.IsNullOrWhiteSpace(Model.TrailerVideoUrl);
+    var hasAnyTrailer = hasLocalVideo || hasYouTube;
     
-    <div id="heroBanner" class="hero-banner" data-video-url="@(hasVideo ? Model.TrailerUrl : "")" role="region" aria-label="Phim nổi bật">
+    <div id="heroBanner" class="hero-banner"
+         data-video-url="@(hasLocalVideo ? Model.TrailerVideoUrl : (hasYouTube ? Model.TrailerUrl : ""))"
+         data-video-is-local="@(hasLocalVideo ? "true" : "false")"
+         role="region" aria-label="Phim nổi bật">
         <!-- ── Background Image ── -->
         <div class="hero-banner__bg" style="background-image: url('@Model.ImageUrl');" onerror="this.style.backgroundImage=&quot;url('/images/movies/default.jpg')&quot;"></div>
 
@@ -31,6 +36,13 @@
                 @if (Model.IsTVSeries)
                 {
                     <span class="hero-banner__chip hero-banner__chip--genre">TV Series</span>
+                }
+                @if (Model.Rating > 0)
+                {
+                    <span class="hero-banner__chip" style="background: rgba(245,197,24,0.2); border-color: #f5c518; color: #f5c518; display: inline-flex; align-items: center; gap: 4px;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        @Model.Rating.ToString("0.0")
+                    </span>
                 }
             </div>
 
@@ -68,6 +80,7 @@
         </button>
     </div>
 }
+
 else
 {
     <section class="hero hero-banner--fallback">

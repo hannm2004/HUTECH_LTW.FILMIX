@@ -19,21 +19,31 @@ namespace untitled1.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            // Lấy danh sách phim có hình ảnh để làm Hero Banner
-            var movies = await _context.Movies
-                .Where(m => !string.IsNullOrEmpty(m.ImageUrl))
+            // Lấy top 5 phim có rating cao nhất để làm Hero Banner
+            var topMovies = await _context.Movies
+                .Where(m => !string.IsNullOrEmpty(m.ImageUrl) && m.Rating > 0)
+                .OrderByDescending(m => m.Rating)
+                .Take(5)
                 .ToListAsync();
 
-            Movie? randomMovie = null;
-
-            if (movies.Any())
+            // Nếu không có phim có rating, fallback về tất cả phim có ảnh
+            if (!topMovies.Any())
             {
-                // Chọn ngẫu nhiên 1 phim
-                var random = new Random();
-                randomMovie = movies[random.Next(movies.Count)];
+                topMovies = await _context.Movies
+                    .Where(m => !string.IsNullOrEmpty(m.ImageUrl))
+                    .Take(5)
+                    .ToListAsync();
             }
 
-            return View("Default", randomMovie);
+            // Rotate theo giờ để banner tự động đổi phim mỗi giờ (không random mỗi request)
+            Movie? featuredMovie = null;
+            if (topMovies.Any())
+            {
+                var hourSlot = DateTime.Now.Hour % topMovies.Count;
+                featuredMovie = topMovies[hourSlot];
+            }
+
+            return View("Default", featuredMovie);
         }
     }
 }

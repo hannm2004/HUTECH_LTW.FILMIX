@@ -68,6 +68,8 @@ namespace untitled1.Controllers
                 Year = m.Year,
                 Genre = m.Genre,
                 IsTVSeries = m.IsTVSeries,
+                Rating = m.Rating,
+                TrailerVideoUrl = m.TrailerVideoUrl,
                 Categories = m.MovieCategories.Select(mc => mc.Category.Name).ToList()
             }).ToList();
 
@@ -109,6 +111,8 @@ namespace untitled1.Controllers
                 Cast = movie.Cast,
                 Description = movie.Description,
                 TrailerUrl = movie.TrailerUrl,
+                TrailerVideoUrl = movie.TrailerVideoUrl,
+                Rating = movie.Rating,
                 CategoryIds = movie.MovieCategories.Select(mc => mc.CategoryId).ToList(),
                 Categories = movie.MovieCategories.Select(mc => mc.Category.Name).ToList()
             };
@@ -130,7 +134,9 @@ namespace untitled1.Controllers
                 Director = dto.Director ?? string.Empty,
                 Cast = dto.Cast ?? string.Empty,
                 Description = dto.Description ?? string.Empty,
-                TrailerUrl = dto.TrailerUrl ?? string.Empty
+                TrailerUrl = dto.TrailerUrl ?? string.Empty,
+                TrailerVideoUrl = dto.TrailerVideoUrl,
+                Rating = dto.Rating
             };
 
             _context.Movies.Add(movie);
@@ -163,6 +169,8 @@ namespace untitled1.Controllers
                 Cast = createdMovie.Cast,
                 Description = createdMovie.Description,
                 TrailerUrl = createdMovie.TrailerUrl,
+                TrailerVideoUrl = createdMovie.TrailerVideoUrl,
+                Rating = createdMovie.Rating,
                 CategoryIds = createdMovie.MovieCategories.Select(mc => mc.CategoryId).ToList(),
                 Categories = createdMovie.MovieCategories.Select(mc => mc.Category.Name).ToList()
             };
@@ -206,6 +214,8 @@ namespace untitled1.Controllers
             movie.Cast = dto.Cast ?? string.Empty;
             movie.Description = dto.Description ?? string.Empty;
             movie.TrailerUrl = dto.TrailerUrl ?? string.Empty;
+            movie.TrailerVideoUrl = dto.TrailerVideoUrl;
+            movie.Rating = dto.Rating;
 
             // Update Categories
             var existingCategories = _context.MovieCategories.Where(mc => mc.MovieId == id);
@@ -239,6 +249,8 @@ namespace untitled1.Controllers
                 Cast = updatedMovie.Cast,
                 Description = updatedMovie.Description,
                 TrailerUrl = updatedMovie.TrailerUrl,
+                TrailerVideoUrl = updatedMovie.TrailerVideoUrl,
+                Rating = updatedMovie.Rating,
                 CategoryIds = updatedMovie.MovieCategories.Select(mc => mc.CategoryId).ToList(),
                 Categories = updatedMovie.MovieCategories.Select(mc => mc.Category.Name).ToList()
             };
