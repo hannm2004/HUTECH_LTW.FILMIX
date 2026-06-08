@@ -29,6 +29,12 @@ namespace untitled1.Models.Entities
         /// Optional – hover preview falls back to a placeholder if empty.</summary>
         public string TrailerUrl { get; set; } = string.Empty;
 
+        /// <summary>Local MP4 trailer path (e.g. /videos/trailers/interstellar.mp4).
+        /// If populated, plays local MP4; otherwise falls back to YouTube embed.</summary>
+        public string? TrailerVideoUrl { get; set; }
+
+        public double Rating { get; set; } = 0.0;
+
         // Many-to-many relationship with Categories via join table
         public ICollection<MovieCategory> MovieCategories { get; set; } = new List<MovieCategory>();
 

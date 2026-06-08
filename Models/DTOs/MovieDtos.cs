@@ -11,6 +11,8 @@ namespace untitled1.Models.DTOs
         public int Year { get; set; }
         public string Genre { get; set; } = string.Empty;
         public bool IsTVSeries { get; set; }
+        public double Rating { get; set; }
+        public string? TrailerVideoUrl { get; set; }
         public List<string> Categories { get; set; } = new List<string>();
     }
 
@@ -26,6 +28,8 @@ namespace untitled1.Models.DTOs
         public string Cast { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string TrailerUrl { get; set; } = string.Empty;
+        public string? TrailerVideoUrl { get; set; }
+        public double Rating { get; set; }
         public List<int> CategoryIds { get; set; } = new List<int>();
         public List<string> Categories { get; set; } = new List<string>();
     }
@@ -59,6 +63,8 @@ namespace untitled1.Models.DTOs
         public string? Description { get; set; }
 
         public string? TrailerUrl { get; set; }
+        public string? TrailerVideoUrl { get; set; }
+        public double Rating { get; set; }
 
         public List<int> CategoryIds { get; set; } = new List<int>();
     }
@@ -95,6 +101,8 @@ namespace untitled1.Models.DTOs
         public string? Description { get; set; }
 
         public string? TrailerUrl { get; set; }
+        public string? TrailerVideoUrl { get; set; }
+        public double Rating { get; set; }
 
         public List<int> CategoryIds { get; set; } = new List<int>();
     }

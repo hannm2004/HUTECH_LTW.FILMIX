@@ -237,35 +237,14 @@ using (var scope = app.Services.CreateScope())
     try
     {
         db.Database.EnsureCreated();
-        // Test query to verify if the schema is up-to-date (checks if Episodes table exists, Movies has Director/Cast columns, and Identity tables exist)
-        _ = db.Episodes.OrderBy(e => e.Id).FirstOrDefault();
-        _ = db.Movies.Select(m => new { m.Id, m.Director, m.Cast }).FirstOrDefault();
-        _ = db.Users.FirstOrDefault();
-        _ = db.SubscriptionPlans.FirstOrDefault();   // triggers recreate if table missing
-        _ = db.UserSubscriptions.FirstOrDefault();   // triggers recreate if table missing
-        _ = db.Orders.FirstOrDefault();              // triggers recreate if table missing
-        _ = db.OrderItems.FirstOrDefault();          // triggers recreate if table missing
-        _ = db.ViewingHistories.FirstOrDefault();    // triggers recreate if table missing
-        _ = db.SystemLogs.FirstOrDefault();          // triggers recreate if table missing
     }
     catch (Exception ex)
     {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogWarning("Phát hiện database cũ hoặc lỗi cấu trúc bảng: {Message}", ex.Message);
-        try
-        {
-            logger.LogWarning("Đang tiến hành tự động xóa và khởi tạo lại database cùng dữ liệu mẫu mới...");
-            db.Database.EnsureDeleted();
-            db.Database.EnsureCreated();
-            logger.LogInformation("Khởi tạo lại database và nạp dữ liệu mẫu mới thành công!");
-        }
-        catch (Exception dbEx)
-        {
-            logger.LogError(dbEx, "=========================================================================\n" +
-                                "ERROR: Không thể kết nối hoặc khởi tạo cơ sở dữ liệu!\n" +
-                                "Vui lòng đảm bảo dịch vụ MySQL/SQL Server đang chạy và thông tin kết nối chính xác.\n" +
-                                "========================================================================");
-        }
+        logger.LogError(ex, "=========================================================================\n" +
+                            "ERROR: Không thể kết nối hoặc khởi tạo cơ sở dữ liệu!\n" +
+                            "Vui lòng đảm bảo dịch vụ cơ sở dữ liệu đang chạy và thông tin kết nối chính xác.\n" +
+                            "========================================================================");
     }
 
     // Call DbSeeder

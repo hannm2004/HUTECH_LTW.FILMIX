@@ -61,6 +61,7 @@ namespace untitled1.Controllers
             var uid = _userManager.GetUserId(User)!;
             var existing = await _context.UserSubscriptions.Where(s => s.UserId == uid && s.IsActive).ToListAsync();
             foreach (var s in existing) s.IsActive = false;
+            
             var sub = new UserSubscription
             {
                 UserId = uid, PlanId = planId,
@@ -70,9 +71,17 @@ namespace untitled1.Controllers
                 CreatedAt = DateTime.Now
             };
             _context.UserSubscriptions.Add(sub);
+            
+            var user = await _userManager.FindByIdAsync(uid);
+            if (user != null)
+            {
+                user.PremiumStartDate = sub.StartDate;
+                user.PremiumEndDate = sub.EndDate;
+                await _userManager.UpdateAsync(user);
+            }
+            
             await _context.SaveChangesAsync();
 
-            var user = await _userManager.FindByIdAsync(uid);
             await _logService.LogAsync(
                 uid, 
                 user?.Email, 

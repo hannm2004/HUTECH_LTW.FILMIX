@@ -19,22 +19,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!video) return;
 
         const trailerUrl = banner.dataset.videoUrl;
+        const isLocal = banner.dataset.videoIsLocal === 'true';
+
         if (!trailerUrl) {
-            // No trailer, stay on background image
+            // No trailer at all — stay on background image
             return;
         }
 
-        // We have a video, set src and prepare for playback
+        if (!isLocal) {
+            // YouTube URL: cannot play directly in <video> tag — skip video, keep image BG
+            // Mute button stays hidden; no video autoplays for YouTube trailers on hero
+            return;
+        }
+
+        // Local MP4: set src and autoplay after 3s (Netflix style)
         video.src = trailerUrl;
-        
-        // Show mute button if we have video
+
+        // Show mute button
         if (muteBtn) muteBtn.style.display = 'flex';
 
-        // Autoplay logic (Netflix style: wait 3 seconds before playing)
         setTimeout(() => {
             playVideo();
         }, 3000);
     }
+
 
     function playVideo() {
         if (!video || !video.src) return;
