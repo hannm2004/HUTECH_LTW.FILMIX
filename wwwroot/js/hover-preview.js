@@ -148,7 +148,7 @@
 
         // Thumbnail
         const thumb = document.getElementById('hp-thumb');
-        thumb.src = thumbSrc || `/images/movies/${movieId}.jpg`;
+        thumb.src = thumbSrc || `/images/posters/default.jpg`;
         thumb.alt = data.title;
 
         // Metadata
@@ -344,7 +344,7 @@
             watchlist.push({
                 id:       movieId,
                 title:    data.title,
-                imageUrl: `/images/movies/${movieId}.jpg`,
+                imageUrl: imgEl ? imgEl.getAttribute('src') : `/images/posters/default.jpg`,
                 year:     data.year,
                 genre:    data.genres.join('/'),
             });
@@ -426,7 +426,7 @@
 
         // Lấy thumbnail
         const imgEl    = card.querySelector('img');
-        const thumbSrc = imgEl ? imgEl.getAttribute('src') : `/images/movies/${movieId}.jpg`;
+        const thumbSrc = imgEl ? imgEl.getAttribute('src') : `/images/posters/default.jpg`;
 
         // Ghi nhớ movieId để dùng ở event handler
         card.dataset.hpId = movieId;

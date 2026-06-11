@@ -148,7 +148,7 @@ namespace untitled1.Data
                 { 
                     Id = 1, 
                     Title = "Breaking Bad", 
-                    ImageUrl = "/images/movies/1.jpg", 
+                    ImageUrl = "/images/posters/breakingbad.jpg", 
                     Year = 2008, 
                     Genre = "Kịch tính / Hình sự", 
                     IsTVSeries = true,
@@ -163,7 +163,7 @@ namespace untitled1.Data
                 { 
                     Id = 2, 
                     Title = "Game of Thrones", 
-                    ImageUrl = "/images/movies/2.jpg", 
+                    ImageUrl = "/images/posters/gameofthrones.jpg", 
                     Year = 2011, 
                     Genre = "Hành động / Kỳ ảo / Phiêu lưu", 
                     IsTVSeries = true,
@@ -178,7 +178,7 @@ namespace untitled1.Data
                 { 
                     Id = 3, 
                     Title = "Oppenheimer", 
-                    ImageUrl = "/images/movies/3.jpg", 
+                    ImageUrl = "/images/posters/oppenheimer.jpg", 
                     Year = 2023, 
                     Genre = "Kịch tính / Tiểu sử / Lịch sử", 
                     IsTVSeries = false,
@@ -193,7 +193,7 @@ namespace untitled1.Data
                 { 
                     Id = 4, 
                     Title = "Avengers: Infinity War", 
-                    ImageUrl = "/images/movies/4.jpg", 
+                    ImageUrl = "/images/posters/avengers.jpg", 
                     Year = 2018, 
                     Genre = "Hành động / Viễn tưởng / Phiêu lưu", 
                     IsTVSeries = false,
@@ -208,7 +208,7 @@ namespace untitled1.Data
                 { 
                     Id = 5, 
                     Title = "Fight Club", 
-                    ImageUrl = "/images/movies/5.jpg", 
+                    ImageUrl = "/images/posters/fightclub.jpg", 
                     Year = 1999, 
                     Genre = "Kịch tính / Giật gân", 
                     IsTVSeries = false,
@@ -223,7 +223,7 @@ namespace untitled1.Data
                 { 
                     Id = 6, 
                     Title = "The Dark Knight", 
-                    ImageUrl = "/images/movies/6.jpg", 
+                    ImageUrl = "/images/posters/thedarkknight.jpg", 
                     Year = 2008, 
                     Genre = "Hành động / Kịch tính / Tội phạm", 
                     IsTVSeries = false,
@@ -238,7 +238,7 @@ namespace untitled1.Data
                 { 
                     Id = 7, 
                     Title = "Interstellar", 
-                    ImageUrl = "/images/movies/7.jpg", 
+                    ImageUrl = "/images/posters/interstellar.jpg", 
                     Year = 2014, 
                     Genre = "Viễn tưởng / Phiêu lưu / Kịch tính", 
                     IsTVSeries = false,
@@ -253,7 +253,7 @@ namespace untitled1.Data
                 { 
                     Id = 8, 
                     Title = "Wednesday", 
-                    ImageUrl = "/images/movies/8.jpg", 
+                    ImageUrl = "/images/posters/wednesday.jpg", 
                     Year = 2022, 
                     Genre = "Kinh dị / Kỳ ảo / Kịch tính", 
                     IsTVSeries = true,
@@ -268,7 +268,7 @@ namespace untitled1.Data
                 { 
                     Id = 9, 
                     Title = "Squid Game", 
-                    ImageUrl = "/images/movies/9.jpg", 
+                    ImageUrl = "/images/posters/squidgame.jpg", 
                     Year = 2021, 
                     Genre = "Hành động / Giật gân / Kịch tính", 
                     IsTVSeries = true,
@@ -283,7 +283,7 @@ namespace untitled1.Data
                 { 
                     Id = 10, 
                     Title = "Spider-Man: No Way Home", 
-                    ImageUrl = "/images/movies/10.jpg", 
+                    ImageUrl = "/images/posters/spiderman-no-way-home.jpg", 
                     Year = 2021, 
                     Genre = "Hành động / Viễn tưởng / Phiêu lưu", 
                     IsTVSeries = false,
@@ -298,7 +298,7 @@ namespace untitled1.Data
                 { 
                     Id = 11, 
                     Title = "Dune: Part Two", 
-                    ImageUrl = "/images/hero/hero2.jpg", 
+                    ImageUrl = "/images/posters/dune-part-two.jpg", 
                     Year = 2024, 
                     Genre = "Viễn tưởng / Phiêu lưu / Hành động", 
                     IsTVSeries = false,
@@ -313,7 +313,7 @@ namespace untitled1.Data
                 { 
                     Id = 12, 
                     Title = "John Wick: Chapter 4", 
-                    ImageUrl = "/images/hero/hero3.jpg", 
+                    ImageUrl = "/images/posters/johnwick-chapter4.jpg", 
                     Year = 2023, 
                     Genre = "Hành động / Giật gân", 
                     IsTVSeries = false,
@@ -328,7 +328,7 @@ namespace untitled1.Data
                 { 
                     Id = 13, 
                     Title = "The Batman", 
-                    ImageUrl = "/images/hero/hero4.jpg", 
+                    ImageUrl = "/images/posters/thebatman.jpg", 
                     Year = 2022, 
                     Genre = "Hành động / Hình sự / Kịch tính", 
                     IsTVSeries = false,
@@ -343,7 +343,7 @@ namespace untitled1.Data
                 { 
                     Id = 14, 
                     Title = "Spider-Man: Into the Spider-Verse", 
-                    ImageUrl = "/images/hero/hero5.jpg", 
+                    ImageUrl = "/images/posters/spiderverse.jpg", 
                     Year = 2018, 
                     Genre = "Hoạt hình / Hành động / Phiêu lưu", 
                     IsTVSeries = false,
@@ -358,7 +358,7 @@ namespace untitled1.Data
                 { 
                     Id = 15, 
                     Title = "Spirited Away", 
-                    ImageUrl = "/images/hero/hero6.jpg", 
+                    ImageUrl = "/images/posters/spiritedaway.jpg", 
                     Year = 2001, 
                     Genre = "Hoạt hình / Phiêu lưu / Kỳ ảo", 
                     IsTVSeries = false,
@@ -373,7 +373,7 @@ namespace untitled1.Data
                 { 
                     Id = 16, 
                     Title = "Avatar: The Way of Water", 
-                    ImageUrl = "/images/hero/hero7.jpg", 
+                    ImageUrl = "/images/posters/avatar-way-of-water.jpg", 
                     Year = 2022, 
                     Genre = "Viễn tưởng / Hành động / Phiêu lưu", 
                     IsTVSeries = false,
@@ -388,7 +388,7 @@ namespace untitled1.Data
                 { 
                     Id = 17, 
                     Title = "Inception", 
-                    ImageUrl = "/images/hero/hero8.jpg", 
+                    ImageUrl = "/images/posters/inception.jpg", 
                     Year = 2010, 
                     Genre = "Viễn tưởng / Hành động / Giật gân", 
                     IsTVSeries = false,
@@ -403,7 +403,7 @@ namespace untitled1.Data
                 { 
                     Id = 18, 
                     Title = "How to Train Your Dragon", 
-                    ImageUrl = "/images/movies/1.jpg", 
+                    ImageUrl = "/images/posters/howtotrainyourdragon.jpg", 
                     Year = 2010, 
                     Genre = "Hoạt hình / Phiêu lưu / Hài hước", 
                     IsTVSeries = false,
@@ -505,65 +505,65 @@ namespace untitled1.Data
             // Seeding MovieImages (stills gallery)
             modelBuilder.Entity<MovieImage>().HasData(
                 // Breaking Bad (Id = 1)
-                new MovieImage { Id = 1, MovieId = 1, ImageUrl = "/images/movies/still_action.png" },
-                new MovieImage { Id = 2, MovieId = 1, ImageUrl = "/images/movies/1.jpg" },
-                new MovieImage { Id = 3, MovieId = 1, ImageUrl = "/images/movies/2.jpg" },
+                new MovieImage { Id = 1, MovieId = 1, ImageUrl = "/images/posters/breakingbad.jpg" },
+                new MovieImage { Id = 2, MovieId = 1, ImageUrl = "/images/posters/breakingbad.jpg" },
+                new MovieImage { Id = 3, MovieId = 1, ImageUrl = "/images/posters/breakingbad.jpg" },
 
                 // Game of Thrones (Id = 2)
-                new MovieImage { Id = 4, MovieId = 2, ImageUrl = "/images/movies/still_scifi.png" },
-                new MovieImage { Id = 5, MovieId = 2, ImageUrl = "/images/movies/2.jpg" },
-                new MovieImage { Id = 6, MovieId = 2, ImageUrl = "/images/movies/3.jpg" },
+                new MovieImage { Id = 4, MovieId = 2, ImageUrl = "/images/posters/gameofthrones.jpg" },
+                new MovieImage { Id = 5, MovieId = 2, ImageUrl = "/images/posters/gameofthrones.jpg" },
+                new MovieImage { Id = 6, MovieId = 2, ImageUrl = "/images/posters/gameofthrones.jpg" },
 
                 // Oppenheimer (Id = 3)
-                new MovieImage { Id = 7, MovieId = 3, ImageUrl = "/images/movies/3.jpg" },
-                new MovieImage { Id = 8, MovieId = 3, ImageUrl = "/images/movies/4.jpg" },
-                new MovieImage { Id = 9, MovieId = 3, ImageUrl = "/images/movies/5.jpg" },
+                new MovieImage { Id = 7, MovieId = 3, ImageUrl = "/images/posters/oppenheimer.jpg" },
+                new MovieImage { Id = 8, MovieId = 3, ImageUrl = "/images/posters/oppenheimer.jpg" },
+                new MovieImage { Id = 9, MovieId = 3, ImageUrl = "/images/posters/oppenheimer.jpg" },
 
                 // Avengers: Infinity War (Id = 4)
-                new MovieImage { Id = 10, MovieId = 4, ImageUrl = "/images/movies/still_scifi.png" },
-                new MovieImage { Id = 11, MovieId = 4, ImageUrl = "/images/movies/still_action.png" },
-                new MovieImage { Id = 12, MovieId = 4, ImageUrl = "/images/movies/4.jpg" },
+                new MovieImage { Id = 10, MovieId = 4, ImageUrl = "/images/posters/avengers.jpg" },
+                new MovieImage { Id = 11, MovieId = 4, ImageUrl = "/images/posters/avengers.jpg" },
+                new MovieImage { Id = 12, MovieId = 4, ImageUrl = "/images/posters/avengers.jpg" },
 
                 // Fight Club (Id = 5)
-                new MovieImage { Id = 13, MovieId = 5, ImageUrl = "/images/movies/5.jpg" },
-                new MovieImage { Id = 14, MovieId = 5, ImageUrl = "/images/movies/6.jpg" },
-                new MovieImage { Id = 15, MovieId = 5, ImageUrl = "/images/movies/7.jpg" },
+                new MovieImage { Id = 13, MovieId = 5, ImageUrl = "/images/posters/fightclub.jpg" },
+                new MovieImage { Id = 14, MovieId = 5, ImageUrl = "/images/posters/fightclub.jpg" },
+                new MovieImage { Id = 15, MovieId = 5, ImageUrl = "/images/posters/fightclub.jpg" },
 
                 // The Dark Knight (Id = 6)
-                new MovieImage { Id = 16, MovieId = 6, ImageUrl = "/images/movies/still_action.png" },
-                new MovieImage { Id = 17, MovieId = 6, ImageUrl = "/images/movies/6.jpg" },
-                new MovieImage { Id = 18, MovieId = 6, ImageUrl = "/images/movies/7.jpg" },
+                new MovieImage { Id = 16, MovieId = 6, ImageUrl = "/images/posters/thedarkknight.jpg" },
+                new MovieImage { Id = 17, MovieId = 6, ImageUrl = "/images/posters/thedarkknight.jpg" },
+                new MovieImage { Id = 18, MovieId = 6, ImageUrl = "/images/posters/thedarkknight.jpg" },
 
                 // Interstellar (Id = 7)
-                new MovieImage { Id = 19, MovieId = 7, ImageUrl = "/images/movies/still_scifi.png" },
-                new MovieImage { Id = 20, MovieId = 7, ImageUrl = "/images/movies/7.jpg" },
-                new MovieImage { Id = 21, MovieId = 7, ImageUrl = "/images/movies/8.jpg" },
+                new MovieImage { Id = 19, MovieId = 7, ImageUrl = "/images/posters/interstellar.jpg" },
+                new MovieImage { Id = 20, MovieId = 7, ImageUrl = "/images/posters/interstellar.jpg" },
+                new MovieImage { Id = 21, MovieId = 7, ImageUrl = "/images/posters/interstellar.jpg" },
 
                 // Wednesday (Id = 8)
-                new MovieImage { Id = 22, MovieId = 8, ImageUrl = "/images/movies/8.jpg" },
-                new MovieImage { Id = 23, MovieId = 8, ImageUrl = "/images/movies/9.jpg" },
-                new MovieImage { Id = 24, MovieId = 8, ImageUrl = "/images/movies/10.jpg" },
+                new MovieImage { Id = 22, MovieId = 8, ImageUrl = "/images/posters/wednesday.jpg" },
+                new MovieImage { Id = 23, MovieId = 8, ImageUrl = "/images/posters/wednesday.jpg" },
+                new MovieImage { Id = 24, MovieId = 8, ImageUrl = "/images/posters/wednesday.jpg" },
 
                 // Squid Game (Id = 9)
-                new MovieImage { Id = 25, MovieId = 9, ImageUrl = "/images/movies/9.jpg" },
-                new MovieImage { Id = 26, MovieId = 9, ImageUrl = "/images/movies/10.jpg" },
-                new MovieImage { Id = 27, MovieId = 9, ImageUrl = "/images/movies/1.jpg" },
+                new MovieImage { Id = 25, MovieId = 9, ImageUrl = "/images/posters/squidgame.jpg" },
+                new MovieImage { Id = 26, MovieId = 9, ImageUrl = "/images/posters/squidgame.jpg" },
+                new MovieImage { Id = 27, MovieId = 9, ImageUrl = "/images/posters/squidgame.jpg" },
 
                 // Spider-Man: No Way Home (Id = 10)
-                new MovieImage { Id = 28, MovieId = 10, ImageUrl = "/images/movies/still_scifi.png" },
-                new MovieImage { Id = 29, MovieId = 10, ImageUrl = "/images/movies/10.jpg" },
-                new MovieImage { Id = 30, MovieId = 10, ImageUrl = "/images/movies/1.jpg" },
+                new MovieImage { Id = 28, MovieId = 10, ImageUrl = "/images/posters/spiderman-no-way-home.jpg" },
+                new MovieImage { Id = 29, MovieId = 10, ImageUrl = "/images/posters/spiderman-no-way-home.jpg" },
+                new MovieImage { Id = 30, MovieId = 10, ImageUrl = "/images/posters/spiderman-no-way-home.jpg" },
 
-                // Dune 2 (Id = 11)
-                new MovieImage { Id = 31, MovieId = 11, ImageUrl = "/images/hero/hero2.jpg" },
-                // John Wick 4 (Id = 12)
-                new MovieImage { Id = 32, MovieId = 12, ImageUrl = "/images/hero/hero3.jpg" },
+                // Dune: Part Two (Id = 11)
+                new MovieImage { Id = 31, MovieId = 11, ImageUrl = "/images/posters/dune-part-two.jpg" },
+                // John Wick: Chapter 4 (Id = 12)
+                new MovieImage { Id = 32, MovieId = 12, ImageUrl = "/images/posters/johnwick-chapter4.jpg" },
                 // The Batman (Id = 13)
-                new MovieImage { Id = 33, MovieId = 13, ImageUrl = "/images/hero/hero4.jpg" },
+                new MovieImage { Id = 33, MovieId = 13, ImageUrl = "/images/posters/thebatman.jpg" },
                 // Spider-Man: Into the Spider-Verse (Id = 14)
-                new MovieImage { Id = 34, MovieId = 14, ImageUrl = "/images/hero/hero5.jpg" },
+                new MovieImage { Id = 34, MovieId = 14, ImageUrl = "/images/posters/spiderverse.jpg" },
                 // Spirited Away (Id = 15)
-                new MovieImage { Id = 35, MovieId = 15, ImageUrl = "/images/hero/hero6.jpg" }
+                new MovieImage { Id = 35, MovieId = 15, ImageUrl = "/images/posters/spiritedaway.jpg" }
             );
         }
     }

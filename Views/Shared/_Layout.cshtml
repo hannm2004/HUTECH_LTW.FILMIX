@@ -299,8 +299,8 @@
 
             dd.innerHTML = items.map(m => `
                 <a class="search-suggest-item" href="/Product/Detail/${m.id}">
-                    <img src="${esc(m.imageUrl || '/images/movies/default.jpg')}" alt="${esc(m.title)}"
-                         onerror="this.src='/images/movies/default.jpg'" />
+                    <img src="${esc(m.imageUrl || '/images/posters/default.jpg')}" alt="${esc(m.title)}"
+                         onerror="this.src='/images/posters/default.jpg'" />
                     <div class="search-suggest-item__info">
                         <div class="search-suggest-item__title">${highlight(m.title)}</div>
                         <div class="search-suggest-item__meta">${m.year} &bull; ${esc(m.genre || '')}</div>

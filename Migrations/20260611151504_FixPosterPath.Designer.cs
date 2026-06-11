@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using untitled1.Data;
 
@@ -11,9 +12,11 @@ using untitled1.Data;
 namespace untitled1.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260611151504_FixPosterPath")]
+    partial class FixPosterPath
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -477,7 +480,7 @@ namespace untitled1.Migrations
                             Description = "Một giáo viên hóa học cấp ba bị chẩn đoán mắc bệnh ung thư phổi giai đoạn cuối quyết định bắt tay với một cựu học sinh để sản xuất và bán ma túy đá chất lượng cao nhằm bảo đảm tài chính cho gia đình.",
                             Director = "Vince Gilligan",
                             Genre = "Kịch tính / Hình sự",
-                            ImageUrl = "/images/posters/breakingbad.jpg",
+                            ImageUrl = "/images/poster/breakingbad.jpg",
                             IsTVSeries = true,
                             Rating = 9.5,
                             Title = "Breaking Bad",
@@ -492,7 +495,7 @@ namespace untitled1.Migrations
                             Description = "Chín gia tộc quý tộc chiến đấu để giành quyền kiểm soát vùng đất giả tưởng Westeros, trong khi một kẻ thù cổ xưa đang thức tỉnh sau hàng thiên niên kỷ ngủ yên dưới bức tường băng tuyết phía Bắc.",
                             Director = "David Benioff",
                             Genre = "Hành động / Kỳ ảo / Phiêu lưu",
-                            ImageUrl = "/images/posters/gameofthrones.jpg",
+                            ImageUrl = "/images/poster/gameofthrones.jpg",
                             IsTVSeries = true,
                             Rating = 9.1999999999999993,
                             Title = "Game of Thrones",
@@ -506,7 +509,7 @@ namespace untitled1.Migrations
                             Description = "Câu chuyện về nhà vật lý lý thuyết J. Robert Oppenheimer, người lãnh đạo Dự án Manhattan chế tạo ra quả bom nguyên tử đầu tiên cho nhân loại, mở ra thời đại hạt nhân và những dằn vặt đạo đức khôn nguôi.",
                             Director = "Christopher Nolan",
                             Genre = "Kịch tính / Tiểu sử / Lịch sử",
-                            ImageUrl = "/images/posters/oppenheimer.jpg",
+                            ImageUrl = "/images/poster/oppenheimer.jpg",
                             IsTVSeries = false,
                             Rating = 8.4000000000000004,
                             Title = "Oppenheimer",
@@ -520,7 +523,7 @@ namespace untitled1.Migrations
                             Description = "Biệt đội siêu anh hùng Avengers và các đồng minh phải sẵn sàng hy sinh tất cả để cố gắng đánh bại Thanos quyền năng trước khi hắn hủy diệt một nửa vũ trụ bằng sáu Viên đá Vô cực.",
                             Director = "Anthony Russo, Joe Russo",
                             Genre = "Hành động / Viễn tưởng / Phiêu lưu",
-                            ImageUrl = "/images/posters/avengers.jpg",
+                            ImageUrl = "/images/poster/avengers.jpg",
                             IsTVSeries = false,
                             Rating = 8.4000000000000004,
                             Title = "Avengers: Infinity War",
@@ -534,7 +537,7 @@ namespace untitled1.Migrations
                             Description = "Một nhân viên văn phòng mất ngủ triền miên và một người bán xà phòng lập dị thành lập một câu lạc bộ đánh lộn ngầm đầy bạo lực, dần biến tướng thành một tổ chức vô chính phủ chống lại chủ nghĩa tiêu dùng.",
                             Director = "David Fincher",
                             Genre = "Kịch tính / Giật gân",
-                            ImageUrl = "/images/posters/fightclub.jpg",
+                            ImageUrl = "/images/poster/fightclub.jpg",
                             IsTVSeries = false,
                             Rating = 8.8000000000000007,
                             Title = "Fight Club",
@@ -548,7 +551,7 @@ namespace untitled1.Migrations
                             Description = "Khi mối đe dọa mang tên Joker xuất hiện tàn phá thành phố Gotham, Người Dơi phải chấp nhận những thử thách tâm lý và thể xác tột cùng để duy trì ranh giới mong manh giữa công lý và thù hận.",
                             Director = "Christopher Nolan",
                             Genre = "Hành động / Kịch tính / Tội phạm",
-                            ImageUrl = "/images/posters/thedarkknight.jpg",
+                            ImageUrl = "/images/poster/thedarkknight.jpg",
                             IsTVSeries = false,
                             Rating = 9.0,
                             Title = "The Dark Knight",
@@ -562,7 +565,7 @@ namespace untitled1.Migrations
                             Description = "Trong tương lai khi Trái Đất sắp bị hủy diệt bởi nạn đói, một nhóm các nhà du hành vũ trụ dấn thân vào chuyến đi xuyên hố đen vũ trụ để tìm kiếm một mái nhà mới cho nhân loại.",
                             Director = "Christopher Nolan",
                             Genre = "Viễn tưởng / Phiêu lưu / Kịch tính",
-                            ImageUrl = "/images/posters/interstellar.jpg",
+                            ImageUrl = "/images/poster/interstellar.jpg",
                             IsTVSeries = false,
                             Rating = 8.6999999999999993,
                             Title = "Interstellar",
@@ -577,7 +580,7 @@ namespace untitled1.Migrations
                             Description = "Wednesday Addams theo học tại Học viện Nevermore, nơi cô cố gắng làm chủ năng lượng ngoại cảm của mình, phá giải một vụ án giết người hàng loạt kinh hoàng và khám phá bí ẩn gia đình 25 năm trước.",
                             Director = "Tim Burton",
                             Genre = "Kinh dị / Kỳ ảo / Kịch tính",
-                            ImageUrl = "/images/posters/wednesday.jpg",
+                            ImageUrl = "/images/poster/wednesday.jpg",
                             IsTVSeries = true,
                             Rating = 8.0999999999999996,
                             Title = "Wednesday",
@@ -591,7 +594,7 @@ namespace untitled1.Migrations
                             Description = "Hàng trăm người chơi nợ nần chồng chất chấp nhận lời mời kỳ lạ tham gia các trò chơi dân gian dành cho trẻ em với giải thưởng hấp dẫn, nhưng thất bại đồng nghĩa với cái chết ngay lập tức.",
                             Director = "Hwang Dong-hyuk",
                             Genre = "Hành động / Giật gân / Kịch tính",
-                            ImageUrl = "/images/posters/squidgame.jpg",
+                            ImageUrl = "/images/poster/squidgame.jpg",
                             IsTVSeries = true,
                             Rating = 8.0,
                             Title = "Squid Game",
@@ -605,7 +608,7 @@ namespace untitled1.Migrations
                             Description = "Danh tính siêu anh hùng của Peter Parker bị tiết lộ. Anh tìm đến Doctor Strange để làm phép xóa ký ức mọi người, vô tình xé rách đa vũ trụ và kéo theo những phản diện huyền thoại từ các thế giới khác.",
                             Director = "Jon Watts",
                             Genre = "Hành động / Viễn tưởng / Phiêu lưu",
-                            ImageUrl = "/images/posters/spiderman-no-way-home.jpg",
+                            ImageUrl = "/images/poster/spiderman-no-way-home.jpg",
                             IsTVSeries = false,
                             Rating = 8.1999999999999993,
                             Title = "Spider-Man: No Way Home",
@@ -619,7 +622,7 @@ namespace untitled1.Migrations
                             Description = "Paul Atreides hợp lực cùng Chani và người Fremen trên con đường phục thù những kẻ đã hủy hoại gia tộc mình, đối mặt với sự giằng xé giữa tình yêu của đời mình và số phận của vũ trụ.",
                             Director = "Denis Villeneuve",
                             Genre = "Viễn tưởng / Phiêu lưu / Hành động",
-                            ImageUrl = "/images/posters/dune-part-two.jpg",
+                            ImageUrl = "/images/poster/dune-part-two.jpg",
                             IsTVSeries = false,
                             Rating = 8.5999999999999996,
                             Title = "Dune: Part Two",
@@ -634,7 +637,7 @@ namespace untitled1.Migrations
                             Description = "John Wick tìm ra con đường đánh bại Hội Tối Cao để giành lại tự do cho bản thân, đối đầu với một liên minh sát thủ toàn cầu mới và những người bạn cũ nay ở hai đầu chiến tuyến.",
                             Director = "Chad Stahelski",
                             Genre = "Hành động / Giật gân",
-                            ImageUrl = "/images/posters/johnwick-chapter4.jpg",
+                            ImageUrl = "/images/poster/johnwick-chapter4.jpg",
                             IsTVSeries = false,
                             Rating = 7.7000000000000002,
                             Title = "John Wick: Chapter 4",
@@ -649,7 +652,7 @@ namespace untitled1.Migrations
                             Description = "Trong năm thứ hai chống tội phạm ở Gotham, Batman dấn thân vào cuộc điều tra các vụ giết người hàng loạt của gã điên Riddler, phơi bày những bê bối tham nhũng chôn giấu từ lâu của thành phố.",
                             Director = "Matt Reeves",
                             Genre = "Hành động / Hình sự / Kịch tính",
-                            ImageUrl = "/images/posters/thebatman.jpg",
+                            ImageUrl = "/images/poster/thebatman.jpg",
                             IsTVSeries = false,
                             Rating = 7.7999999999999998,
                             Title = "The Batman",
@@ -664,7 +667,7 @@ namespace untitled1.Migrations
                             Description = "Miles Morales, một thiếu niên da màu ở Brooklyn, vô tình có siêu năng lực nhện và phải hợp tác với những Người Nhện khác từ các chiều không gian song song để giải cứu New York.",
                             Director = "Bob Persichetti, Peter Ramsey, Rodney Rothman",
                             Genre = "Hoạt hình / Hành động / Phiêu lưu",
-                            ImageUrl = "/images/posters/spiderverse.jpg",
+                            ImageUrl = "/images/poster/spiderverse.jpg",
                             IsTVSeries = false,
                             Rating = 8.4000000000000004,
                             Title = "Spider-Man: Into the Spider-Verse",
@@ -678,7 +681,7 @@ namespace untitled1.Migrations
                             Description = "Cô bé Chihiro đi lạc vào thế giới linh hồn kỳ lạ, nơi cha mẹ cô bị biến thành heo. Cô phải làm việc tại nhà tắm của mụ phù thủy Yubaba và tìm cách giải cứu gia đình mình.",
                             Director = "Hayao Miyazaki",
                             Genre = "Hoạt hình / Phiêu lưu / Kỳ ảo",
-                            ImageUrl = "/images/posters/spiritedaway.jpg",
+                            ImageUrl = "/images/poster/spiritedaway.jpg",
                             IsTVSeries = false,
                             Rating = 8.5999999999999996,
                             Title = "Spirited Away",
@@ -692,7 +695,7 @@ namespace untitled1.Migrations
                             Description = "Nhiều năm sau cuộc chiến đầu tiên, Jake Sully và Neytiri phải rời bỏ quê hương rừng xanh để tìm kiếm nơi trú ẩn tại bộ tộc vùng biển đảo Pandora trước mối hiểm họa xâm lăng mới.",
                             Director = "James Cameron",
                             Genre = "Viễn tưởng / Hành động / Phiêu lưu",
-                            ImageUrl = "/images/posters/avatar-way-of-water.jpg",
+                            ImageUrl = "/images/poster/avatar-way-of-water.jpg",
                             IsTVSeries = false,
                             Rating = 7.5999999999999996,
                             Title = "Avatar: The Way of Water",
@@ -706,7 +709,7 @@ namespace untitled1.Migrations
                             Description = "Một kẻ trộm chuyên nghiệp chuyên xâm nhập vào tiềm thức của mục tiêu thông qua giấc mơ để đánh cắp bí mật kinh doanh, nay nhận nhiệm vụ đảo ngược: cấy một ý tưởng vào tâm trí đối thủ.",
                             Director = "Christopher Nolan",
                             Genre = "Viễn tưởng / Hành động / Giật gân",
-                            ImageUrl = "/images/posters/inception.jpg",
+                            ImageUrl = "/images/poster/inception.jpg",
                             IsTVSeries = false,
                             Rating = 8.8000000000000007,
                             Title = "Inception",
@@ -720,7 +723,7 @@ namespace untitled1.Migrations
                             Description = "Hiccup, một cậu bé Viking yếu ớt sống trên đảo Berk vốn có truyền thống diệt rồng, vô tình bắt được một chú rồng loài Night Fury quý hiếm và nhận ra rồng không đáng sợ như họ vẫn tưởng.",
                             Director = "Dean DeBlois, Chris Sanders",
                             Genre = "Hoạt hình / Phiêu lưu / Hài hước",
-                            ImageUrl = "/images/posters/howtotrainyourdragon.jpg",
+                            ImageUrl = "/images/poster/howtotrainyourdragon.jpg",
                             IsTVSeries = false,
                             Rating = 8.0999999999999996,
                             Title = "How to Train Your Dragon",
@@ -981,211 +984,211 @@ namespace untitled1.Migrations
                         new
                         {
                             Id = 1,
-                            ImageUrl = "/images/posters/breakingbad.jpg",
+                            ImageUrl = "/images/poster/breakingbad.jpg",
                             MovieId = 1
                         },
                         new
                         {
                             Id = 2,
-                            ImageUrl = "/images/posters/breakingbad.jpg",
+                            ImageUrl = "/images/poster/breakingbad.jpg",
                             MovieId = 1
                         },
                         new
                         {
                             Id = 3,
-                            ImageUrl = "/images/posters/breakingbad.jpg",
+                            ImageUrl = "/images/poster/breakingbad.jpg",
                             MovieId = 1
                         },
                         new
                         {
                             Id = 4,
-                            ImageUrl = "/images/posters/gameofthrones.jpg",
+                            ImageUrl = "/images/poster/gameofthrones.jpg",
                             MovieId = 2
                         },
                         new
                         {
                             Id = 5,
-                            ImageUrl = "/images/posters/gameofthrones.jpg",
+                            ImageUrl = "/images/poster/gameofthrones.jpg",
                             MovieId = 2
                         },
                         new
                         {
                             Id = 6,
-                            ImageUrl = "/images/posters/gameofthrones.jpg",
+                            ImageUrl = "/images/poster/gameofthrones.jpg",
                             MovieId = 2
                         },
                         new
                         {
                             Id = 7,
-                            ImageUrl = "/images/posters/oppenheimer.jpg",
+                            ImageUrl = "/images/poster/oppenheimer.jpg",
                             MovieId = 3
                         },
                         new
                         {
                             Id = 8,
-                            ImageUrl = "/images/posters/oppenheimer.jpg",
+                            ImageUrl = "/images/poster/oppenheimer.jpg",
                             MovieId = 3
                         },
                         new
                         {
                             Id = 9,
-                            ImageUrl = "/images/posters/oppenheimer.jpg",
+                            ImageUrl = "/images/poster/oppenheimer.jpg",
                             MovieId = 3
                         },
                         new
                         {
                             Id = 10,
-                            ImageUrl = "/images/posters/avengers.jpg",
+                            ImageUrl = "/images/poster/avengers.jpg",
                             MovieId = 4
                         },
                         new
                         {
                             Id = 11,
-                            ImageUrl = "/images/posters/avengers.jpg",
+                            ImageUrl = "/images/poster/avengers.jpg",
                             MovieId = 4
                         },
                         new
                         {
                             Id = 12,
-                            ImageUrl = "/images/posters/avengers.jpg",
+                            ImageUrl = "/images/poster/avengers.jpg",
                             MovieId = 4
                         },
                         new
                         {
                             Id = 13,
-                            ImageUrl = "/images/posters/fightclub.jpg",
+                            ImageUrl = "/images/poster/fightclub.jpg",
                             MovieId = 5
                         },
                         new
                         {
                             Id = 14,
-                            ImageUrl = "/images/posters/fightclub.jpg",
+                            ImageUrl = "/images/poster/fightclub.jpg",
                             MovieId = 5
                         },
                         new
                         {
                             Id = 15,
-                            ImageUrl = "/images/posters/fightclub.jpg",
+                            ImageUrl = "/images/poster/fightclub.jpg",
                             MovieId = 5
                         },
                         new
                         {
                             Id = 16,
-                            ImageUrl = "/images/posters/thedarkknight.jpg",
+                            ImageUrl = "/images/poster/thedarkknight.jpg",
                             MovieId = 6
                         },
                         new
                         {
                             Id = 17,
-                            ImageUrl = "/images/posters/thedarkknight.jpg",
+                            ImageUrl = "/images/poster/thedarkknight.jpg",
                             MovieId = 6
                         },
                         new
                         {
                             Id = 18,
-                            ImageUrl = "/images/posters/thedarkknight.jpg",
+                            ImageUrl = "/images/poster/thedarkknight.jpg",
                             MovieId = 6
                         },
                         new
                         {
                             Id = 19,
-                            ImageUrl = "/images/posters/interstellar.jpg",
+                            ImageUrl = "/images/poster/interstellar.jpg",
                             MovieId = 7
                         },
                         new
                         {
                             Id = 20,
-                            ImageUrl = "/images/posters/interstellar.jpg",
+                            ImageUrl = "/images/poster/interstellar.jpg",
                             MovieId = 7
                         },
                         new
                         {
                             Id = 21,
-                            ImageUrl = "/images/posters/interstellar.jpg",
+                            ImageUrl = "/images/poster/interstellar.jpg",
                             MovieId = 7
                         },
                         new
                         {
                             Id = 22,
-                            ImageUrl = "/images/posters/wednesday.jpg",
+                            ImageUrl = "/images/poster/wednesday.jpg",
                             MovieId = 8
                         },
                         new
                         {
                             Id = 23,
-                            ImageUrl = "/images/posters/wednesday.jpg",
+                            ImageUrl = "/images/poster/wednesday.jpg",
                             MovieId = 8
                         },
                         new
                         {
                             Id = 24,
-                            ImageUrl = "/images/posters/wednesday.jpg",
+                            ImageUrl = "/images/poster/wednesday.jpg",
                             MovieId = 8
                         },
                         new
                         {
                             Id = 25,
-                            ImageUrl = "/images/posters/squidgame.jpg",
+                            ImageUrl = "/images/poster/squidgame.jpg",
                             MovieId = 9
                         },
                         new
                         {
                             Id = 26,
-                            ImageUrl = "/images/posters/squidgame.jpg",
+                            ImageUrl = "/images/poster/squidgame.jpg",
                             MovieId = 9
                         },
                         new
                         {
                             Id = 27,
-                            ImageUrl = "/images/posters/squidgame.jpg",
+                            ImageUrl = "/images/poster/squidgame.jpg",
                             MovieId = 9
                         },
                         new
                         {
                             Id = 28,
-                            ImageUrl = "/images/posters/spiderman-no-way-home.jpg",
+                            ImageUrl = "/images/poster/spiderman-no-way-home.jpg",
                             MovieId = 10
                         },
                         new
                         {
                             Id = 29,
-                            ImageUrl = "/images/posters/spiderman-no-way-home.jpg",
+                            ImageUrl = "/images/poster/spiderman-no-way-home.jpg",
                             MovieId = 10
                         },
                         new
                         {
                             Id = 30,
-                            ImageUrl = "/images/posters/spiderman-no-way-home.jpg",
+                            ImageUrl = "/images/poster/spiderman-no-way-home.jpg",
                             MovieId = 10
                         },
                         new
                         {
                             Id = 31,
-                            ImageUrl = "/images/posters/dune-part-two.jpg",
+                            ImageUrl = "/images/poster/dune-part-two.jpg",
                             MovieId = 11
                         },
                         new
                         {
                             Id = 32,
-                            ImageUrl = "/images/posters/johnwick-chapter4.jpg",
+                            ImageUrl = "/images/poster/johnwick-chapter4.jpg",
                             MovieId = 12
                         },
                         new
                         {
                             Id = 33,
-                            ImageUrl = "/images/posters/thebatman.jpg",
+                            ImageUrl = "/images/poster/thebatman.jpg",
                             MovieId = 13
                         },
                         new
                         {
                             Id = 34,
-                            ImageUrl = "/images/posters/spiderverse.jpg",
+                            ImageUrl = "/images/poster/spiderverse.jpg",
                             MovieId = 14
                         },
                         new
                         {
                             Id = 35,
-                            ImageUrl = "/images/posters/spiritedaway.jpg",
+                            ImageUrl = "/images/poster/spiritedaway.jpg",
                             MovieId = 15
                         });
                 });
