@@ -106,8 +106,8 @@
 
             card.innerHTML = `
                 <img class="cw-card__thumb"
-                     src="${prog.imageUrl || '/images/movies/default.jpg'}"
-                     onerror="this.src='/images/movies/default.jpg'"
+                     src="${prog.imageUrl || '/images/posters/default.jpg'}"
+                     onerror="this.src='/images/posters/default.jpg'"
                      alt="${prog.title}" loading="lazy" />
                 <div class="cw-card__gradient"></div>
                 <div class="cw-card__play-overlay">

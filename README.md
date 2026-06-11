@@ -169,11 +169,22 @@ HUTECH_LTW.FILMIX/
 ## 🌿 Git Branches
 
 | Branch | Mô tả |
-|--------|-------|
+|----------|----------|
 | `main` | Stable production code |
-| `feature/api-swagger-integration` | RESTful Cart & Products APIs + Swagger UI integration |
-| `feature/jwt-authentication` | JWT Bearer Authentication for REST APIs |
-
+| `feat/filmix-ui` | Xây dựng giao diện FILMIX ban đầu, layout Netflix-style và các thành phần UI cơ bản |
+| `feat/complete-netflix-auth-admin-hover` | Hoàn thiện Authentication, Authorization, Admin Area và hiệu ứng hover Netflix |
+| `feat/admin` | Xây dựng khu vực quản trị và CRUD quản lý dữ liệu |
+| `feat/admin-dashboard-payment-system` | Dashboard quản trị, thống kê và hệ thống thanh toán Premium |
+| `feature/hover-video-preview` | Hover Preview Video giống Netflix khi rê chuột vào phim |
+| `feature/smart-live-search` | Tìm kiếm thông minh, autocomplete và gợi ý thời gian thực |
+| `feature/search-and-recommendation-system` | Hệ thống tìm kiếm nâng cao và đề xuất phim |
+| `feature/recommendation-and-audit-log` | Recommendation Engine và Centralized Audit Logging |
+| `feature/advanced-player-and-recommendations` | Nâng cấp trình phát video, Continue Watching và đề xuất cá nhân hóa |
+| `feature/payment-system` | Hệ thống gói Premium, Subscription và quy trình thanh toán |
+| `feature/api-swagger-integration` | Xây dựng RESTful APIs và tích hợp Swagger UI |
+| `feature/jwt-authentication` | JWT Bearer Authentication cho REST APIs |
+| `fix/watchlist-bugs` | Sửa lỗi Watchlist và đồng bộ dữ liệu người dùng |
+| `fix/pre-defense-stabilization` | Sửa lỗi và ổn định hệ thống trước đồ án |
 ---
 
 ## 🏗 Lộ Trình Phát Triển
