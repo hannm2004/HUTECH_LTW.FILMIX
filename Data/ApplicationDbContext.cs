@@ -28,6 +28,19 @@ namespace untitled1.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Cấu hình độ chính xác cho các cột kiểu decimal để tránh cảnh báo EF Core
+            modelBuilder.Entity<Order>()
+                .Property(o => o.TotalAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<OrderItem>()
+                .Property(oi => oi.Price)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<SubscriptionPlan>()
+                .Property(sp => sp.Price)
+                .HasPrecision(18, 2);
+
             // Configure Many-to-Many Movie <-> Category via MovieCategory
             modelBuilder.Entity<MovieCategory>()
                 .HasKey(mc => new { mc.MovieId, mc.CategoryId });

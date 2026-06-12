@@ -1,8 +1,10 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using untitled1.Models.Entities;
 using untitled1.Models.ViewModels;
 using untitled1.Services;
@@ -18,19 +20,22 @@ namespace untitled1.Controllers
         private readonly IOrderRepository _orderRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly ILogger<OrderController> _logger;
 
         public OrderController(
             ICartService cartService,
             IOrderService orderService,
             IOrderRepository orderRepository,
             UserManager<ApplicationUser> userManager,
-            IEmailService emailService)
+            IEmailService emailService,
+            ILogger<OrderController> logger)
         {
             _cartService = cartService;
             _orderService = orderService;
             _orderRepository = orderRepository;
             _userManager = userManager;
             _emailService = emailService;
+            _logger = logger;
         }
 
         // GET /Order/Checkout
@@ -123,11 +128,33 @@ namespace untitled1.Controllers
             {
                 await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Paid);
 
-                // Tải lại đơn (đã Paid, kèm OrderItems/Plan) và gửi email xác nhận tới
-                // địa chỉ email khách đã nhập ở bước Checkout (order.Email).
+                // Tải lại đơn (đã Paid, kèm OrderItems/Plan) để đảm bảo navigation properties được load đầy đủ
                 var paidOrder = await _orderRepository.GetByIdAsync(orderId);
                 if (paidOrder != null)
-                    _ = _emailService.SendOrderConfirmationAsync(paidOrder);
+                {
+                    _logger.LogInformation(
+                        "[OrderController] Đơn hàng #{OrderId} đã thanh toán thành công. Đang gửi email xác nhận tới {Email}...",
+                        paidOrder.Id, paidOrder.Email);
+
+                    // Gửi email trong background task — tránh làm chậm redirect của người dùng
+                    // nhưng vẫn log đầy đủ nếu có lỗi SMTP.
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _emailService.SendOrderConfirmationAsync(paidOrder);
+                            _logger.LogInformation(
+                                "[OrderController] Email xác nhận đơn hàng #{OrderId} đã được gửi thành công.",
+                                paidOrder.Id);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex,
+                                "[OrderController] Gửi email xác nhận thất bại cho đơn hàng #{OrderId} - Email: {Email}",
+                                paidOrder.Id, paidOrder.Email);
+                        }
+                    });
+                }
             }
 
             return RedirectToAction("Success", new { orderId = order.Id });
