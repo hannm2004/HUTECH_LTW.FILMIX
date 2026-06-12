@@ -3,18 +3,30 @@
     var cartCount = CartService.GetCart().Sum(i => i.Quantity);
     var showExpiryWarning = false;
     double? daysRemaining = null;
+    var watchlistIds = new List<int>();
     if (User.Identity?.IsAuthenticated == true)
     {
         var userManager = Context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<untitled1.Models.Entities.ApplicationUser>>();
         var currentUser = userManager.GetUserAsync(User).Result;
-        if (currentUser != null && currentUser.PremiumEndDate.HasValue)
+        if (currentUser != null)
         {
-            var timeLeft = currentUser.PremiumEndDate.Value - DateTime.Now;
-            if (timeLeft.TotalDays > 0 && timeLeft.TotalDays <= 3)
+            if (currentUser.PremiumEndDate.HasValue)
             {
-                showExpiryWarning = true;
-                daysRemaining = Math.Round(timeLeft.TotalDays, 1);
+                var timeLeft = currentUser.PremiumEndDate.Value - DateTime.Now;
+                if (timeLeft.TotalDays > 0 && timeLeft.TotalDays <= 3)
+                {
+                    showExpiryWarning = true;
+                    daysRemaining = Math.Round(timeLeft.TotalDays, 1);
+                }
             }
+
+            // Watchlist IDs từ DB — render thẳng vào trang để client đồng bộ localStorage (tránh race)
+            var db = Context.RequestServices.GetRequiredService<untitled1.Data.ApplicationDbContext>();
+            watchlistIds = db.WatchlistItems
+                .Where(w => w.UserId == currentUser.Id)
+                .OrderByDescending(w => w.AddedAt)
+                .Select(w => w.MovieId)
+                .ToList();
         }
     }
 }
@@ -32,6 +44,11 @@
     <link rel="stylesheet" href="~/css/search.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/subscription.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
+    <script>
+        window.FILMIX_AUTH = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+        window.FILMIX_WATCHLIST = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(watchlistIds));
+    </script>
+    <script src="~/js/watchlist-sync.js" asp-append-version="true"></script>
     <script src="~/js/i18n.js"></script>
     <script src="~/js/auth-state.js"></script>
 </head>
@@ -114,7 +131,7 @@
                 {
                     <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="nav__admin-link" style="color: #fff; background: var(--red); padding: 7px 16px; border-radius: 4px; font-weight: 700; text-decoration: none; margin-right: 10px; font-size: 0.82rem; transition: all 0.25s;" onmouseover="this.style.background='#b00610'" onmouseout="this.style.background='var(--red)'">Quản Trị</a>
                 }
-                <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;margin:0;">
+                <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;margin:0;" onsubmit="filmixClearUserData()">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="nav__logout" data-i18n="nav.logout">Đăng Xuất</button>
                 </form>
@@ -165,6 +182,21 @@
         }
     </style>
     <script>
+        /* ── Xoá dữ liệu client gắn với người dùng khi đăng xuất ──
+           Watchlist & lịch sử xem lưu ở localStorage theo trình duyệt (không theo tài khoản),
+           nên phải xoá khi logout để không lộ sang trạng thái khách / tài khoản khác. */
+        function filmixClearUserData() {
+            try {
+                localStorage.removeItem('filmix_user');
+                localStorage.removeItem('filmix_watchlist');
+                localStorage.removeItem('filmix_cw_order');
+                Object.keys(localStorage)
+                    .filter(function (k) { return k.indexOf('filmix_progress_') === 0; })
+                    .forEach(function (k) { localStorage.removeItem(k); });
+            } catch (e) { /* ignore */ }
+            return true;
+        }
+
         /* ── Auth Required Modal ── */
         function requireAuth(title, desc, returnUrl) {
             const isAuth = document.cookie.split(';').some(c => c.trim().startsWith('.AspNetCore.Identity.Application='))

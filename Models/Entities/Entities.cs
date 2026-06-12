@@ -165,6 +165,17 @@ namespace untitled1.Models.Entities
         public DateTime WatchedAt { get; set; } = DateTime.Now;
     }
 
+    // Watchlist ("Danh Sách Của Tôi") lưu theo từng user trong DB
+    public class WatchlistItem
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public ApplicationUser User { get; set; } = null!;
+        public int MovieId { get; set; }
+        public Movie Movie { get; set; } = null!;
+        public DateTime AddedAt { get; set; } = DateTime.Now;
+    }
+
     public class SystemLog
     {
         public int Id { get; set; }

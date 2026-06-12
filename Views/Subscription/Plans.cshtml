@@ -80,8 +80,7 @@
                     <span class="plan-cta current" style="margin-bottom: 8px; display: block; text-align: center;">✓ Đang Sử Dụng</span>
                 }
                 
-                <form asp-controller="Cart" asp-action="Add" method="post" style="width: 100%;"
-                      onsubmit="return requireAuth('Đăng nhập để mua gói Premium', 'Bạn cần có tài khoản để đăng ký gói Premium và xem phim không giới hạn.', window.location.pathname)">
+                <form asp-controller="Cart" asp-action="Add" method="post" style="width: 100%;">
                     <input type="hidden" name="planId" value="@plan.Id" />
                     <button type="submit" class="plan-cta" style="border: none; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; margin-top: 5px;">
                         🛒 Thêm Vào Giỏ
@@ -112,15 +111,15 @@
                 </tr>
                 <tr>
                     <td>Tải xuống offline</td>
-                    @foreach (var p in Model) { <td>@(p.HasDownload ? "<span class='tick'>✓</span>" : "<span class='cross'>✗</span>")</td> }
+                    @foreach (var p in Model) { <td>@Html.Raw(p.HasDownload ? "<span class='tick'>✓</span>" : "<span class='cross'>✗</span>")</td> }
                 </tr>
                 <tr>
                     <td>Âm thanh không gian</td>
-                    @foreach (var p in Model) { <td>@(p.HasSpatialAudio ? "<span class='tick'>✓</span>" : "<span class='cross'>✗</span>")</td> }
+                    @foreach (var p in Model) { <td>@Html.Raw(p.HasSpatialAudio ? "<span class='tick'>✓</span>" : "<span class='cross'>✗</span>")</td> }
                 </tr>
                 <tr>
                     <td>Ultra HD 4K + HDR</td>
-                    @foreach (var p in Model) { <td>@(p.Resolution.Contains("4K") ? "<span class='tick'>✓</span>" : "<span class='cross'>✗</span>")</td> }
+                    @foreach (var p in Model) { <td>@Html.Raw(p.Resolution.Contains("4K") ? "<span class='tick'>✓</span>" : "<span class='cross'>✗</span>")</td> }
                 </tr>
                 <tr>
                     <td>Giá / tháng</td>

@@ -21,6 +21,7 @@ namespace untitled1.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<ViewingHistory> ViewingHistories { get; set; }
+        public DbSet<WatchlistItem> WatchlistItems { get; set; }
         public DbSet<SystemLog> SystemLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,6 +100,23 @@ namespace untitled1.Data
                 .WithMany()
                 .HasForeignKey(vh => vh.MovieId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure WatchlistItem relationships + unique (UserId, MovieId)
+            modelBuilder.Entity<WatchlistItem>()
+                .HasOne(w => w.User)
+                .WithMany()
+                .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WatchlistItem>()
+                .HasOne(w => w.Movie)
+                .WithMany()
+                .HasForeignKey(w => w.MovieId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WatchlistItem>()
+                .HasIndex(w => new { w.UserId, w.MovieId })
+                .IsUnique();
 
             // Seed SubscriptionPlans
             modelBuilder.Entity<SubscriptionPlan>().HasData(
@@ -502,78 +520,26 @@ namespace untitled1.Data
                 new Episode { Id = 11, MovieId = 9, SeasonNumber = 1, EpisodeNumber = 2, Title = "Hell (Địa ngục)", VideoUrl = "/videos/sample.mp4" }
             );
 
-            // Seeding MovieImages (stills gallery)
+            // Seeding MovieImages — mỗi phim 1 ảnh poster đại diện (tránh trùng lặp trong thư viện)
             modelBuilder.Entity<MovieImage>().HasData(
-                // Breaking Bad (Id = 1)
                 new MovieImage { Id = 1, MovieId = 1, ImageUrl = "/images/posters/breakingbad.jpg" },
-                new MovieImage { Id = 2, MovieId = 1, ImageUrl = "/images/posters/breakingbad.jpg" },
-                new MovieImage { Id = 3, MovieId = 1, ImageUrl = "/images/posters/breakingbad.jpg" },
-
-                // Game of Thrones (Id = 2)
-                new MovieImage { Id = 4, MovieId = 2, ImageUrl = "/images/posters/gameofthrones.jpg" },
-                new MovieImage { Id = 5, MovieId = 2, ImageUrl = "/images/posters/gameofthrones.jpg" },
-                new MovieImage { Id = 6, MovieId = 2, ImageUrl = "/images/posters/gameofthrones.jpg" },
-
-                // Oppenheimer (Id = 3)
-                new MovieImage { Id = 7, MovieId = 3, ImageUrl = "/images/posters/oppenheimer.jpg" },
-                new MovieImage { Id = 8, MovieId = 3, ImageUrl = "/images/posters/oppenheimer.jpg" },
-                new MovieImage { Id = 9, MovieId = 3, ImageUrl = "/images/posters/oppenheimer.jpg" },
-
-                // Avengers: Infinity War (Id = 4)
-                new MovieImage { Id = 10, MovieId = 4, ImageUrl = "/images/posters/avengers.jpg" },
-                new MovieImage { Id = 11, MovieId = 4, ImageUrl = "/images/posters/avengers.jpg" },
-                new MovieImage { Id = 12, MovieId = 4, ImageUrl = "/images/posters/avengers.jpg" },
-
-                // Fight Club (Id = 5)
-                new MovieImage { Id = 13, MovieId = 5, ImageUrl = "/images/posters/fightclub.jpg" },
-                new MovieImage { Id = 14, MovieId = 5, ImageUrl = "/images/posters/fightclub.jpg" },
-                new MovieImage { Id = 15, MovieId = 5, ImageUrl = "/images/posters/fightclub.jpg" },
-
-                // The Dark Knight (Id = 6)
-                new MovieImage { Id = 16, MovieId = 6, ImageUrl = "/images/posters/thedarkknight.jpg" },
-                new MovieImage { Id = 17, MovieId = 6, ImageUrl = "/images/posters/thedarkknight.jpg" },
-                new MovieImage { Id = 18, MovieId = 6, ImageUrl = "/images/posters/thedarkknight.jpg" },
-
-                // Interstellar (Id = 7)
-                new MovieImage { Id = 19, MovieId = 7, ImageUrl = "/images/posters/interstellar.jpg" },
-                new MovieImage { Id = 20, MovieId = 7, ImageUrl = "/images/posters/interstellar.jpg" },
-                new MovieImage { Id = 21, MovieId = 7, ImageUrl = "/images/posters/interstellar.jpg" },
-
-                // Wednesday (Id = 8)
-                new MovieImage { Id = 22, MovieId = 8, ImageUrl = "/images/posters/wednesday.jpg" },
-                new MovieImage { Id = 23, MovieId = 8, ImageUrl = "/images/posters/wednesday.jpg" },
-                new MovieImage { Id = 24, MovieId = 8, ImageUrl = "/images/posters/wednesday.jpg" },
-
-                // Squid Game (Id = 9)
-                new MovieImage { Id = 25, MovieId = 9, ImageUrl = "/images/posters/squidgame.jpg" },
-                new MovieImage { Id = 26, MovieId = 9, ImageUrl = "/images/posters/squidgame.jpg" },
-                new MovieImage { Id = 27, MovieId = 9, ImageUrl = "/images/posters/squidgame.jpg" },
-
-                // Spider-Man: No Way Home (Id = 10)
-                new MovieImage { Id = 28, MovieId = 10, ImageUrl = "/images/posters/spiderman-no-way-home.jpg" },
-                new MovieImage { Id = 29, MovieId = 10, ImageUrl = "/images/posters/spiderman-no-way-home.jpg" },
-                new MovieImage { Id = 30, MovieId = 10, ImageUrl = "/images/posters/spiderman-no-way-home.jpg" },
-
-                // Dune: Part Two (Id = 11)
-                new MovieImage { Id = 31, MovieId = 11, ImageUrl = "/images/posters/dune-part-two.jpg" },
-                // John Wick: Chapter 4 (Id = 12)
-                new MovieImage { Id = 32, MovieId = 12, ImageUrl = "/images/posters/johnwick-chapter4.jpg" },
-                // The Batman (Id = 13)
-                new MovieImage { Id = 33, MovieId = 13, ImageUrl = "/images/posters/thebatman.jpg" },
-                // Spider-Man: Into the Spider-Verse (Id = 14)
-                new MovieImage { Id = 34, MovieId = 14, ImageUrl = "/images/posters/spiderverse.jpg" },
-                // Spirited Away (Id = 15)
-                new MovieImage { Id = 35, MovieId = 15, ImageUrl = "/images/posters/spiritedaway.jpg" },
-
-                // Avatar: The Way of Water (Id = 16)
-                new MovieImage { Id = 36, MovieId = 16, ImageUrl = "/images/posters/avatar-way-of-water.jpg" },
-
-                // Inception (Id = 17)
-                new MovieImage { Id = 37, MovieId = 17, ImageUrl = "/images/posters/inception.jpg" },
-
-                // How to Train Your Dragon (Id = 18)
-                new MovieImage { Id = 38, MovieId = 18, ImageUrl = "/images/posters/howtotrainyourdragon.jpg" }
-
+                new MovieImage { Id = 2, MovieId = 2, ImageUrl = "/images/posters/gameofthrones.jpg" },
+                new MovieImage { Id = 3, MovieId = 3, ImageUrl = "/images/posters/oppenheimer.jpg" },
+                new MovieImage { Id = 4, MovieId = 4, ImageUrl = "/images/posters/avengers.jpg" },
+                new MovieImage { Id = 5, MovieId = 5, ImageUrl = "/images/posters/fightclub.jpg" },
+                new MovieImage { Id = 6, MovieId = 6, ImageUrl = "/images/posters/thedarkknight.jpg" },
+                new MovieImage { Id = 7, MovieId = 7, ImageUrl = "/images/posters/interstellar.jpg" },
+                new MovieImage { Id = 8, MovieId = 8, ImageUrl = "/images/posters/wednesday.jpg" },
+                new MovieImage { Id = 9, MovieId = 9, ImageUrl = "/images/posters/squidgame.jpg" },
+                new MovieImage { Id = 10, MovieId = 10, ImageUrl = "/images/posters/spiderman-no-way-home.jpg" },
+                new MovieImage { Id = 11, MovieId = 11, ImageUrl = "/images/posters/dune-part-two.jpg" },
+                new MovieImage { Id = 12, MovieId = 12, ImageUrl = "/images/posters/johnwick-chapter4.jpg" },
+                new MovieImage { Id = 13, MovieId = 13, ImageUrl = "/images/posters/thebatman.jpg" },
+                new MovieImage { Id = 14, MovieId = 14, ImageUrl = "/images/posters/spiderverse.jpg" },
+                new MovieImage { Id = 15, MovieId = 15, ImageUrl = "/images/posters/spiritedaway.jpg" },
+                new MovieImage { Id = 16, MovieId = 16, ImageUrl = "/images/posters/avatar-way-of-water.jpg" },
+                new MovieImage { Id = 17, MovieId = 17, ImageUrl = "/images/posters/inception.jpg" },
+                new MovieImage { Id = 18, MovieId = 18, ImageUrl = "/images/posters/howtotrainyourdragon.jpg" }
             );
         }
     }

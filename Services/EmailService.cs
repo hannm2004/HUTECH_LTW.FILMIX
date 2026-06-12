@@ -198,6 +198,32 @@ namespace untitled1.Services
                 return;
             }
 
+            // ── Validate FROM ── (ưu tiên FromEmail; nếu trống/không hợp lệ thì fallback sang UserName SMTP)
+            var fromEmail = FirstValidEmail(_settings.FromEmail, _settings.UserName);
+            if (fromEmail == null)
+            {
+                _logger.LogError(
+                    "[EmailService] FromEmail và UserName đều không hợp lệ (FromEmail='{From}', UserName='{User}'). Bỏ qua gửi email.",
+                    _settings.FromEmail, _settings.UserName);
+                return;
+            }
+
+            // ── Validate TO ── (đây là nguyên nhân FormatException: địa chỉ rỗng/null/sai định dạng)
+            if (!IsValidEmail(toEmail))
+            {
+                _logger.LogError(
+                    "[EmailService] Địa chỉ người nhận không hợp lệ — bỏ qua gửi email. ToEmail='{ToEmail}', ToName='{ToName}', Subject='{Subject}'",
+                    toEmail ?? "(null)", toName ?? "(null)", subject);
+                return;
+            }
+
+            // ── Sanitize display names ── (rỗng/null → null; loại ký tự điều khiển có thể làm hỏng header)
+            var fromName = SanitizeDisplayName(_settings.FromName);
+            var safeToName = SanitizeDisplayName(toName);
+            _logger.LogInformation(
+                "[EmailService] Chuẩn bị gửi: From='{From}' (name='{FromName}') → To='{To}' (name='{ToName}')",
+                fromEmail, fromName ?? "", toEmail.Trim(), safeToName ?? "");
+
             try
             {
                 using var client = new SmtpClient(_settings.Host, _settings.Port)
@@ -207,16 +233,17 @@ namespace untitled1.Services
                     DeliveryMethod = SmtpDeliveryMethod.Network
                 };
 
-                var mail = new MailMessage
+                using var mail = new MailMessage
                 {
-                    From            = new MailAddress(_settings.FromEmail, _settings.FromName),
+                    // Mã hoá UTF-8 cho display name (hỗ trợ tên tiếng Việt) và truyền địa chỉ đã được kiểm tra
+                    From            = new MailAddress(fromEmail, fromName ?? string.Empty, System.Text.Encoding.UTF8),
                     Subject         = subject,
                     SubjectEncoding = System.Text.Encoding.UTF8,
                     Body            = htmlBody,
                     BodyEncoding    = System.Text.Encoding.UTF8,
                     IsBodyHtml      = true
                 };
-                mail.To.Add(new MailAddress(toEmail, toName));
+                mail.To.Add(new MailAddress(toEmail.Trim(), safeToName ?? string.Empty, System.Text.Encoding.UTF8));
 
                 await client.SendMailAsync(mail);
                 _logger.LogInformation("[EmailService] Email sent successfully to {Email}: {Subject}", toEmail, subject);
@@ -225,6 +252,41 @@ namespace untitled1.Services
             {
                 _logger.LogError(ex, "[EmailService] Failed to send email to {Email}", toEmail);
             }
+        }
+
+        /// <summary>Kiểm tra một chuỗi có đúng là địa chỉ email hợp lệ (không kèm display name) hay không.</summary>
+        private static bool IsValidEmail(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+            var trimmed = email.Trim();
+            try
+            {
+                var addr = new MailAddress(trimmed);
+                // Loại bỏ trường hợp "Name <email>" — chỉ chấp nhận đúng phần địa chỉ
+                return string.Equals(addr.Address, trimmed, StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>Trả về email hợp lệ đầu tiên trong danh sách ứng viên (đã trim), hoặc null nếu không có.</summary>
+        private static string? FirstValidEmail(params string?[] candidates)
+        {
+            foreach (var c in candidates)
+            {
+                if (IsValidEmail(c)) return c!.Trim();
+            }
+            return null;
+        }
+
+        /// <summary>Chuẩn hoá display name: null/rỗng → null; loại bỏ ký tự điều khiển (xuống dòng…) gây lỗi header.</summary>
+        private static string? SanitizeDisplayName(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return null;
+            var cleaned = new string(name.Where(c => !char.IsControl(c)).ToArray()).Trim();
+            return string.IsNullOrEmpty(cleaned) ? null : cleaned;
         }
     }
 }

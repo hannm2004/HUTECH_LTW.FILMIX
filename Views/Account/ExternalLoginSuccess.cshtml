@@ -1,0 +1,40 @@
+@{
+    Layout = null;
+    var name = ViewBag.Name as string ?? "";
+    var email = ViewBag.Email as string ?? "";
+    var returnUrl = ViewBag.ReturnUrl as string ?? "/";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đang đăng nhập… - FILMIX</title>
+    <style>
+        body { margin: 0; background: #0a0a0a; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .box { text-align: center; }
+        .logo { font-size: 2rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 14px; }
+        .logo span { color: #e50914; }
+        .spinner { width: 34px; height: 34px; border: 3px solid rgba(255,255,255,0.15); border-top-color: #e50914; border-radius: 50%; margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
+        @@keyframes spin { to { transform: rotate(360deg); } }
+        p { color: #aaa; font-size: 0.95rem; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="logo">FILM<span>IX</span></div>
+        <div class="spinner"></div>
+        <p>Đang hoàn tất đăng nhập…</p>
+    </div>
+    <script>
+        // Đồng bộ trạng thái đăng nhập phía client (giống luồng đăng nhập email/mật khẩu)
+        try {
+            localStorage.setItem('filmix_user', JSON.stringify({
+                name: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(name)),
+                email: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(email))
+            }));
+        } catch (e) { /* ignore */ }
+        window.location.replace(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(returnUrl)));
+    </script>
+</body>
+</html>

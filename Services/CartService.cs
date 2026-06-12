@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using untitled1.Models.ViewModels;
@@ -9,27 +11,27 @@ namespace untitled1.Services
     public class CartService : ICartService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private const string CartSessionKey = "FilmixCart";
+        private const string CartCookieKey = "FilmixCart";
 
         public CartService(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
 
-        private ISession? Session => _httpContextAccessor.HttpContext?.Session;
+        private HttpContext? Context => _httpContextAccessor.HttpContext;
 
         public List<CartItemViewModel> GetCart()
         {
-            if (Session == null) return new List<CartItemViewModel>();
-
-            var json = Session.GetString(CartSessionKey);
-            if (string.IsNullOrEmpty(json))
+            var raw = Context?.Request.Cookies[CartCookieKey];
+            if (string.IsNullOrEmpty(raw))
             {
                 return new List<CartItemViewModel>();
             }
 
             try
             {
+                // Cookie chứa JSON đã được Base64 hoá để an toàn ký tự
+                var json = Encoding.UTF8.GetString(Convert.FromBase64String(raw));
                 return JsonSerializer.Deserialize<List<CartItemViewModel>>(json) ?? new List<CartItemViewModel>();
             }
             catch
@@ -95,10 +97,7 @@ namespace untitled1.Services
 
         public void ClearCart()
         {
-            if (Session != null)
-            {
-                Session.Remove(CartSessionKey);
-            }
+            Context?.Response.Cookies.Delete(CartCookieKey);
         }
 
         public decimal GetTotalAmount()
@@ -108,11 +107,25 @@ namespace untitled1.Services
 
         private void SaveCart(List<CartItemViewModel> cart)
         {
-            if (Session != null)
+            if (Context == null) return;
+
+            if (cart.Count == 0)
             {
-                var json = JsonSerializer.Serialize(cart);
-                Session.SetString(CartSessionKey, json);
+                Context.Response.Cookies.Delete(CartCookieKey);
+                return;
             }
+
+            var json = JsonSerializer.Serialize(cart);
+            var encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+
+            // Cookie bền: sống sót qua đăng nhập/đăng xuất và khởi động lại app
+            Context.Response.Cookies.Append(CartCookieKey, encoded, new CookieOptions
+            {
+                HttpOnly = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            });
         }
     }
 }

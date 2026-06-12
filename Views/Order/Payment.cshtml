@@ -116,6 +116,21 @@
                 </button>
             </form>
         }
+        else
+        {
+            <div style="font-size: 4rem; margin-bottom: 20px;">💳</div>
+            <h1 style="color: #fff; font-size: 1.8rem; font-weight: 800; margin-bottom: 15px;">Xác Nhận Thanh Toán</h1>
+            <p style="color: #aaa; margin-bottom: 10px;">Phương thức: <strong style="color:#fff;">@Model.PaymentMethod</strong></p>
+            <div style="font-size: 1.8rem; font-weight: 800; margin: 10px 0 30px; color: #e50914;">@Model.TotalAmount.ToString("N0") ₫</div>
+
+            <form asp-controller="Order" asp-action="ProcessMockPayment" method="post">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                @Html.AntiForgeryToken()
+                <button type="submit" class="plan-cta" style="border: none; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: 700; box-sizing: border-box;">
+                    Xác Nhận Thanh Toán ✓
+                </button>
+            </form>
+        }
     </div>
 </div>
 

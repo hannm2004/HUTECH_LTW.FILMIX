@@ -181,7 +181,7 @@ if (jwtSettings == null)
     throw new InvalidOperationException("Cấu hình JwtSettings chưa được khai báo trong appsettings.json");
 }
 
-builder.Services.AddAuthentication()
+var authBuilder = builder.Services.AddAuthentication()
     .AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata = false;
@@ -231,6 +231,36 @@ builder.Services.AddAuthentication()
             }
         };
     });
+
+// ── Social login (Google / Facebook) — chỉ bật nếu đã cấu hình credentials trong appsettings.
+//    Nhờ đó app vẫn chạy bình thường khi chưa khai báo OAuth keys. ──
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+        // CallbackPath mặc định: /signin-google (đăng ký trong Google Console)
+        options.SaveTokens = true;
+    });
+}
+
+var facebookAppId = builder.Configuration["Authentication:Facebook:AppId"];
+var facebookAppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+if (!string.IsNullOrWhiteSpace(facebookAppId) && !string.IsNullOrWhiteSpace(facebookAppSecret))
+{
+    authBuilder.AddFacebook(options =>
+    {
+        options.AppId = facebookAppId;
+        options.AppSecret = facebookAppSecret;
+        // CallbackPath mặc định: /signin-facebook (đăng ký trong Facebook App)
+        options.Fields.Add("email");
+        options.Fields.Add("name");
+        options.SaveTokens = true;
+    });
+}
 
 var app = builder.Build();
 
