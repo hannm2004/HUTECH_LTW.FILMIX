@@ -136,6 +136,10 @@ builder.Services.AddScoped<untitled1.Services.IAdminService, untitled1.Services.
 builder.Services.AddScoped<untitled1.Services.IRecommendationService, untitled1.Services.RecommendationService>();
 builder.Services.AddScoped<untitled1.Services.ILogService, untitled1.Services.LogService>();
 
+// Register Email service
+builder.Services.Configure<untitled1.Models.Settings.EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<untitled1.Services.IEmailService, untitled1.Services.EmailService>();
+
 // Register JWT configuration and services
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddScoped<IJwtService, JwtService>();

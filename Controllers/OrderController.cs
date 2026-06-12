@@ -17,17 +17,20 @@ namespace untitled1.Controllers
         private readonly IOrderService _orderService;
         private readonly IOrderRepository _orderRepository;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
 
         public OrderController(
             ICartService cartService,
             IOrderService orderService,
             IOrderRepository orderRepository,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IEmailService emailService)
         {
             _cartService = cartService;
             _orderService = orderService;
             _orderRepository = orderRepository;
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         // GET /Order/Checkout
@@ -81,6 +84,11 @@ namespace untitled1.Controllers
             // Process payment method
             await _orderService.ProcessPaymentAsync(order.Id, model.PaymentMethod);
 
+            // Reload order with items for email (auto-paid methods)
+            var fullOrder = await _orderRepository.GetByIdAsync(order.Id);
+            if (fullOrder != null)
+                _ = _emailService.SendOrderConfirmationAsync(fullOrder);
+
             return RedirectToAction("Payment", new { orderId = order.Id });
         }
 
@@ -109,6 +117,11 @@ namespace untitled1.Controllers
 
             // Set order as Paid (since mock VNPay, mock PayOS, or mock bank transfer is completed by user clicking "Confirm")
             await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Paid);
+
+            // Send order confirmation email
+            var paidOrder = await _orderRepository.GetByIdAsync(orderId);
+            if (paidOrder != null)
+                _ = _emailService.SendOrderConfirmationAsync(paidOrder);
 
             return RedirectToAction("Success", new { orderId = order.Id });
         }
