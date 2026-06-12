@@ -82,16 +82,8 @@ namespace untitled1.Controllers
             _cartService.ClearCart();
 
             // Đơn được tạo ở trạng thái Pending với đúng phương thức đã chọn.
-            // KHÔNG xử lý thanh toán tại đây — thanh toán & kích hoạt Premium diễn ra ở
-            // Payment/ProcessMockPayment (idempotent) để tránh xử lý sớm và trùng lặp.
-            //
-            // Gửi email xác nhận ĐƠN HÀNG đúng 1 lần ngay khi đặt hàng, áp dụng cho MỌI
-            // phương thức (kể cả COD vốn không đi qua ProcessMockPayment). Tải lại đơn kèm
-            // OrderItems/Plan để email có đủ dữ liệu.
-            var fullOrder = await _orderRepository.GetByIdAsync(order.Id);
-            if (fullOrder != null)
-                _ = _emailService.SendOrderConfirmationAsync(fullOrder);
-
+            // KHÔNG xử lý thanh toán hay gửi email tại đây — email xác nhận chỉ được gửi
+            // SAU KHI thanh toán thành công (ProcessMockPayment), không gửi khi chưa thanh toán.
             return RedirectToAction("Payment", new { orderId = order.Id });
         }
 
@@ -124,12 +116,18 @@ namespace untitled1.Controllers
             var userId = _userManager.GetUserId(User);
             if (order.UserId != userId) return Forbid();
 
-            // Idempotent: chỉ chuyển sang Paid & kích hoạt Premium nếu đơn chưa được thanh toán.
-            // Thanh toán xử lý đúng 1 lần; kích hoạt Premium (trong UpdateOrderStatusAsync) cũng 1 lần.
-            // Email xác nhận đã được gửi 1 lần ở POST Checkout nên KHÔNG gửi lại ở đây.
+            // Idempotent: chỉ chuyển sang Paid, kích hoạt Premium VÀ gửi email khi đơn CHƯA thanh toán.
+            // → mỗi thứ (thanh toán / kích hoạt Premium / email) diễn ra đúng 1 lần; các lần gọi lại
+            //   (bấm Back, refresh, double-submit) đều bị bỏ qua, và không bao giờ gửi khi đơn còn Pending.
             if (order.Status != OrderStatus.Paid && order.Status != OrderStatus.Completed)
             {
                 await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Paid);
+
+                // Tải lại đơn (đã Paid, kèm OrderItems/Plan) và gửi email xác nhận tới
+                // địa chỉ email khách đã nhập ở bước Checkout (order.Email).
+                var paidOrder = await _orderRepository.GetByIdAsync(orderId);
+                if (paidOrder != null)
+                    _ = _emailService.SendOrderConfirmationAsync(paidOrder);
             }
 
             return RedirectToAction("Success", new { orderId = order.Id });

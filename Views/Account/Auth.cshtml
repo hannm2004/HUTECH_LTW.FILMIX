@@ -590,7 +590,14 @@
 
         /* ── Social login ── */
         function socialLogin(provider) {
-            showToast('Đang kết nối tới ' + provider + '...', 'success');
+            if (provider === 'Google' || provider === 'Facebook') {
+                showToast('Đang kết nối tới ' + provider + '...', 'success');
+                const rt = _returnUrl || '/';
+                window.location.href = '/Account/ExternalLogin?provider=' + encodeURIComponent(provider)
+                    + '&returnUrl=' + encodeURIComponent(rt);
+            } else {
+                showToast(provider + ' sẽ sớm được hỗ trợ', 'error');
+            }
         }
 
         /* ── Handle Login ── */
