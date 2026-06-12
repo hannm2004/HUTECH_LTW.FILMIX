@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="~/css/continue-watching.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/search.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/subscription.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
     <script src="~/js/i18n.js"></script>
     <script src="~/js/auth-state.js"></script>
 </head>
@@ -392,5 +393,73 @@
     {
         <script>localStorage.removeItem('filmix_user');</script>
     }
+
+    <!-- ══ FILMIX CHATBOT WIDGET ══ -->
+    <div id="chatbotWidget">
+        <!-- Toggle Button -->
+        <button id="chatbotToggle" onclick="chatbotToggle()" aria-label="Mở trợ lý FILMIX AI" title="FILMIX AI Assistant">
+            <span id="chatbotToggleIcon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+                </svg>
+            </span>
+            <span id="chatbotToggleClose" style="display:none;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </span>
+            <span class="chatbot-badge" id="chatbotBadge">AI</span>
+        </button>
+
+        <!-- Chat Panel -->
+        <div id="chatbotPanel">
+            <!-- Header -->
+            <div class="chatbot-header">
+                <div class="chatbot-header-info">
+                    <div class="chatbot-avatar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#e50914">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="chatbot-name">FILMIX AI</div>
+                        <div class="chatbot-status"><span class="chatbot-dot"></span> Đang hoạt động</div>
+                    </div>
+                </div>
+                <button class="chatbot-close-btn" onclick="chatbotToggle()" aria-label="Đóng">&times;</button>
+            </div>
+
+            <!-- Messages -->
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="chatbot-msg bot">
+                    <div class="chatbot-bubble">
+                        Xin chào! 👋 Tôi là <strong>FILMIX AI</strong> – trợ lý thông minh của bạn.<br/>
+                        Tôi có thể giúp về <strong>phim</strong>, <strong>gói Premium</strong>, <strong>đơn hàng</strong> và <strong>hỗ trợ kỹ thuật</strong>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div class="chatbot-suggestions" id="chatbotSuggestions">
+                <button onclick="chatbotSend('Các gói Premium có giá bao nhiêu?')">👑 Gói Premium</button>
+                <button onclick="chatbotSend('Kiểm tra đơn hàng của tôi')">📦 Đơn hàng</button>
+                <button onclick="chatbotSend('Phương thức thanh toán nào được hỗ trợ?')">💳 Thanh toán</button>
+                <button onclick="chatbotSend('Tôi gặp lỗi khi xem phim')">🔧 Hỗ trợ</button>
+            </div>
+
+            <!-- Input -->
+            <div class="chatbot-input-wrap">
+                <input type="text" id="chatbotInput" placeholder="Hỏi tôi bất cứ điều gì..." 
+                       onkeydown="if(event.key==='Enter') chatbotSend()" maxlength="300"
+                       aria-label="Tin nhắn chatbot" />
+                <button id="chatbotSendBtn" onclick="chatbotSend()" aria-label="Gửi">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="~/js/chatbot.js" asp-append-version="true"></script>
 </body>
 </html>
