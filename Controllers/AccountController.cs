@@ -27,10 +27,11 @@ namespace untitled1.Controllers
             _logService = logService;
         }
 
-        public IActionResult Auth()
+        public IActionResult Auth(string? returnUrl = null)
         {
             if (User.Identity?.IsAuthenticated == true)
                 return RedirectToAction("Index", "Home");
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
@@ -51,7 +52,8 @@ namespace untitled1.Controllers
                 {
                     await _logService.LogAsync(user.Id, user.Email, "Login", "Đăng nhập thành công", HttpContext.Connection.RemoteIpAddress?.ToString());
                 }
-                return Json(new { success = true, redirectUrl = "/" });
+                var redirectUrl = string.IsNullOrEmpty(model.ReturnUrl) ? "/" : model.ReturnUrl;
+                return Json(new { success = true, redirectUrl });
             }
 
             await _logService.LogAsync(null, model.Email, "Login Failed", $"Đăng nhập thất bại với email {model.Email}", HttpContext.Connection.RemoteIpAddress?.ToString());

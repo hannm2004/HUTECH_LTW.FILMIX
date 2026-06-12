@@ -483,7 +483,8 @@
             return document.querySelector('input[name="__RequestVerificationToken"]').value;
         }
 
-        /* ── Read ?mode= from URL ── */
+        /* ── Read ?mode= and ?returnUrl= from URL ── */
+        const _returnUrl = new URLSearchParams(window.location.search).get('returnUrl') || '';
         (function () {
             const p = new URLSearchParams(window.location.search);
             if (p.get('mode') === 'signup') switchTab('signup');
@@ -599,17 +600,18 @@
 
             setLoading(btn, true);
             try {
-                const res = await fetch('/Account/Login', {
+                    const res = await fetch('/Account/Login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `__RequestVerificationToken=${encodeURIComponent(getCsrfToken())}&Email=${encodeURIComponent(email)}&Password=${encodeURIComponent(pw)}&RememberMe=${rememberMe}`
+                    body: `__RequestVerificationToken=${encodeURIComponent(getCsrfToken())}&Email=${encodeURIComponent(email)}&Password=${encodeURIComponent(pw)}&RememberMe=${rememberMe}&ReturnUrl=${encodeURIComponent(_returnUrl)}`
                 });
                 const data = await res.json();
                 setLoading(btn, false);
                 if (data.success) {
                     localStorage.setItem('filmix_user', JSON.stringify({ name: email.split('@@')[0], email }));
                     showToast('Đăng nhập thành công!', 'success');
-                    setTimeout(() => { window.location.href = data.redirectUrl || '/'; }, 1200);
+                    const dest = _returnUrl || data.redirectUrl || '/';
+                    setTimeout(() => { window.location.href = dest; }, 1200);
                 } else {
                     showToast(data.message || 'Đăng nhập thất bại', 'error');
                 }

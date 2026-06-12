@@ -26,6 +26,8 @@
 | 🧠 **Recommendation** | Đề xuất phim cá nhân hóa dựa trên lịch sử xem của người dùng |
 | 📱 **Responsive** | Tương thích hoàn toàn trên mobile, tablet, desktop |
 | 🚫 **Custom Errors** | Trang lỗi 404/500 Netflix-style với hiệu ứng glitch |
+| 🛡️ **Auth Guards** | Chặn thao tác lưu Watchlist & thêm giỏ hàng khi chưa đăng nhập, tự động chuyển hướng ReturnUrl |
+
 
 ---
 
@@ -185,6 +187,7 @@ HUTECH_LTW.FILMIX/
 | `feature/jwt-authentication` | JWT Bearer Authentication cho REST APIs |
 | `fix/watchlist-bugs` | Sửa lỗi Watchlist và đồng bộ dữ liệu người dùng |
 | `fix/pre-defense-stabilization` | Sửa lỗi và ổn định hệ thống trước đồ án |
+| `feature/auth-guards-and-poster-fixes` | Đồng bộ poster 2:3 mới, tối ưu hóa kích thước và chặn lưu watchlist/thêm giỏ hàng khi chưa đăng nhập |
 ---
 
 ## 🏗 Lộ Trình Phát Triển
@@ -198,6 +201,7 @@ HUTECH_LTW.FILMIX/
 - [x] Phase 7: Analytics, System Audit Logs & Recommendation System
 - [x] Phase 8: RESTful API Development (Cart & Products) & Swagger UI
 - [x] Phase 9: RESTful API JWT Authentication & API Authorization
+- [x] Phase 10: Auth Guards for Cart & Watchlist & Poster Styling Reversion
 
 ---
 

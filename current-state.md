@@ -1,4 +1,29 @@
-# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 08/06/2026
+# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 12/06/2026
+
+---
+
+## 📅 Nhật Ký Cập Nhật Hôm Nay (12/06/2026) — Đồng Bộ Poster Chuẩn Dọc & Tích Hợp Giao Diện Chặn Thao Tác Chưa Đăng Nhập (Auth Guards for Cart & Watchlist)
+
+Đã hoàn thành chuẩn hóa giao diện hiển thị cho bộ poster 2:3 mới, tối ưu hóa kích thước tài nguyên và xây dựng cơ chế chặn thông báo đăng nhập trước khi thêm giỏ hàng hoặc thao tác watchlist.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### 1. Khôi phục hiển thị Cover cho Poster chuẩn dọc
+* **Khôi phục `object-fit: cover`**: Revert toàn bộ các điều chỉnh `object-fit: contain` trước đây về `cover` trên các file style hệ thống:
+  - `style.css` (trending slider)
+  - `movies.css` (movies card)
+  - `newhot.css` (new & hot card)
+  - `search.css` (search results)
+  - `watchlist.css` (watchlist card)
+  - Inline style của phim gợi ý trong `Home/Index.cshtml` và `Product/Detail.cshtml`
+* **Nén ảnh tối ưu dung lượng**: Thực hiện resize file poster `thebatman.jpg` có độ phân giải cao (~1.6MB) xuống kích thước hiển thị chuẩn web (400x593px, dung lượng chỉ còn ~41KB), nâng tốc độ tải trang lên tối đa.
+
+#### 2. Xây dựng Giao Diện Modal Đăng Nhập & Chuyển Hướng Thông Minh (Auth Guards)
+* **Thành phần Modal chung (`_Layout.cshtml`)**: Bổ sung modal overlay glassmorphism phong cách Netflix thông báo "Đăng nhập để tiếp tục" kèm theo link Đăng Ký / Đăng Nhập và khả năng truyền ngược URL hiện tại.
+* **Chặn tương tác khi chưa Đăng Nhập (Client-side & Server-side)**:
+  - **Giỏ Hàng**: Thêm `[Authorize]` vào toàn bộ Cart mutating endpoints ở server. Chặn submit form giỏ hàng ở `Plans.cshtml` phía client và show modal nếu chưa đăng nhập.
+  - **Watchlist (Lưu Xem Sau)**: Tích hợp hàm kiểm tra `requireAuth()` trước khi thao tác lưu phim ở các trang `Movies/Index.cshtml`, `TVShows/Index.cshtml`, `NewHot/Index.cshtml` và `Detail.cshtml`.
+  - **Chuyển hướng ReturnUrl**: Cập nhật `AccountController.cs` và `Auth.cshtml` đọc và truyền `ReturnUrl` để tự động trả người dùng về đúng trang họ đang làm việc sau khi đăng nhập thành công.
 
 ---
 

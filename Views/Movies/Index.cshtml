@@ -95,6 +95,7 @@
     <script>
         /* Hero watchlist toggle */
         function toggleHeroWatchlist(id, title, img, btn) {
+            if (!requireAuth('Đăng nhập để lưu phim', 'Bạn cần có tài khoản để lưu phim vào danh sách và theo dõi lịch sử xem.', window.location.pathname)) return;
             const span = btn.querySelector('#heroSaveBtnText');
             const movieId = id.toString();
             let watchlist = JSON.parse(localStorage.getItem('filmix_watchlist') || '[]').map(x => x.toString());
