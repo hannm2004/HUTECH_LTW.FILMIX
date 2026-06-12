@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using untitled1.Repositories;
 using untitled1.Services;
@@ -25,6 +26,7 @@ namespace untitled1.Controllers
         }
 
         // POST /Cart/Add
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Add(int planId)
         {
@@ -36,6 +38,7 @@ namespace untitled1.Controllers
         }
 
         // POST /Cart/UpdateQuantity
+        [Authorize]
         [HttpPost]
         public IActionResult UpdateQuantity(int planId, int quantity)
         {
@@ -44,6 +47,7 @@ namespace untitled1.Controllers
         }
 
         // POST /Cart/Remove
+        [Authorize]
         [HttpPost]
         public IActionResult Remove(int planId)
         {
@@ -52,6 +56,7 @@ namespace untitled1.Controllers
         }
 
         // POST /Cart/Clear
+        [Authorize]
         [HttpPost]
         public IActionResult Clear()
         {

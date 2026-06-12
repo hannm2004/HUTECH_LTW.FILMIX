@@ -431,6 +431,7 @@
 
         // Watchlist toggle toast helper with localStorage persistence
         function toggleWatchlist(btn) {
+            if (!requireAuth('Đăng nhập để lưu phim', 'Bạn cần có tài khoản để lưu phim vào danh sách của mình.', window.location.pathname)) return;
             const span = btn.querySelector('span');
             const svg = btn.querySelector('svg');
             const movieId = '@Model.Id'.toString();

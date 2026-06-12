@@ -80,7 +80,8 @@
                     <span class="plan-cta current" style="margin-bottom: 8px; display: block; text-align: center;">✓ Đang Sử Dụng</span>
                 }
                 
-                <form asp-controller="Cart" asp-action="Add" method="post" style="width: 100%;">
+                <form asp-controller="Cart" asp-action="Add" method="post" style="width: 100%;"
+                      onsubmit="return requireAuth('Đăng nhập để mua gói Premium', 'Bạn cần có tài khoản để đăng ký gói Premium và xem phim không giới hạn.', window.location.pathname)">
                     <input type="hidden" name="planId" value="@plan.Id" />
                     <button type="submit" class="plan-cta" style="border: none; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; margin-top: 5px;">
                         🛒 Thêm Vào Giỏ

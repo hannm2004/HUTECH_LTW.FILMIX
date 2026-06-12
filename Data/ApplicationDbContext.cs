@@ -563,7 +563,17 @@ namespace untitled1.Data
                 // Spider-Man: Into the Spider-Verse (Id = 14)
                 new MovieImage { Id = 34, MovieId = 14, ImageUrl = "/images/posters/spiderverse.jpg" },
                 // Spirited Away (Id = 15)
-                new MovieImage { Id = 35, MovieId = 15, ImageUrl = "/images/posters/spiritedaway.jpg" }
+                new MovieImage { Id = 35, MovieId = 15, ImageUrl = "/images/posters/spiritedaway.jpg" },
+
+                // Avatar: The Way of Water (Id = 16)
+                new MovieImage { Id = 36, MovieId = 16, ImageUrl = "/images/posters/avatar-way-of-water.jpg" },
+
+                // Inception (Id = 17)
+                new MovieImage { Id = 37, MovieId = 17, ImageUrl = "/images/posters/inception.jpg" },
+
+                // How to Train Your Dragon (Id = 18)
+                new MovieImage { Id = 38, MovieId = 18, ImageUrl = "/images/posters/howtotrainyourdragon.jpg" }
+
             );
         }
     }
