@@ -13,8 +13,8 @@
 | 🎠 **Netflix Slider** | Chevron arrows, pagination dashes, drag-to-scroll, touch swipe |
 | 🔍 **Search & Autocomplete** | Full-text search (Title/Genre/Director/Cast/Description), glassmorphism dropdown, keyboard nav |
 | ⏯ **Continue Watching** | Lưu tiến độ vào database & localStorage, tự động phát tiếp |
-| 📋 **Watchlist** | Thêm/xóa phim yêu thích, đồng bộ localStorage, filter Phim Lẻ / TV Series |
-| 🔐 **Authentication** | Đăng nhập / Đăng ký với ASP.NET Identity, CSRF token bảo mật |
+| 📋 **Watchlist** | Đồng bộ 2 chiều giữa DB (bảng `WatchlistItems`) và `localStorage`, hỗ trợ lọc Phim Lẻ / TV Series |
+| 🔐 **Authentication** | Đăng nhập / Đăng ký truyền thống (ASP.NET Identity) kết hợp Google & Facebook OAuth |
 | 👑 **Admin Dashboard v2** | Thống kê nâng cao, KPI tổng quan, biểu đồ trực quan, quản lý người dùng, đơn hàng, gói đăng ký |
 | 🎭 **Detail Page** | Mô tả thực từ DB, diễn viên, đạo diễn, Similar Movies slider |
 | 🛡️ **Swagger UI** | Phân nhóm tài liệu API (Auth/Cart/Products), hỗ trợ kiểm thử xác thực Bearer Token & Cookie |
@@ -24,11 +24,13 @@
 | 💳 **Payment System** | Quy trình thanh toán Premium 3D flip card, confetti thành công, quản lý gói cước |
 | 🪵 **Audit Logging** | Centralized System Logs ghi lại 12+ hành động của người dùng/Admin |
 | 🧠 **Recommendation** | Đề xuất phim cá nhân hóa dựa trên lịch sử xem của người dùng |
+| 💾 **Database Switch** | Hỗ trợ chuyển đổi linh hoạt giữa SQL Server và MySQL thông qua cấu hình `DbProvider` |
 | 📱 **Responsive** | Tương thích hoàn toàn trên mobile, tablet, desktop |
 | 🚫 **Custom Errors** | Trang lỗi 404/500 Netflix-style với hiệu ứng glitch |
 | 🛡️ **Auth Guards** | Chặn thao tác lưu Watchlist & thêm giỏ hàng khi chưa đăng nhập, tự động chuyển hướng ReturnUrl |
 | 🤖 **FILMIX Chatbot** | Hộp thoại bong bóng chat thông minh hỗ trợ tư vấn gói cước, tra cứu đơn hàng, đề xuất phim và khắc phục lỗi kỹ thuật |
 | ✉️ **Email Notification** | Hệ thống gửi hóa đơn và xác nhận đơn hàng tự động phong cách Dark Mode, tối ưu tương thích Outlook/Gmail |
+
 
 
 ---
@@ -107,7 +109,7 @@ HUTECH_LTW.FILMIX/
 │   │   └── ProductController.cs   # CRUD phim truyền thống
 │   └── Views/                    # Dashboard, User, Subscription, Analytics views
 ├── Controllers/
-│   ├── AccountController.cs      # Login / Register / Logout / Profile
+│   ├── AccountController.cs      # Login / Register / Logout / Profile / Social Login
 │   ├── AuthApiController.cs      # API JWT xác thực (Login & Profile)
 │   ├── CartApiController.cs      # API giỏ hàng (RESTful JWT-secured)
 │   ├── ProductsApiController.cs  # API CRUD phim (RESTful Admin JWT-secured)
@@ -118,14 +120,14 @@ HUTECH_LTW.FILMIX/
 │   ├── SearchController.cs       # Search & Autocomplete API
 │   ├── SubscriptionController.cs # Chọn gói cước, Thanh toán 3D Card
 │   ├── ViewingHistoryController.cs # Ghi nhận watch progress API
-│   └── WatchlistController.cs    # Watchlist + API
+│   └── WatchlistController.cs    # Watchlist + API (Sync & Details)
 ├── Data/
 │   ├── ApplicationDbContext.cs
 │   └── DbSeeder.cs               # Seed roles & admin accounts
 ├── Models/
 │   ├── Entities/
 │   │   ├── ApplicationUser.cs
-│   │   └── Entities.cs           # Movie, Episode, Category, SubscriptionPlan, UserSubscription, SystemLog
+│   │   └── Entities.cs           # Movie, Episode, Category, SubscriptionPlan, UserSubscription, SystemLog, WatchlistItem
 │   ├── Settings/
 │   │   └── JwtSettings.cs        # Cấu hình cài đặt JWT
 │   ├── DTOs/
@@ -145,6 +147,9 @@ HUTECH_LTW.FILMIX/
 ├── ViewComponents/
 │   └── HeroBannerViewComponent.cs
 ├── Views/
+│   ├── Account/
+│   │   ├── Auth.cshtml              # Giao diện Đăng nhập & Đăng ký
+│   │   └── ExternalLoginSuccess.cshtml # View cầu nối đăng nhập Google & Facebook
 │   ├── Home/Index.cshtml         # Trang chủ + Recommendations
 │   ├── Product/Detail.cshtml     # Chi tiết phim
 │   ├── Search/Index.cshtml       # Kết quả tìm kiếm
@@ -165,7 +170,11 @@ HUTECH_LTW.FILMIX/
         ├── netflix-slider.js     # Slider + skeleton loading
         ├── hero-banner.js
         ├── continue-watching.js  # Tự động gửi tiến độ xem lên server
-        └── auth-state.js
+        ├── auth-state.js
+        ├── chatbot.js            # Xử lý tương tác chatbot
+        └── watchlist-sync.js     # Đồng bộ danh sách watchlist với DB
+├── CLAUDE.md                     # Tài liệu hướng dẫn dành cho AI coding assistant
+└── appsettings.json              # Cấu hình SMTP Email & OAuth Google/Facebook
 ```
 
 ---
@@ -206,6 +215,7 @@ HUTECH_LTW.FILMIX/
 - [x] Phase 9: RESTful API JWT Authentication & API Authorization
 - [x] Phase 10: Auth Guards for Cart & Watchlist & Poster Styling Reversion
 - [x] Phase 11: Chatbot AI (Rule-based) Q&A & Automated Email Notification System
+- [x] Phase 12: Google & Facebook OAuth, Database-backed Watchlist Sync & Multi-database Switch
 
 ---
 
@@ -213,7 +223,7 @@ HUTECH_LTW.FILMIX/
 
 - Video phim dùng sample public domain: [Big Buck Bunny](https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4)
 - Trailer URL nhận YouTube Embed format: `https://www.youtube.com/embed/XXXX`
-- Watchlist & Continue Watching lưu trong `localStorage` (client-side only)
+- Continue Watching được ghi nhận qua API lưu vào DB; Watchlist được đồng bộ hai chiều giữa DB và localStorage.
 
 ---
 
