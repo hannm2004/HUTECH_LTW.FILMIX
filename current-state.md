@@ -2,13 +2,32 @@
 
 ---
 
-## 📅 Nhật Ký Cập Nhật Hôm Nay (12/06/2026) — Tích Hợp Chatbot Hỏi Đáp & Hệ Thống Gửi Email Đơn Hàng Tự Động
+## 📅 Nhật Ký Cập Nhật Hôm Nay (12/06/2026) — Tích Hợp Chatbot AI, Gửi Email Tự Động, Social Login OAuth, Đồng Bộ Watchlist DB & Hỗ Trợ Đa CSDL
 
-Đã hoàn thành thiết kế, xây dựng và tối ưu hệ thống Chatbot AI (Rule-based) thông minh phong cách Netflix cùng dịch vụ gửi Email thông báo/xác nhận hóa đơn tự động bằng SMTP bất đồng bộ.
+Đã hoàn thành đợt nâng cấp quan trọng cuối cùng trước khi bảo vệ đồ án: Tích hợp thành công Chatbot AI, hệ thống Email SMTP xác nhận hóa đơn đơn hàng, Đăng nhập bên thứ ba (Google/Facebook OAuth), đồng bộ dữ liệu Watchlist 2 chiều với CSDL và hỗ trợ chuyển đổi linh hoạt SQL Server / MySQL.
 
 ### 🛠 Chi Tiết Cập Nhật
 
-#### 1. Chatbot Hỏi Đáp Thông Minh (Netflix-Style Floating Widget)
+#### 1. Đăng Nhập Mạng Xã Hội (Google OAuth Integration)
+* **Tích hợp bên thứ ba**: Cấu hình và tích hợp thư viện Authentication OAuth cho Google vào pipeline xác thực của ứng dụng (`Program.cs`).
+* **Định tuyến & Xử lý (AccountController)**: Triển khai các Endpoint `/Account/ExternalLogin` và `/Account/ExternalLoginCallback` xử lý bắt tay OAuth, nhận diện thông tin email và họ tên từ Claims của nhà cung cấp.
+* **Tự Động Tạo Tài Khoản (Auto-provisioning)**: Tự tạo mới tài khoản `ApplicationUser` và gán vai trò `"User"` khi người dùng đăng nhập lần đầu bằng Google, tự động xác nhận email (`EmailConfirmed = true`) và ghi nhận vào Audit Log hệ thống.
+* **Đồng Bộ Trạng Trái Client (ExternalLoginSuccess.cshtml)**: Thiết kế trang chuyển tiếp trung gian Netflix-style với hiệu ứng Loading Spinner đẹp mắt, tự động ghi nhận thông tin đăng nhập vào `localStorage` của client-side (`filmix_user`) để đồng bộ thanh Navbar và điều hướng an toàn trở lại trang đích trước đó.
+* **Khởi tạo động an toàn**: Cấu hình kiểm tra trong `Program.cs` để chỉ kích hoạt OAuth Services khi các khoá ClientId/ClientSecret được cấu hình trong `appsettings.json`, tránh gây lỗi crash ứng dụng khi chưa cấu hình.
+
+#### 2. Đồng Bộ Watchlist Lên Cơ Sở Dữ Liệu (Database-Backed Watchlist & Sync)
+* **Thiết Kế Thực Thể (Database Schema)**: Bổ sung thực thể `WatchlistItem` với khoá ngoại liên kết bảng phim và người dùng, thiết lập chỉ mục kép duy nhất trên `(UserId, MovieId)` để tối ưu hóa truy vấn.
+* **Endpoint API Watchlist**: Cấu hình các API mới trong `WatchlistController.cs`:
+  - `GET /api/watchlist/ids`: Trả về danh sách các Movie ID có trong danh sách của người dùng đang đăng nhập.
+  - `POST /api/watchlist/sync`: Nhận mảng ID từ phía client gửi lên để đồng bộ hóa (thêm mới/xoá bớt) tương thích với DB nhằm bảo toàn lịch sử lưu phim.
+* **Đồng Bộ Tự Động Hai Chiều (watchlist-sync.js)**: Viết script Javascript tải sớm ở `<head>` của trang. Khi người dùng đăng nhập thành công, script sẽ tự động lấy danh sách phim trong CSDL nạp đè vào `localStorage` của trình duyệt. Mỗi khi người dùng thêm/xoá phim khỏi danh sách yêu thích, script sẽ tự động gọi API `/api/watchlist/sync` để đồng bộ ngay lập tức.
+* **Lọc Phim Theo Thể Loại**: Hỗ trợ bộ lọc động Phim Lẻ / TV Series trên trang Watchlist (`/Watchlist/Index`) được render trực tiếp từ DB.
+
+#### 3. Chuyển Đổi Linh Hoạt Cơ Sở Dữ Liệu (Multi-Database SQL Server & MySQL)
+* **Hỗ trợ đa CSDL**: Cấu hình tham số `"DbProvider"` trong `appsettings.json` cho phép quản trị viên/lập trình viên chuyển đổi hệ quản trị cơ sở dữ liệu qua lại giữa **Microsoft SQL Server** và **MySQL** chỉ bằng cách thay đổi giá trị cấu hình.
+* **Nhận Diện Khởi Tạo**: `Program.cs` đọc giá trị cấu hình này và tiêm DbContext phù hợp (`UseSqlServer` hoặc `UseMySql` thông qua Pomelo driver).
+
+#### 4. Chatbot Hỏi Đáp Thông Minh (Netflix-Style Floating Widget)
 * **Giao diện Chatbot**: Tích hợp widget nổi động (`chatbot.css` và `chatbot.js`) vào layout chung `_Layout.cshtml`, hỗ trợ responsive trên di động, hiệu ứng đóng/mở mượt mà, khung chat có scroll tự động và gửi tin nhắn qua phím Enter.
 * **Engine Xử Lý Intent & Từ Khóa**: Xây dựng `ChatbotApiController.cs` với cơ chế nhận diện từ khóa linh hoạt hỗ trợ cả tiếng Việt không dấu (alias keywords).
 * **Định tuyến & Thứ Tự Ưu Tiên**: Thiết lập thứ tự ưu tiên cho câu hỏi để tránh trùng lặp:
@@ -19,7 +38,7 @@
   5. *Nội dung phim* (thể loại, gợi ý phim lẻ/TV series).
   6. *Mặc định (Fallback)* hướng dẫn các chủ đề chatbot có thể trả lời.
 
-#### 2. Dịch Vụ Gửi Email Xác Nhận Đơn Hàng Tự Động (Email Service)
+#### 5. Dịch Vụ Gửi Email Xác Nhận Đơn Hàng Tự Động (Email Service)
 * **Kiến trúc EmailService**: Thiết lập `IEmailService` và triển khai `EmailService` qua SMTP (`System.Net.Mail`), cấu hình bảo mật bằng lớp cài đặt `EmailSettings` ánh xạ từ `appsettings.json`.
 * **Trình duyệt/Email Client Compatibility**: Thiết kế template HTML phong cách Netflix Dark Mode, thay thế hoàn toàn Flexbox bằng cấu trúc thẻ `<table>` để bảo đảm hiển thị đồng đều trên Outlook, Gmail.
 * **Mã hóa UTF-8**: Cấu hình `SubjectEncoding` và `BodyEncoding` là `System.Text.Encoding.UTF8` giúp hiển thị tiếng Việt hoàn hảo không lỗi ký tự.
@@ -29,15 +48,7 @@
 * **Fire-and-forget**: Thực thi gửi mail ngầm bằng Task bất đồng bộ để tối ưu hóa tốc độ load trang cho người dùng.
 * **Local Preview**: Tự động kết xuất HTML ra file tĩnh `wwwroot/emails/order_confirmation_{id}.html` khi tắt SMTP để lập trình viên dễ dàng kiểm thử giao diện.
 
----
-
-## 📅 Nhật Ký Cập Nhật Hôm Nay (12/06/2026) — Đồng Bộ Poster Chuẩn Dọc & Tích Hợp Giao Diện Chặn Thao Tác Chưa Đăng Nhập (Auth Guards for Cart & Watchlist)
-
-Đã hoàn thành chuẩn hóa giao diện hiển thị cho bộ poster 2:3 mới, tối ưu hóa kích thước tài nguyên và xây dựng cơ chế chặn thông báo đăng nhập trước khi thêm giỏ hàng hoặc thao tác watchlist.
-
-### 🛠 Chi Tiết Cập Nhật
-
-#### 1. Khôi phục hiển thị Cover cho Poster chuẩn dọc
+#### 6. Khôi phục hiển thị Cover cho Poster chuẩn dọc & Auth Guards
 * **Khôi phục `object-fit: cover`**: Revert toàn bộ các điều chỉnh `object-fit: contain` trước đây về `cover` trên các file style hệ thống:
   - `style.css` (trending slider)
   - `movies.css` (movies card)
@@ -46,8 +57,6 @@
   - `watchlist.css` (watchlist card)
   - Inline style của phim gợi ý trong `Home/Index.cshtml` và `Product/Detail.cshtml`
 * **Nén ảnh tối ưu dung lượng**: Thực hiện resize file poster `thebatman.jpg` có độ phân giải cao (~1.6MB) xuống kích thước hiển thị chuẩn web (400x593px, dung lượng chỉ còn ~41KB), nâng tốc độ tải trang lên tối đa.
-
-#### 2. Xây dựng Giao Diện Modal Đăng Nhập & Chuyển Hướng Thông Minh (Auth Guards)
 * **Thành phần Modal chung (`_Layout.cshtml`)**: Bổ sung modal overlay glassmorphism phong cách Netflix thông báo "Đăng nhập để tiếp tục" kèm theo link Đăng Ký / Đăng Nhập và khả năng truyền ngược URL hiện tại.
 * **Chặn tương tác khi chưa Đăng Nhập (Client-side & Server-side)**:
   - **Giỏ Hàng**: Thêm `[Authorize]` vào toàn bộ Cart mutating endpoints ở server. Chặn submit form giỏ hàng ở `Plans.cshtml` phía client và show modal nếu chưa đăng nhập.
@@ -55,6 +64,7 @@
   - **Chuyển hướng ReturnUrl**: Cập nhật `AccountController.cs` và `Auth.cshtml` đọc và truyền `ReturnUrl` để tự động trả người dùng về đúng trang họ đang làm việc sau khi đăng nhập thành công.
 
 ---
+
 
 ## 📅 Nhật Ký Cập Nhật Hôm Nay (08/06/2026) — Nâng Cấp Hệ Thống Sẵn Sàng Bảo Vệ Đồ Án (Premium Fix, Database Migration & UI Smart Trailer)
 
@@ -423,26 +433,44 @@ Hôm nay chúng ta đã tập trung hoàn thiện các tính năng tương tác 
 
 ```
 HUTECH_LTW.FILMIX/
+├── Areas/Admin/
+│   └── Views/
+│       └── Shared/
+│           └── _AdminLayout.cshtml  ✅ SỬA (Cập nhật sidebar System Logs và bố cục)
 ├── Controllers/
+│   ├── AccountController.cs         ✅ SỬA (Tích hợp đăng nhập bên thứ ba Google & Facebook)
 │   ├── ChatbotApiController.cs      ✅ MỚI (Xử lý hỏi đáp chatbot qua API)
-│   ├── OrderController.cs           ✅ SỬA (Tích hợp kích hoạt gửi email đơn hàng)
-│   └── HomeController.cs            ✅ SỬA (Tiêm các repo & service để tối ưu hóa)
+│   ├── OrderController.cs           ✅ SỬA (Tích hợp gửi email đơn hàng và nạp dữ liệu chi tiết)
+│   ├── WatchlistController.cs       ✅ SỬA (Triển khai API lấy danh sách và đồng bộ watchlist)
+│   └── HomeController.cs            ✅ SỬA (Tiêm các repo & service để tối ưu hóa trang chủ)
+├── Data/
+│   └── ApplicationDbContext.cs      ✅ SỬA (Thêm thực thể WatchlistItem và cấu hình quan hệ)
+├── Models/
+│   └── Entities/
+│       └── Entities.cs              ✅ SỬA (Định nghĩa thực thể WatchlistItem trong DB)
 ├── Services/
 │   ├── IEmailService.cs             ✅ MỚI (Interface dịch vụ gửi email)
-│   └── EmailService.cs              ✅ MỚI (Hiện thực gửi mail bằng SmtpClient & lưu preview)
-├── Models/
-│   └── Settings/
-│       └── EmailSettings.cs         ✅ MỚI (Model cấu hình SMTP settings)
+│   ├── EmailService.cs              ✅ MỚI (Hiện thực gửi mail bằng SmtpClient & lưu preview)
+│   └── CartService.cs               ✅ SỬA (Cập nhật logic giỏ hàng cục bộ)
 ├── Views/
-│   └── Shared/
-│       └── _Layout.cshtml           ✅ SỬA (Tích hợp CSS/JS và giao diện chatbot widget)
+│   ├── Account/
+│   │   ├── Auth.cshtml              ✅ SỬA (Tích hợp nút đăng nhập bằng Google/Facebook)
+│   │   └── ExternalLoginSuccess.cshtml ✅ MỚI (View cầu nối đồng bộ trạng thái đăng nhập OAuth)
+│   ├── Shared/
+│   │   └── _Layout.cshtml           ✅ SỬA (Tích hợp CSS/JS chatbot, script đồng bộ Watchlist)
+│   ├── Subscription/
+│   │   └── Plans.cshtml             ✅ SỬA (Chặn thao tác chọn gói khi chưa đăng nhập)
+│   └── TVShows/
+│       └── Index.cshtml             ✅ SỬA (Cập nhật nút lưu phim TV nổi bật)
 ├── wwwroot/
 │   ├── css/
 │   │   └── chatbot.css              ✅ MỚI (Style giao diện bong bóng chat & khung chat Netflix)
 │   └── js/
-│       └── chatbot.js               ✅ MỚI (Xử lý DOM gửi tin, nhận tin và scroll chatbot)
-├── appsettings.json                 ✅ SỬA (Thêm cấu hình EmailSettings)
-├── Program.cs                       ✅ SỬA (Đăng ký DI cho EmailService & EmailSettings)
+│       ├── chatbot.js               ✅ MỚI (Xử lý DOM gửi tin, nhận tin và scroll chatbot)
+│       └── watchlist-sync.js        ✅ MỚI (Script đồng bộ Watchlist giữa localStorage và DB)
+├── appsettings.json                 ✅ SỬA (Cấu hình SMTP EmailSettings và Google/Facebook OAuth keys)
+├── Program.cs                       ✅ SỬA (Đăng ký DI, cấu hình JWT Bearer và External Logins)
+├── CLAUDE.md                        ✅ MỚI (File tài liệu hướng dẫn Claude Code cho dự án)
 ├── README.md                        ✅ SỬA (Cập nhật sơ đồ tính năng & cấu trúc file)
 └── current-state.md                 ✅ SỬA (Cập nhật nhật ký phát triển ngày 12/06)
 ```
