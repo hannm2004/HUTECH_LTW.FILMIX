@@ -81,10 +81,13 @@ namespace untitled1.Controllers
             // Clear the cart
             _cartService.ClearCart();
 
-            // Process payment method
-            await _orderService.ProcessPaymentAsync(order.Id, model.PaymentMethod);
-
-            // Reload order with items for email (auto-paid methods)
+            // Đơn được tạo ở trạng thái Pending với đúng phương thức đã chọn.
+            // KHÔNG xử lý thanh toán tại đây — thanh toán & kích hoạt Premium diễn ra ở
+            // Payment/ProcessMockPayment (idempotent) để tránh xử lý sớm và trùng lặp.
+            //
+            // Gửi email xác nhận ĐƠN HÀNG đúng 1 lần ngay khi đặt hàng, áp dụng cho MỌI
+            // phương thức (kể cả COD vốn không đi qua ProcessMockPayment). Tải lại đơn kèm
+            // OrderItems/Plan để email có đủ dữ liệu.
             var fullOrder = await _orderRepository.GetByIdAsync(order.Id);
             if (fullOrder != null)
                 _ = _emailService.SendOrderConfirmationAsync(fullOrder);
@@ -101,6 +104,12 @@ namespace untitled1.Controllers
             var userId = _userManager.GetUserId(User);
             if (order.UserId != userId) return Forbid();
 
+            // Đơn đã thanh toán → về thẳng trang Success (tránh lỗi khi bấm Back vào lại trang thanh toán)
+            if (order.Status == OrderStatus.Paid || order.Status == OrderStatus.Completed)
+            {
+                return RedirectToAction("Success", new { orderId = order.Id });
+            }
+
             return View(order);
         }
 
@@ -115,13 +124,13 @@ namespace untitled1.Controllers
             var userId = _userManager.GetUserId(User);
             if (order.UserId != userId) return Forbid();
 
-            // Set order as Paid (since mock VNPay, mock PayOS, or mock bank transfer is completed by user clicking "Confirm")
-            await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Paid);
-
-            // Send order confirmation email
-            var paidOrder = await _orderRepository.GetByIdAsync(orderId);
-            if (paidOrder != null)
-                _ = _emailService.SendOrderConfirmationAsync(paidOrder);
+            // Idempotent: chỉ chuyển sang Paid & kích hoạt Premium nếu đơn chưa được thanh toán.
+            // Thanh toán xử lý đúng 1 lần; kích hoạt Premium (trong UpdateOrderStatusAsync) cũng 1 lần.
+            // Email xác nhận đã được gửi 1 lần ở POST Checkout nên KHÔNG gửi lại ở đây.
+            if (order.Status != OrderStatus.Paid && order.Status != OrderStatus.Completed)
+            {
+                await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Paid);
+            }
 
             return RedirectToAction("Success", new { orderId = order.Id });
         }

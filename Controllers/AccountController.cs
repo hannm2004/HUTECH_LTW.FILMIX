@@ -16,15 +16,18 @@ namespace untitled1.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly untitled1.Services.ILogService _logService;
+        private readonly untitled1.Services.ICartService _cartService;
 
         public AccountController(
-            SignInManager<ApplicationUser> signInManager, 
+            SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
-            untitled1.Services.ILogService logService)
+            untitled1.Services.ILogService logService,
+            untitled1.Services.ICartService cartService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _logService = logService;
+            _cartService = cartService;
         }
 
         public IActionResult Auth(string? returnUrl = null)
@@ -103,6 +106,10 @@ namespace untitled1.Controllers
                 await _logService.LogAsync(user.Id, user.Email, "Logout", "Đăng xuất tài khoản", HttpContext.Connection.RemoteIpAddress?.ToString());
             }
             await _signInManager.SignOutAsync();
+
+            // Xoá giỏ hàng (cookie) để không lộ dữ liệu của tài khoản vừa đăng xuất sang trạng thái khách
+            _cartService.ClearCart();
+
             return RedirectToAction("Index", "Home");
         }
 

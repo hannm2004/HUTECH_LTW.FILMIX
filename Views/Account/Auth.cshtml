@@ -484,7 +484,11 @@
         }
 
         /* ── Read ?mode= and ?returnUrl= from URL ── */
-        const _returnUrl = new URLSearchParams(window.location.search).get('returnUrl') || '';
+        // Đọc cả 'returnUrl' (modal tự tạo) lẫn 'ReturnUrl' (ASP.NET Identity redirect) — get() phân biệt hoa thường
+        const _returnUrl = (function () {
+            const p = new URLSearchParams(window.location.search);
+            return p.get('returnUrl') || p.get('ReturnUrl') || '';
+        })();
         (function () {
             const p = new URLSearchParams(window.location.search);
             if (p.get('mode') === 'signup') switchTab('signup');

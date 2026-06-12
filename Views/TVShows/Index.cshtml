@@ -1,30 +1,37 @@
 @model IEnumerable<Movie>
 @{
     ViewData["Title"] = "TV Shows - FILMIX";
+    // Phim TV nổi bật cho hero — lấy phim có rating cao nhất để tiêu đề/ảnh/nút lưu luôn khớp nhau
+    var featured = Model.OrderByDescending(m => m.Rating).FirstOrDefault();
 }
 
-<section class="hero hero--tv">
-    <div class="hero__bg" style="background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 60%), url('/images/auth/ap1.jpg') center/cover;"></div>
-    <div class="hero__inner" style="align-items: flex-start; text-align: left; padding-left: 5%;">
-        <div class="hero__content" style="max-width: 600px; margin-left: 0;">
-            <div class="hero__badge">TV SERIES</div>
-            <h1 class="hero__title" style="font-size: 5rem;">STRANGER<br><span class="red">THINGS</span></h1>
-            <p class="hero__sub" style="margin-left: 0;">
-                Khi một cậu bé mất tích, một thị trấn nhỏ phát hiện ra một bí ẩn liên quan đến các thí nghiệm bí mật, các lực lượng siêu nhiên đáng sợ và một cô bé kỳ lạ.
-            </p>
-            <div class="hero__actions" style="justify-content: flex-start;">
-                <button class="btn btn-red">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                    Phát
-                </button>
-                <button class="btn btn-ghost" id="heroSaveBtn" onclick="toggleHeroWatchlist(1, 'Breaking Bad', '/images/posters/breakingbad.jpg', this)">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /></svg>
-                    <span id="heroSaveBtnText">Danh sách của tôi</span>
-                </button>
+@if (featured != null)
+{
+    <section class="hero hero--tv">
+        <div class="hero__bg" style="background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, transparent 100%), url('@featured.ImageUrl') center/cover;"></div>
+        <div class="hero__inner" style="align-items: flex-start; text-align: left; padding-left: 5%;">
+            <div class="hero__content" style="max-width: 600px; margin-left: 0;">
+                <div class="hero__badge">TV SERIES</div>
+                <h1 class="hero__title" style="font-size: 4rem; text-transform: uppercase;">@featured.Title</h1>
+                <p class="hero__sub" style="margin-left: 0;">
+                    @(string.IsNullOrWhiteSpace(featured.Description)
+                        ? $"{featured.Genre} · {featured.Year}"
+                        : featured.Description)
+                </p>
+                <div class="hero__actions" style="justify-content: flex-start;">
+                    <a asp-controller="Product" asp-action="Detail" asp-route-id="@featured.Id" class="btn btn-red">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                        Phát
+                    </a>
+                    <button class="btn btn-ghost" id="heroSaveBtn" data-movie-id="@featured.Id" onclick="toggleHeroWatchlist(@featured.Id, '@featured.Title', '@featured.ImageUrl', this)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /></svg>
+                        <span id="heroSaveBtnText">Danh sách của tôi</span>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+}
 
 <div class="trending" style="padding-top: 20px;">
     <div class="trending__header">
@@ -88,8 +95,9 @@
             const btn = document.getElementById('heroSaveBtn');
             const span = document.getElementById('heroSaveBtnText');
             if (btn) {
+                const movieId = (btn.getAttribute('data-movie-id') || '').toString();
                 const wl = JSON.parse(localStorage.getItem('filmix_watchlist') || '[]').map(x => x.toString());
-                if (wl.includes('1')) {
+                if (movieId && wl.includes(movieId)) {
                     btn.style.background = 'rgba(70,211,105,0.2)';
                     btn.style.borderColor = '#46d369';
                     if (span) span.textContent = '✓ Đã Lưu';
