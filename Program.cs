@@ -244,6 +244,11 @@ if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(goo
         options.ClientSecret = googleClientSecret;
         // CallbackPath mặc định: /signin-google (đăng ký trong Google Console)
         options.SaveTokens = true;
+
+        // Tránh lỗi "Correlation failed" khi chạy trên môi trường phát triển HTTP (localhost)
+        options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.CorrelationCookie.HttpOnly = true;
     });
 }
 
