@@ -2,6 +2,35 @@
 
 ---
 
+## 📅 Nhật Ký Cập Nhật Hôm Nay (12/06/2026) — Tích Hợp Chatbot Hỏi Đáp & Hệ Thống Gửi Email Đơn Hàng Tự Động
+
+Đã hoàn thành thiết kế, xây dựng và tối ưu hệ thống Chatbot AI (Rule-based) thông minh phong cách Netflix cùng dịch vụ gửi Email thông báo/xác nhận hóa đơn tự động bằng SMTP bất đồng bộ.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### 1. Chatbot Hỏi Đáp Thông Minh (Netflix-Style Floating Widget)
+* **Giao diện Chatbot**: Tích hợp widget nổi động (`chatbot.css` và `chatbot.js`) vào layout chung `_Layout.cshtml`, hỗ trợ responsive trên di động, hiệu ứng đóng/mở mượt mà, khung chat có scroll tự động và gửi tin nhắn qua phím Enter.
+* **Engine Xử Lý Intent & Từ Khóa**: Xây dựng `ChatbotApiController.cs` với cơ chế nhận diện từ khóa linh hoạt hỗ trợ cả tiếng Việt không dấu (alias keywords).
+* **Định tuyến & Thứ Tự Ưu Tiên**: Thiết lập thứ tự ưu tiên cho câu hỏi để tránh trùng lặp:
+  1. *Hỗ trợ kỹ thuật* (sự cố xem phim, lỗi player).
+  2. *Phương thức thanh toán* (thẻ ngân hàng, VNPay, PayOS).
+  3. *Đơn hàng* (yêu cầu đăng nhập, kiểm tra trạng thái đơn hàng).
+  4. *Gói cước* (truy vấn danh sách gói từ `ISubscriptionPlanRepository`).
+  5. *Nội dung phim* (thể loại, gợi ý phim lẻ/TV series).
+  6. *Mặc định (Fallback)* hướng dẫn các chủ đề chatbot có thể trả lời.
+
+#### 2. Dịch Vụ Gửi Email Xác Nhận Đơn Hàng Tự Động (Email Service)
+* **Kiến trúc EmailService**: Thiết lập `IEmailService` và triển khai `EmailService` qua SMTP (`System.Net.Mail`), cấu hình bảo mật bằng lớp cài đặt `EmailSettings` ánh xạ từ `appsettings.json`.
+* **Trình duyệt/Email Client Compatibility**: Thiết kế template HTML phong cách Netflix Dark Mode, thay thế hoàn toàn Flexbox bằng cấu trúc thẻ `<table>` để bảo đảm hiển thị đồng đều trên Outlook, Gmail.
+* **Mã hóa UTF-8**: Cấu hình `SubjectEncoding` và `BodyEncoding` là `System.Text.Encoding.UTF8` giúp hiển thị tiếng Việt hoàn hảo không lỗi ký tự.
+* **Kích hoạt tự động (Triggers)**:
+  - Khi đặt hàng thành công (`OrderController.Checkout`): Gửi mail trạng thái `Pending` (Chờ xử lý).
+  - Khi hoàn tất thanh toán (`OrderController.ProcessMockPayment`): Gửi mail trạng thái `Paid` (Đã thanh toán) để kích hoạt gói dịch vụ.
+* **Fire-and-forget**: Thực thi gửi mail ngầm bằng Task bất đồng bộ để tối ưu hóa tốc độ load trang cho người dùng.
+* **Local Preview**: Tự động kết xuất HTML ra file tĩnh `wwwroot/emails/order_confirmation_{id}.html` khi tắt SMTP để lập trình viên dễ dàng kiểm thử giao diện.
+
+---
+
 ## 📅 Nhật Ký Cập Nhật Hôm Nay (12/06/2026) — Đồng Bộ Poster Chuẩn Dọc & Tích Hợp Giao Diện Chặn Thao Tác Chưa Đăng Nhập (Auth Guards for Cart & Watchlist)
 
 Đã hoàn thành chuẩn hóa giao diện hiển thị cho bộ poster 2:3 mới, tối ưu hóa kích thước tài nguyên và xây dựng cơ chế chặn thông báo đăng nhập trước khi thêm giỏ hàng hoặc thao tác watchlist.
@@ -390,33 +419,32 @@ Hôm nay chúng ta đã tập trung hoàn thiện các tính năng tương tác 
 
 ---
 
-## 📁 Cấu Trúc Các File Đã Thêm / Sửa Hôm Nay (08/06)
+## 📁 Cấu Trúc Các File Đã Thêm / Sửa Hôm Nay (12/06)
 
 ```
 HUTECH_LTW.FILMIX/
 ├── Controllers/
-│   ├── ProductsApiController.cs     ✅ SỬA (Đồng bộ các trường Rating và TrailerVideoUrl mới)
-│   └── SubscriptionController.cs    ✅ SỬA (Sửa lỗi Premium không cập nhật cho User)
+│   ├── ChatbotApiController.cs      ✅ MỚI (Xử lý hỏi đáp chatbot qua API)
+│   ├── OrderController.cs           ✅ SỬA (Tích hợp kích hoạt gửi email đơn hàng)
+│   └── HomeController.cs            ✅ SỬA (Tiêm các repo & service để tối ưu hóa)
+├── Services/
+│   ├── IEmailService.cs             ✅ MỚI (Interface dịch vụ gửi email)
+│   └── EmailService.cs              ✅ MỚI (Hiện thực gửi mail bằng SmtpClient & lưu preview)
 ├── Models/
-│   ├── DTOs/
-│   │   └── MovieDtos.cs             ✅ SỬA (Thêm trường Rating và TrailerVideoUrl vào DTOs)
-│   └── Entities/
-│       ├── ApplicationUser.cs       ✅ SỬA (Thêm thuộc tính tính toán IsPremium)
-│       └── Entities.cs              │   (Bổ sung Rating và TrailerVideoUrl vào Movie)
-├── ViewComponents/
-│   └── HeroBannerViewComponent.cs   ✅ SỬA (Lấy top 5 phim có Rating cao nhất thay vì random)
+│   └── Settings/
+│       └── EmailSettings.cs         ✅ MỚI (Model cấu hình SMTP settings)
 ├── Views/
-│   ├── Product/
-│   │   └── Detail.cshtml            ✅ SỬA (Tích hợp Smart Trailer và Badge Rating)
-│   └── Shared/Components/HeroBanner/
-│       └── Default.cshtml           ✅ SỬA (Thêm Rating badge lên Banner)
-├── wwwroot/js/
-│   └── hero-banner.js               ✅ SỬA (Tối ưu phát video trailer cục bộ)
-├── Migrations/
-│   └── *AddMovieRatingAndLocalTrailer* ✅ MỚI (Tạo database migration cho các cột mới)
-├── Program.cs                       ✅ SỬA (Loại bỏ EnsureDeleted reset DB nguy hiểm)
-├── README.md                        ✅ SỬA (Cập nhật sơ đồ nhánh Git)
-└── current-state.md                 ✅ SỬA (Cập nhật nhật ký phát triển ngày 08/06)
+│   └── Shared/
+│       └── _Layout.cshtml           ✅ SỬA (Tích hợp CSS/JS và giao diện chatbot widget)
+├── wwwroot/
+│   ├── css/
+│   │   └── chatbot.css              ✅ MỚI (Style giao diện bong bóng chat & khung chat Netflix)
+│   └── js/
+│       └── chatbot.js               ✅ MỚI (Xử lý DOM gửi tin, nhận tin và scroll chatbot)
+├── appsettings.json                 ✅ SỬA (Thêm cấu hình EmailSettings)
+├── Program.cs                       ✅ SỬA (Đăng ký DI cho EmailService & EmailSettings)
+├── README.md                        ✅ SỬA (Cập nhật sơ đồ tính năng & cấu trúc file)
+└── current-state.md                 ✅ SỬA (Cập nhật nhật ký phát triển ngày 12/06)
 ```
 
 ---
