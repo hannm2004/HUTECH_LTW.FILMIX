@@ -54,25 +54,29 @@ namespace untitled1.Services
                 return await GetDefaultRecommendationsAsync(count);
             }
 
-            var history = (await _viewingHistoryRepo.GetByUserIdAsync(userId)).ToList();
-            var watchedMovieIds = history.Select(h => h.MovieId).Distinct().ToList();
+            // Get watched movie IDs directly from database (SQL)
+            var watchedMovieIds = await _context.ViewingHistories
+                .Where(h => h.UserId == userId)
+                .Select(h => h.MovieId)
+                .Distinct()
+                .ToListAsync();
 
-            if (!history.Any())
+            if (!watchedMovieIds.Any())
             {
                 return await GetDefaultRecommendationsAsync(count);
             }
 
-            // Count watch frequency of each category (genre) from user's history
-            var categoryCounts = history
-                .Select(h => h.Movie)
-                .Where(m => m != null)
-                .SelectMany(m => m.MovieCategories)
+            // Get top category IDs (up to 3) directly from database (SQL GroupBy, Count, OrderByDescending, Take)
+            var topCategoryIds = await _context.ViewingHistories
+                .Where(h => h.UserId == userId && h.Movie != null)
+                .SelectMany(h => h.Movie.MovieCategories)
                 .GroupBy(mc => mc.CategoryId)
-                .Select(g => new { CategoryId = g.Key, Count = g.Count() })
-                .OrderByDescending(x => x.Count)
-                .ToList();
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .Take(3)
+                .ToListAsync();
 
-            if (!categoryCounts.Any())
+            if (!topCategoryIds.Any())
             {
                 // Fallback: If no categories resolved, return newest unwatched movies
                 return await _context.Movies
@@ -85,10 +89,7 @@ namespace untitled1.Services
                     .ToListAsync();
             }
 
-            // Get the user's top category IDs (up to 3 to ensure diversity in suggestions)
-            var topCategoryIds = categoryCounts.Take(3).Select(x => x.CategoryId).ToList();
-
-            // Find movies in those top categories that the user has not watched yet
+            // Find movies in those top categories that the user has not watched yet (SQL)
             var recommendations = await _context.Movies
                 .Include(m => m.MovieCategories)
                     .ThenInclude(mc => mc.Category)
@@ -98,7 +99,7 @@ namespace untitled1.Services
                 .Take(count)
                 .ToListAsync();
 
-            // If we don't have enough recommendations, pad the list with other unwatched movies
+            // If we don't have enough recommendations, pad the list with other unwatched movies (SQL)
             if (recommendations.Count < count)
             {
                 var existingRecIds = recommendations.Select(r => r.Id).ToList();
@@ -120,12 +121,9 @@ namespace untitled1.Services
 
         public async Task<IEnumerable<CategoryWatchStatDto>> GetTopGenresAsync(int count = 10)
         {
-            var allHistory = await _viewingHistoryRepo.GetAllAsync();
-
-            var stats = allHistory
-                .Select(h => h.Movie)
-                .Where(m => m != null)
-                .SelectMany(m => m.MovieCategories)
+            var stats = await _context.ViewingHistories
+                .Where(h => h.Movie != null)
+                .SelectMany(h => h.Movie.MovieCategories)
                 .GroupBy(mc => mc.Category.Name)
                 .Select(g => new CategoryWatchStatDto
                 {
@@ -134,16 +132,14 @@ namespace untitled1.Services
                 })
                 .OrderByDescending(x => x.WatchCount)
                 .Take(count)
-                .ToList();
+                .ToListAsync();
 
             return stats;
         }
 
         public async Task<IEnumerable<MovieWatchStatDto>> GetTopMoviesAsync(int count = 10)
         {
-            var allHistory = await _viewingHistoryRepo.GetAllAsync();
-
-            var stats = allHistory
+            var stats = await _context.ViewingHistories
                 .GroupBy(h => h.MovieId)
                 .Select(g => new
                 {
@@ -152,7 +148,7 @@ namespace untitled1.Services
                 })
                 .OrderByDescending(x => x.Count)
                 .Take(count)
-                .ToList();
+                .ToListAsync();
 
             var movieIds = stats.Select(s => s.MovieId).ToList();
             var movies = await _context.Movies
