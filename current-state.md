@@ -1,4 +1,33 @@
-# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 12/06/2026
+# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 14/06/2026
+
+---
+
+## 📅 Nhật Ký Cập Nhật Hôm Nay (14/06/2026) — Rà Soát Bảo Mật, Khắc Phục Lỗi Cú Pháp & Đóng Cổng Bypass Thanh Toán
+
+Đã hoàn thành đợt rà soát và củng cố bảo mật toàn diện cho hệ thống: Sửa lỗi biên dịch trang Edit của Admin, phòng chống tấn công thay đổi giá (Price Tampering) qua Cart, xóa bỏ hoàn toàn đường dẫn bypass thanh toán gói cước Premium, dọn dẹp các thông tin nhạy cảm lộ trong mã nguồn, và tối ưu hóa hệ thống gợi ý phim trực tiếp trong CSDL.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### 1. Sửa Lỗi Biên Dịch Trang Quản Trị Admin
+* **Edit View CSS Escape**: Khắc phục lỗi compiler `CS0103` tại `Areas/Admin/Views/Product/Edit.cshtml` bằng việc thay thế `@media` thành `@@media` trong khối thẻ `<style>` để trình biên dịch Razor không parse nhầm thành biến C#.
+
+#### 2. Bảo Vệ Dữ Liệu Thanh Toán & Chặn Price Tampering (C-01)
+* **Xác Thực Số Lượng Sản Phẩm**: Thêm kiểm tra đầu vào tại `OrderService.cs` đảm bảo số lượng sản phẩm thanh toán trong đơn hàng (`item.Quantity`) luôn luôn lớn hơn 0 để ngăn chặn thay đổi giá trị đơn hàng bằng số lượng âm hoặc bằng không.
+* **Sử Dụng Giá Gốc DB**: Giá của gói đăng ký được tham chiếu trực tiếp từ `SubscriptionPlan` trong CSDL, bỏ qua hoàn toàn thông tin giá gửi từ phía client.
+
+#### 3. Loại Bỏ Lộ Lọt Thông Tin Nhạy Cảm (H-01)
+* **Gỡ Bỏ Mật Khẩu Gmail Hardcoded**: Loại bỏ mật khẩu ứng dụng Gmail (`yysq frdl wgpr zafc`) trong `Program.cs` và thay bằng placeholder của lập trình viên.
+* **Cảnh Báo Biến Môi Trường**: Bổ sung log cảnh báo (`Console.WriteLine("[WARN]...")`) khi ứng dụng thiếu các biến môi trường cấu hình thực tế cho JWT, SMTP, Google Client ID/Secret.
+* **Cấu hình CORS an toàn**: Đăng ký các địa chỉ CORS tin cậy (`Cors:AllowedOrigins`) trong `appsettings.json`.
+
+#### 4. Tối Ưu Hóa Tốc Độ Truy Vấn Đề Xuất Phim (H-03)
+* **Chuyển Aggregations Về CSDL**: Refactor `RecommendationService.cs` để thực hiện các toán tử nặng như GroupBy, Count, OrderByDescending và Take trực tiếp trên SQL Database bằng Entity Framework thay vì tải dữ liệu thô về bộ nhớ RAM rồi xử lý qua LINQ-to-Objects.
+
+#### 5. Triệt Tiêu Lỗ Hổng Stored XSS Tập Phim (H-04)
+* **Chuyển Sang Data-Attributes**: Gỡ bỏ tham số nội suy Javascript thô trong sự kiện `onclick` của tập phim tại `Detail.cshtml`. Dữ liệu tiêu đề và URL video được lưu an toàn trong thuộc tính `data-title` và `data-url` của HTML, và được truy xuất qua `this.getAttribute()`.
+
+#### 6. Quy Chuẩn Hóa Quy Trình Mua Premium (M-05)
+* **Đóng Đường Bypass Trực Tiếp**: Xóa bỏ các Action `ProcessPayment` và `Success` trong `SubscriptionController.cs`, đồng thời xóa bỏ hai file view thô `Checkout.cshtml` và `Success.cshtml` tương ứng. Luồng đăng ký Premium hiện được hợp nhất hoàn toàn qua giỏ hàng chuẩn của hệ thống.
 
 ---
 
