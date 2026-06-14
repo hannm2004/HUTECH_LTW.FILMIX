@@ -143,20 +143,20 @@ namespace untitled1.Areas.Admin.Controllers
                 var movie = await _context.Movies.FindAsync(id);
                 if (movie == null) return NotFound();
 
-                // L-01: Delete old locally-uploaded poster if a new file is uploaded
+                // L-01: Update image path and delete old poster file if appropriate
                 if (uploadedPath != null && uploadedPath != "INVALID_FILE")
                 {
-                    if (!string.IsNullOrEmpty(movie.ImageUrl) && movie.ImageUrl.StartsWith("/images/posters/"))
-                    {
-                        var oldPath = Path.Combine(_webHostEnvironment.WebRootPath, movie.ImageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-                        if (System.IO.File.Exists(oldPath))
-                            System.IO.File.Delete(oldPath);
-                    }
+                    DeleteLocalPoster(movie.ImageUrl);
                     movie.ImageUrl = uploadedPath;
                 }
-                else if (uploadedPath == null && !string.IsNullOrWhiteSpace(movieData.ImageUrl))
+                else if (uploadedPath == null)
                 {
-                    movie.ImageUrl = movieData.ImageUrl;
+                    var targetImageUrl = string.IsNullOrWhiteSpace(movieData.ImageUrl) ? "/images/posters/default.jpg" : movieData.ImageUrl;
+                    if (movie.ImageUrl != targetImageUrl)
+                    {
+                        DeleteLocalPoster(movie.ImageUrl);
+                        movie.ImageUrl = targetImageUrl;
+                    }
                 }
 
                 movie.Title       = movieData.Title;
@@ -214,12 +214,7 @@ namespace untitled1.Areas.Admin.Controllers
             if (movie != null)
             {
                 // L-01: Delete uploaded poster file if it's locally stored
-                if (!string.IsNullOrEmpty(movie.ImageUrl) && movie.ImageUrl.StartsWith("/images/posters/"))
-                {
-                    var posterPath = Path.Combine(_webHostEnvironment.WebRootPath, movie.ImageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-                    if (System.IO.File.Exists(posterPath))
-                        System.IO.File.Delete(posterPath);
-                }
+                DeleteLocalPoster(movie.ImageUrl);
 
                 var title = movie.Title;
                 _context.Movies.Remove(movie);
@@ -239,7 +234,13 @@ namespace untitled1.Areas.Admin.Controllers
         {
             if (file == null || file.Length == 0) return null;
 
+            // Security: reject path traversal attempts
+            if (file.FileName.Contains("..") || file.FileName.Contains('/') || file.FileName.Contains('\\'))
+                return "INVALID_FILE";
+
             var extension = Path.GetExtension(file.FileName);
+            if (string.IsNullOrEmpty(extension))
+                return "INVALID_FILE";
 
             // Security: reject disallowed extensions including double-extension attacks
             if (!AllowedExtensions.Contains(extension))
@@ -255,16 +256,49 @@ namespace untitled1.Areas.Admin.Controllers
                 return "INVALID_FILE";
 
             var postersDir = Path.Combine(_webHostEnvironment.WebRootPath, "images", "posters");
-            Directory.CreateDirectory(postersDir);
+            if (!Directory.Exists(postersDir))
+            {
+                Directory.CreateDirectory(postersDir);
+            }
 
-            // Generate a unique filename to prevent path traversal and overwrite attacks
-            var uniqueName = $"{Guid.NewGuid()}{extension.ToLowerInvariant()}";
+            // Generate a unique filename using required format film_yyyyMMdd_HHmmss_guid.extension
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var uniqueName = $"film_{timestamp}_{Guid.NewGuid()}{extension.ToLowerInvariant()}";
             var filePath = Path.Combine(postersDir, uniqueName);
+
+            // Double check for directory traversal on resolved path
+            var canonicalPostersDir = Path.GetFullPath(postersDir);
+            var canonicalFilePath = Path.GetFullPath(filePath);
+            if (!canonicalFilePath.StartsWith(canonicalPostersDir, StringComparison.OrdinalIgnoreCase))
+                return "INVALID_FILE";
 
             await using var stream = new FileStream(filePath, FileMode.Create);
             await file.CopyToAsync(stream);
 
             return $"/images/posters/{uniqueName}";
+        }
+
+        // L-01: Helper — deletes local poster files safely, ensuring default.jpg and external URLs are never deleted.
+        private void DeleteLocalPoster(string? imageUrl)
+        {
+            if (string.IsNullOrEmpty(imageUrl)) return;
+
+            if (imageUrl.StartsWith("/images/posters/", StringComparison.OrdinalIgnoreCase) && 
+                !imageUrl.EndsWith("default.jpg", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var filePath = Path.Combine(_webHostEnvironment.WebRootPath, imageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+                catch
+                {
+                    // Ignore errors during deletion
+                }
+            }
         }
     }
 }
