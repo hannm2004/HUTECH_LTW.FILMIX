@@ -29,6 +29,19 @@
 #### 6. Quy Chuẩn Hóa Quy Trình Mua Premium (M-05)
 * **Đóng Đường Bypass Trực Tiếp**: Xóa bỏ các Action `ProcessPayment` và `Success` trong `SubscriptionController.cs`, đồng thời xóa bỏ hai file view thô `Checkout.cshtml` và `Success.cshtml` tương ứng. Luồng đăng ký Premium hiện được hợp nhất hoàn toàn qua giỏ hàng chuẩn của hệ thống.
 
+#### 7. Hoàn Thiện & Xác Thực Tính Năng Upload Ảnh Bìa Phim (Movie Poster Upload)
+* **Xác Thực Model ImageUrl Tùy Chọn**: Khắc phục lỗi Model Validation bắt buộc phải có `ImageUrl` bằng cách chuyển trường này thành nullable (`string?`) trong thực thể `Movie` để phù hợp với luồng tải lên ảnh tùy chọn.
+* **Chính Sách Ưu Tiên File Tải Lên**: Thiết lập luồng xử lý tại Controller:
+  - Nếu có file tải lên: File tải lên luôn luôn chiến thắng và được chọn.
+  - Nếu không có file tải lên nhưng có `ImageUrl`: Sử dụng URL bên ngoài.
+  - Nếu không có cả hai: Tự động gán poster mặc định `/images/posters/default.jpg`.
+* **Cơ Chế Tự Động Tạo Thư Mục & Tên File Duy Nhất**: Tự động kiểm tra và khởi tạo thư mục lưu trữ ảnh `wwwroot/images/posters` nếu chưa tồn tại. Tên file được sinh ngẫu nhiên theo định dạng `film_yyyyMMdd_HHmmss_guid.extension` để tránh ghi đè dữ liệu.
+* **Xóa Bỏ Ảnh Bìa Cũ & Khi Xóa Phim**:
+  - Khi quản trị viên thay thế ảnh bìa mới trong Edit, ảnh bìa cũ dạng cục bộ (local) sẽ tự động bị xóa khỏi đĩa cứng để tránh lãng phí dung lượng.
+  - Khi xóa phim (Delete), tệp ảnh bìa cục bộ liên kết với phim đó cũng tự động được giải phóng khỏi máy chủ.
+  - Bảo vệ an toàn: Hệ thống tuyệt đối KHÔNG bao giờ cố gắng xóa ảnh bìa mặc định `default.jpg` hoặc các URL bên ngoài (`https://...`).
+* **Harden Bảo Mật Phía Server**: Validate chặt chẽ file upload: chặn tệp rỗng, giới hạn kích thước tối đa 5MB, giới hạn định dạng cho phép (`.jpg`, `.jpeg`, `.png`, `.webp`), đối chiếu MIME Type (`image/jpeg`, `image/png`, `image/webp`), và chặn đứng tấn công Path Traversal bằng cách kiểm tra ký tự nguy hiểm (`..`, `/`, `\`) trong filename cũng như kiểm tra đường dẫn sau khi giải quyết (canonical path check).
+
 ---
 
 ## 📅 Nhật Ký Cập Nhật Hôm Nay (12/06/2026) — Tích Hợp Chatbot AI, Gửi Email Tự Động, Social Login OAuth, Đồng Bộ Watchlist DB & Hỗ Trợ Đa CSDL

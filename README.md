@@ -30,6 +30,7 @@
 | 🛡️ **Auth Guards** | Chặn thao tác lưu Watchlist & thêm giỏ hàng khi chưa đăng nhập, tự động chuyển hướng ReturnUrl |
 | 🤖 **FILMIX Chatbot** | Hộp thoại bong bóng chat thông minh hỗ trợ tư vấn gói cước, tra cứu đơn hàng, đề xuất phim và khắc phục lỗi kỹ thuật |
 | ✉️ **Email Notification** | Hệ thống gửi hóa đơn và xác nhận đơn hàng tự động phong cách Dark Mode, tối ưu tương thích Outlook/Gmail |
+| 🖼️ **Poster Upload** | Quản lý tải ảnh bìa phim lên máy chủ local hoặc sử dụng URL ảnh bên ngoài, tự động dọn dẹp ảnh cũ & tối ưu hóa bảo mật (size, type, path traversal validation) |
 
 
 
@@ -216,6 +217,7 @@ HUTECH_LTW.FILMIX/
 - [x] Phase 10: Auth Guards for Cart & Watchlist & Poster Styling Reversion
 - [x] Phase 11: Chatbot AI (Rule-based) Q&A & Automated Email Notification System
 - [x] Phase 12: Google & Facebook OAuth, Database-backed Watchlist Sync & Multi-database Switch
+- [x] Phase 13: Complete Movie Poster Upload & Security Hardening (File Upload, Auto-cleanup, Traversal Prevention)
 
 ---
 
