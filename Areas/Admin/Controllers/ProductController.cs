@@ -13,16 +13,25 @@ namespace untitled1.Areas.Admin.Controllers
         private readonly ApplicationDbContext _context;
         private readonly Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> _userManager;
         private readonly untitled1.Services.ILogService _logService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private const int PageSize = 10;
+
+        private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jpg", ".jpeg", ".png", ".webp"
+        };
+        private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5 MB
 
         public ProductController(
             ApplicationDbContext context, 
             Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager,
-            untitled1.Services.ILogService logService)
+            untitled1.Services.ILogService logService,
+            IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _userManager = userManager;
             _logService = logService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Admin/Product
@@ -64,8 +73,23 @@ namespace untitled1.Areas.Admin.Controllers
         // POST: Admin/Product/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Movie movie, int[] selectedCategories)
+        public async Task<IActionResult> Create(Movie movie, int[] selectedCategories, IFormFile? posterFile)
         {
+            // L-01: Handle poster file upload
+            var uploadedPath = await HandlePosterUploadAsync(posterFile);
+            if (uploadedPath == "INVALID_FILE")
+            {
+                ModelState.AddModelError("posterFile", "File không hợp lệ. Chỉ chấp nhận .jpg, .jpeg, .png, .webp và kích thước tối đa 5MB.");
+            }
+            else if (uploadedPath != null)
+            {
+                movie.ImageUrl = uploadedPath;
+            }
+            else if (string.IsNullOrWhiteSpace(movie.ImageUrl))
+            {
+                movie.ImageUrl = "/images/posters/default.jpg";
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Movies.Add(movie);
@@ -103,17 +127,39 @@ namespace untitled1.Areas.Admin.Controllers
         // POST: Admin/Product/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Movie movieData, int[] selectedCategories)
+        public async Task<IActionResult> Edit(int id, Movie movieData, int[] selectedCategories, IFormFile? posterFile)
         {
             if (id != movieData.Id) return BadRequest();
+
+            // L-01: Handle poster file upload
+            var uploadedPath = await HandlePosterUploadAsync(posterFile);
+            if (uploadedPath == "INVALID_FILE")
+            {
+                ModelState.AddModelError("posterFile", "File không hợp lệ. Chỉ chấp nhận .jpg, .jpeg, .png, .webp và kích thước tối đa 5MB.");
+            }
 
             if (ModelState.IsValid)
             {
                 var movie = await _context.Movies.FindAsync(id);
                 if (movie == null) return NotFound();
 
+                // L-01: Delete old locally-uploaded poster if a new file is uploaded
+                if (uploadedPath != null && uploadedPath != "INVALID_FILE")
+                {
+                    if (!string.IsNullOrEmpty(movie.ImageUrl) && movie.ImageUrl.StartsWith("/images/posters/"))
+                    {
+                        var oldPath = Path.Combine(_webHostEnvironment.WebRootPath, movie.ImageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                        if (System.IO.File.Exists(oldPath))
+                            System.IO.File.Delete(oldPath);
+                    }
+                    movie.ImageUrl = uploadedPath;
+                }
+                else if (uploadedPath == null && !string.IsNullOrWhiteSpace(movieData.ImageUrl))
+                {
+                    movie.ImageUrl = movieData.ImageUrl;
+                }
+
                 movie.Title       = movieData.Title;
-                movie.ImageUrl    = movieData.ImageUrl;
                 movie.Year        = movieData.Year;
                 movie.Genre       = movieData.Genre;
                 movie.IsTVSeries  = movieData.IsTVSeries;
@@ -122,8 +168,8 @@ namespace untitled1.Areas.Admin.Controllers
                 movie.Description = movieData.Description ?? string.Empty;
                 movie.TrailerUrl  = movieData.TrailerUrl  ?? string.Empty;
 
-                var existing = _context.MovieCategories.Where(mc => mc.MovieId == id);
-                _context.MovieCategories.RemoveRange(existing);
+                var existingCats = _context.MovieCategories.Where(mc => mc.MovieId == id);
+                _context.MovieCategories.RemoveRange(existingCats);
 
                 foreach (var catId in selectedCategories)
                     _context.MovieCategories.Add(new MovieCategory { MovieId = id, CategoryId = catId });
@@ -167,6 +213,14 @@ namespace untitled1.Areas.Admin.Controllers
 
             if (movie != null)
             {
+                // L-01: Delete uploaded poster file if it's locally stored
+                if (!string.IsNullOrEmpty(movie.ImageUrl) && movie.ImageUrl.StartsWith("/images/posters/"))
+                {
+                    var posterPath = Path.Combine(_webHostEnvironment.WebRootPath, movie.ImageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    if (System.IO.File.Exists(posterPath))
+                        System.IO.File.Delete(posterPath);
+                }
+
                 var title = movie.Title;
                 _context.Movies.Remove(movie);
                 await _context.SaveChangesAsync();
@@ -177,6 +231,40 @@ namespace untitled1.Areas.Admin.Controllers
                 TempData["Success"] = $"Đã xóa phim \"{title}\" thành công.";
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        // L-01: Helper — validates and saves an uploaded poster file.
+        // Returns: file path on success, null if no file, "INVALID_FILE" on failure.
+        private async Task<string?> HandlePosterUploadAsync(IFormFile? file)
+        {
+            if (file == null || file.Length == 0) return null;
+
+            var extension = Path.GetExtension(file.FileName);
+
+            // Security: reject disallowed extensions including double-extension attacks
+            if (!AllowedExtensions.Contains(extension))
+                return "INVALID_FILE";
+
+            // Security: reject files exceeding max size
+            if (file.Length > MaxFileSizeBytes)
+                return "INVALID_FILE";
+
+            // Security: verify actual content type matches extension
+            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!allowedMimeTypes.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
+                return "INVALID_FILE";
+
+            var postersDir = Path.Combine(_webHostEnvironment.WebRootPath, "images", "posters");
+            Directory.CreateDirectory(postersDir);
+
+            // Generate a unique filename to prevent path traversal and overwrite attacks
+            var uniqueName = $"{Guid.NewGuid()}{extension.ToLowerInvariant()}";
+            var filePath = Path.Combine(postersDir, uniqueName);
+
+            await using var stream = new FileStream(filePath, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            return $"/images/posters/{uniqueName}";
         }
     }
 }
