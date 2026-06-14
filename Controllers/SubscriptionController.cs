@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using untitled1.Data;
 using untitled1.Models.Entities;
+using untitled1.Services;
 
 namespace untitled1.Controllers
 {
@@ -11,16 +12,19 @@ namespace untitled1.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly untitled1.Services.ILogService _logService;
+        private readonly ILogService _logService;
+        private readonly ICartService _cartService;
 
         public SubscriptionController(
             ApplicationDbContext context, 
             UserManager<ApplicationUser> userManager,
-            untitled1.Services.ILogService logService)
+            ILogService logService,
+            ICartService cartService)
         {
             _context = context;
             _userManager = userManager;
             _logService = logService;
+            _cartService = cartService;
         }
 
         // GET /Subscription/Plans
@@ -37,70 +41,21 @@ namespace untitled1.Controllers
             return View(plans);
         }
 
-        // GET /Subscription/Checkout/2
+        // GET /Subscription/Checkout/2 — M-05: Route through standard Cart → Order flow
         [Authorize]
         public async Task<IActionResult> Checkout(int planId)
         {
             var plan = await _context.SubscriptionPlans.FindAsync(planId);
             if (plan == null) return NotFound();
-            var uid = _userManager.GetUserId(User);
-            ViewBag.ActiveSubscription = await _context.UserSubscriptions
-                .Include(s => s.Plan)
-                .FirstOrDefaultAsync(s => s.UserId == uid && s.IsActive && s.EndDate > DateTime.Now);
-            return View(plan);
+
+            // Add the chosen plan to the cart and redirect to the unified checkout page
+            _cartService.ClearCart(); // Start with clean cart for subscription
+            _cartService.AddToCart(plan.Id, plan.Name, plan.Price, plan.AccentColor, plan.Resolution);
+
+            return RedirectToAction("Checkout", "Order");
         }
 
-        // POST /Subscription/ProcessPayment
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcessPayment(int planId, string paymentMethod)
-        {
-            var plan = await _context.SubscriptionPlans.FindAsync(planId);
-            if (plan == null) return NotFound();
-            var uid = _userManager.GetUserId(User)!;
-            var existing = await _context.UserSubscriptions.Where(s => s.UserId == uid && s.IsActive).ToListAsync();
-            foreach (var s in existing) s.IsActive = false;
-            
-            var sub = new UserSubscription
-            {
-                UserId = uid, PlanId = planId,
-                StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(1),
-                IsActive = true, PaymentMethod = paymentMethod ?? "credit_card",
-                TransactionId = "FX" + DateTime.Now.Ticks.ToString()[^8..],
-                CreatedAt = DateTime.Now
-            };
-            _context.UserSubscriptions.Add(sub);
-            
-            var user = await _userManager.FindByIdAsync(uid);
-            if (user != null)
-            {
-                user.PremiumStartDate = sub.StartDate;
-                user.PremiumEndDate = sub.EndDate;
-                await _userManager.UpdateAsync(user);
-            }
-            
-            await _context.SaveChangesAsync();
 
-            await _logService.LogAsync(
-                uid, 
-                user?.Email, 
-                "Buy Premium", 
-                $"Đăng ký gói Premium: Gói \"{plan.Name}\", Phương thức: {paymentMethod}, Mã GD: {sub.TransactionId}", 
-                HttpContext.Connection.RemoteIpAddress?.ToString()
-            );
-
-            return RedirectToAction("Success", new { id = sub.Id });
-        }
-
-        // GET /Subscription/Success/5
-        [Authorize]
-        public async Task<IActionResult> Success(int id)
-        {
-            var sub = await _context.UserSubscriptions.Include(s => s.Plan).FirstOrDefaultAsync(s => s.Id == id);
-            if (sub == null) return NotFound();
-            return View(sub);
-        }
 
         // GET /Subscription/MySubscription
         [Authorize]

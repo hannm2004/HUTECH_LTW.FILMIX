@@ -56,7 +56,9 @@ namespace untitled1.Controllers
                 {
                     await _logService.LogAsync(user.Id, user.Email, "Login", "Đăng nhập thành công", HttpContext.Connection.RemoteIpAddress?.ToString());
                 }
-                var redirectUrl = string.IsNullOrEmpty(model.ReturnUrl) ? "/" : model.ReturnUrl;
+                // M-04: Validate ReturnUrl to prevent Open Redirect attacks
+                var redirectUrl = (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                    ? model.ReturnUrl : "/";
                 return Json(new { success = true, redirectUrl });
             }
 
@@ -87,6 +89,8 @@ namespace untitled1.Controllers
 
             if (result.Succeeded)
             {
+                // M-01: Assign default "User" role to all newly registered accounts
+                await _userManager.AddToRoleAsync(user, "User");
                 await _logService.LogAsync(user.Id, user.Email, "Register", "Đăng ký tài khoản mới thành công", HttpContext.Connection.RemoteIpAddress?.ToString());
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return Json(new { success = true, redirectUrl = "/" });
@@ -202,6 +206,14 @@ namespace untitled1.Controllers
             ViewBag.Email = email;
             ViewBag.ReturnUrl = (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) ? returnUrl : "/";
             return View("ExternalLoginSuccess");
+        }
+
+        // GET /Account/AccessDenied
+        // Called automatically by ASP.NET Identity when an authenticated user
+        // tries to access a resource they are not authorized for.
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
 
         [Authorize]

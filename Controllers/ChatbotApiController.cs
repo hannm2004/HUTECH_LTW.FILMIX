@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using untitled1.Models.Entities;
@@ -28,6 +30,20 @@ namespace untitled1.Controllers
         {
             if (string.IsNullOrWhiteSpace(req?.Message))
                 return Ok(new { reply = "Bạn chưa nhập gì. Hãy hỏi tôi về phim, gói dịch vụ hoặc đơn hàng nhé! 😊" });
+
+            // L-02: Support both Cookie and JWT auth — try each scheme to populate User principal
+            if (HttpContext.User.Identity?.IsAuthenticated != true)
+            {
+                var cookieResult = await HttpContext.AuthenticateAsync("Identity.Application");
+                if (cookieResult.Succeeded && cookieResult.Principal != null)
+                    HttpContext.User = cookieResult.Principal;
+                else
+                {
+                    var jwtResult = await HttpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                    if (jwtResult.Succeeded && jwtResult.Principal != null)
+                        HttpContext.User = jwtResult.Principal;
+                }
+            }
 
             var msg   = req.Message.Trim().ToLower();
             var reply = await GenerateReply(msg);

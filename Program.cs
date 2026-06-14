@@ -30,8 +30,34 @@ builder.Services.AddControllersWithViews()
         };
     });
 
+// ── M-02 CORS Policy — restrict to known origins ─────────────────────────────
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FilmixPolicy", policy =>
+    {
+        if (builder.Environment.IsDevelopment())
+        {
+            // Development: allow all localhost ports
+            policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+        else
+        {
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? Array.Empty<string>();
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+    });
+});
+
 // ── Swagger / OpenAPI ─────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
     // Auth API group
@@ -136,12 +162,40 @@ builder.Services.AddScoped<untitled1.Services.IAdminService, untitled1.Services.
 builder.Services.AddScoped<untitled1.Services.IRecommendationService, untitled1.Services.RecommendationService>();
 builder.Services.AddScoped<untitled1.Services.ILogService, untitled1.Services.LogService>();
 
-// Register Email service
-builder.Services.Configure<untitled1.Models.Settings.EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+// Register Email service with environment variables override and fallback warnings (H-01)
+builder.Services.Configure<untitled1.Models.Settings.EmailSettings>(options =>
+{
+    builder.Configuration.GetSection("EmailSettings").Bind(options);
+    var envSmtpPassword = Environment.GetEnvironmentVariable("FILMIX_SMTP_PASSWORD");
+    if (!string.IsNullOrEmpty(envSmtpPassword))
+    {
+        options.Password = envSmtpPassword;
+    }
+    else
+    {
+        // Fallback for local development
+        options.Password = "development_dummy_smtp_password";
+        Console.WriteLine("[WARN] FILMIX_SMTP_PASSWORD environment variable not set. Using development fallback dummy SMTP credentials.");
+    }
+});
 builder.Services.AddScoped<untitled1.Services.IEmailService, untitled1.Services.EmailService>();
 
-// Register JWT configuration and services
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+// Register JWT configuration with environment variables override and fallback warnings (H-01)
+builder.Services.Configure<JwtSettings>(options =>
+{
+    builder.Configuration.GetSection("JwtSettings").Bind(options);
+    var envJwtSecret = Environment.GetEnvironmentVariable("FILMIX_JWT_SECRET");
+    if (!string.IsNullOrEmpty(envJwtSecret))
+    {
+        options.Secret = envJwtSecret;
+    }
+    else if (options.Secret == "YOUR_JWT_SECRET_PLACEHOLDER_MIN_32_CHARS_LONG_2026!")
+    {
+        // Fallback for local development
+        options.Secret = "SuperSecretKeyForFilmixRESTApiAuthBearerTokens2026!";
+        Console.WriteLine("[WARN] FILMIX_JWT_SECRET environment variable not set. Using development fallback secret key.");
+    }
+});
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -172,13 +226,30 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Auth";
+    options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
-// Configure JWT Authentication
+// Configure JWT Authentication (H-01)
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 if (jwtSettings == null)
 {
     throw new InvalidOperationException("Cấu hình JwtSettings chưa được khai báo trong appsettings.json");
+}
+
+var envJwtSecretForAuth = Environment.GetEnvironmentVariable("FILMIX_JWT_SECRET");
+if (!string.IsNullOrEmpty(envJwtSecretForAuth))
+{
+    jwtSettings.Secret = envJwtSecretForAuth;
+}
+else if (jwtSettings.Secret == "YOUR_JWT_SECRET_PLACEHOLDER_MIN_32_CHARS_LONG_2026!")
+{
+    jwtSettings.Secret = "SuperSecretKeyForFilmixRESTApiAuthBearerTokens2026!";
+    Console.WriteLine("[WARN] AddJwtBearer configuration is using the fallback development JWT Secret key.");
+}
+
+if (string.IsNullOrEmpty(jwtSettings.Secret))
+{
+    throw new InvalidOperationException("Khóa bí mật JWT (JWT Secret) chưa được cấu hình.");
 }
 
 var authBuilder = builder.Services.AddAuthentication()
@@ -232,10 +303,24 @@ var authBuilder = builder.Services.AddAuthentication()
         };
     });
 
-// ── Social login (Google / Facebook) — chỉ bật nếu đã cấu hình credentials trong appsettings.
-//    Nhờ đó app vẫn chạy bình thường khi chưa khai báo OAuth keys. ──
-var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
-var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+// ── Social login (Google / Facebook) — chỉ bật nếu đã cấu hình credentials trong appsettings hoặc env. ──
+var googleClientId = Environment.GetEnvironmentVariable("FILMIX_GOOGLE_CLIENT_ID")
+    ?? builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = Environment.GetEnvironmentVariable("FILMIX_GOOGLE_CLIENT_SECRET")
+    ?? builder.Configuration["Authentication:Google:ClientSecret"];
+
+// Ignore placeholder settings (H-01)
+if (string.IsNullOrWhiteSpace(googleClientId) || googleClientId.Contains("PLACEHOLDER"))
+{
+    Console.WriteLine("[WARN] FILMIX_GOOGLE_CLIENT_ID not configured or is a placeholder. Google Auth will be disabled.");
+    googleClientId = null;
+}
+if (string.IsNullOrWhiteSpace(googleClientSecret) || googleClientSecret.Contains("PLACEHOLDER"))
+{
+    Console.WriteLine("[WARN] FILMIX_GOOGLE_CLIENT_SECRET not configured or is a placeholder. Google Auth will be disabled.");
+    googleClientSecret = null;
+}
+
 if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
 {
     authBuilder.AddGoogle(options =>
@@ -289,9 +374,10 @@ using (var scope = app.Services.CreateScope())
     // Call DbSeeder
     try
     {
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        DbSeeder.SeedAsync(roleManager, userManager).GetAwaiter().GetResult();
+        var roleManager  = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager  = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var seederLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        DbSeeder.SeedAsync(roleManager, userManager, seederLogger).GetAwaiter().GetResult();
     }
     catch (Exception ex)
     {
@@ -329,6 +415,7 @@ app.UseWhen(
 
 app.UseRouting();
 app.UseSession();
+app.UseCors("FilmixPolicy"); // M-02: Apply named CORS policy
 
 app.UseAuthentication();
 app.UseAuthorization();

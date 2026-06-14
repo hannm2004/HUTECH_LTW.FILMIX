@@ -135,7 +135,7 @@
                     <div class="episodes-list" style="display: grid; gap: 15px;">
                         @foreach (var ep in Model.Episodes.OrderBy(e => e.SeasonNumber).ThenBy(e => e.EpisodeNumber))
                         {
-                            <div class="episode-card" data-season="@ep.SeasonNumber" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; gap: 20px; padding: 15px 20px; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.07)'; this.style.borderColor='rgba(255,255,255,0.15)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.05)';" onclick="playEpisode('@ep.Title', '@ep.VideoUrl')">
+                            <div class="episode-card" data-season="@ep.SeasonNumber" data-title="@ep.Title" data-url="@ep.VideoUrl" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; gap: 20px; padding: 15px 20px; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.07)'; this.style.borderColor='rgba(255,255,255,0.15)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.05)';" onclick="playEpisode(this.getAttribute('data-title'), this.getAttribute('data-url'))">
                                 <div class="ep-number" style="font-size: 1.5rem; font-weight: 900; color: rgba(255,255,255,0.3); min-width: 40px; text-align: center;">
                                     @ep.EpisodeNumber
                                 </div>
@@ -338,9 +338,9 @@
             }
         });
 
-        // Trailer sources from server
-        const localTrailerUrl = '@(Model.TrailerVideoUrl ?? "")';
-        const youtubeTrailerUrl = '@(Model.TrailerUrl ?? "")';
+        // Trailer sources from server (H-04: encoded to prevent XSS)
+        const localTrailerUrl = '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.TrailerVideoUrl ?? ""))';
+        const youtubeTrailerUrl = '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.TrailerUrl ?? ""))';
 
         // Video control: Smart fallback: LocalMP4 → YouTube embed → Big Buck Bunny
         function playMainVideo() {

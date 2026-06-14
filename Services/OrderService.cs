@@ -40,20 +40,36 @@ namespace untitled1.Services
                 Address = model.Address,
                 Notes = model.Notes,
                 PaymentMethod = model.PaymentMethod,
-                TotalAmount = model.TotalAmount,
                 Status = OrderStatus.Pending,
                 CreatedAt = DateTime.Now
             };
 
+            decimal calculatedTotal = 0;
+
             foreach (var item in model.CartItems)
             {
+                var plan = await _planRepository.GetByIdAsync(item.PlanId);
+                if (plan == null)
+                {
+                    throw new ArgumentException($"Gói dịch vụ có ID {item.PlanId} không tồn tại trong hệ thống.");
+                }
+
+                if (item.Quantity <= 0)
+                {
+                    throw new ArgumentException("Số lượng gói đăng ký phải lớn hơn 0.");
+                }
+
                 order.OrderItems.Add(new OrderItem
                 {
                     PlanId = item.PlanId,
                     Quantity = item.Quantity,
-                    Price = item.Price
+                    Price = plan.Price
                 });
+
+                calculatedTotal += plan.Price * item.Quantity;
             }
+
+            order.TotalAmount = calculatedTotal;
 
             await _orderRepository.AddAsync(order);
             await _orderRepository.SaveAsync();
