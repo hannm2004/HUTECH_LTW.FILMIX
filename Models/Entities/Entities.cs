@@ -15,7 +15,7 @@ namespace untitled1.Models.Entities
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
-        public string ImageUrl { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
         public int Year { get; set; }
         public string Genre { get; set; } = string.Empty; // Keeps textual genre overview for reference
         public bool IsTVSeries { get; set; }
