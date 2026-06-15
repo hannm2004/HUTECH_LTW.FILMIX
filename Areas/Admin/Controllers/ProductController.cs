@@ -127,12 +127,12 @@ namespace untitled1.Areas.Admin.Controllers
         // POST: Admin/Product/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Movie movieData, int[] selectedCategories, IFormFile? posterFile)
+        public async Task<IActionResult> Edit(int id, Movie movieData, int[] selectedCategories, IFormFile? posterFile, bool removeAllImages = false)
         {
             if (id != movieData.Id) return BadRequest();
 
-            // L-01: Handle poster file upload
-            var uploadedPath = await HandlePosterUploadAsync(posterFile);
+            // L-01: Handle poster file upload — bỏ qua nếu admin chọn "Xóa tất cả ảnh"
+            var uploadedPath = removeAllImages ? null : await HandlePosterUploadAsync(posterFile);
             if (uploadedPath == "INVALID_FILE")
             {
                 ModelState.AddModelError("posterFile", "File không hợp lệ. Chỉ chấp nhận .jpg, .jpeg, .png, .webp và kích thước tối đa 5MB.");
@@ -140,11 +140,26 @@ namespace untitled1.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
-                var movie = await _context.Movies.FindAsync(id);
+                var movie = await _context.Movies
+                    .Include(m => m.MovieImages)
+                    .FirstOrDefaultAsync(m => m.Id == id);
                 if (movie == null) return NotFound();
 
+                if (removeAllImages)
+                {
+                    // Xóa toàn bộ ảnh của phim: poster chính + tất cả ảnh phụ (MovieImages),
+                    // giải phóng file cục bộ trên đĩa và đưa poster về ảnh mặc định.
+                    foreach (var img in movie.MovieImages.ToList())
+                    {
+                        DeleteLocalPoster(img.ImageUrl);
+                    }
+                    _context.MovieImages.RemoveRange(movie.MovieImages);
+
+                    DeleteLocalPoster(movie.ImageUrl);
+                    movie.ImageUrl = "/images/posters/default.jpg";
+                }
                 // L-01: Update image path and delete old poster file if appropriate
-                if (uploadedPath != null && uploadedPath != "INVALID_FILE")
+                else if (uploadedPath != null && uploadedPath != "INVALID_FILE")
                 {
                     DeleteLocalPoster(movie.ImageUrl);
                     movie.ImageUrl = uploadedPath;
@@ -167,6 +182,9 @@ namespace untitled1.Areas.Admin.Controllers
                 movie.Cast        = movieData.Cast        ?? string.Empty;
                 movie.Description = movieData.Description ?? string.Empty;
                 movie.TrailerUrl  = movieData.TrailerUrl  ?? string.Empty;
+                // Đường dẫn video phim thật & teaser cục bộ (admin cung cấp file thủ công)
+                movie.VideoUrl        = string.IsNullOrWhiteSpace(movieData.VideoUrl) ? null : movieData.VideoUrl.Trim();
+                movie.TrailerVideoUrl = string.IsNullOrWhiteSpace(movieData.TrailerVideoUrl) ? null : movieData.TrailerVideoUrl.Trim();
 
                 var existingCats = _context.MovieCategories.Where(mc => mc.MovieId == id);
                 _context.MovieCategories.RemoveRange(existingCats);

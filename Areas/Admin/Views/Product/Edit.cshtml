@@ -13,6 +13,7 @@
     <form asp-area="Admin" asp-controller="Product" asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
+        <input type="hidden" id="removeAllImages" name="removeAllImages" value="false" />
 
         <div class="form-row-2col">
             <div class="form-row">
@@ -48,7 +49,7 @@
                 <div style="display:flex; flex-direction:column; gap:6px; padding-top:4px;">
                     <span id="previewFileName" style="font-size:.78rem; color:rgba(255,255,255,.65);">@Model.ImageUrl</span>
                     <span id="previewFileSize" style="font-size:.72rem; color:rgba(255,255,255,.35);"></span>
-                    <button type="button" id="clearFile" style="margin-top:6px; background:rgba(229,9,20,.1); border:1px solid rgba(229,9,20,.25); color:#ff6b6b; border-radius:5px; padding:4px 10px; font-size:.74rem; cursor:pointer;">✕ Xóa ảnh mới</button>
+                    <button type="button" id="clearFile" style="margin-top:6px; background:rgba(229,9,20,.1); border:1px solid rgba(229,9,20,.25); color:#ff6b6b; border-radius:5px; padding:4px 10px; font-size:.74rem; cursor:pointer;">✕ Xóa tất cả ảnh của phim</button>
                 </div>
             </div>
         </div>
@@ -80,6 +81,22 @@
                 <small style="color:#8892a4; font-weight:400; margin-left:6px;">(YouTube embed, VD: https://www.youtube.com/embed/XXXX)</small>
             </label>
             <input asp-for="TrailerUrl" class="form-control" />
+        </div>
+
+        <div class="form-row">
+            <label asp-for="VideoUrl">
+                Đường Dẫn Video Phim (Xem Ngay)
+                <small style="color:#8892a4; font-weight:400; margin-left:6px;">(File cục bộ, VD: /videos/movies/breaking_bad.mp4)</small>
+            </label>
+            <input asp-for="VideoUrl" class="form-control" placeholder="/videos/movies/ten_phim.mp4" />
+        </div>
+
+        <div class="form-row">
+            <label asp-for="TrailerVideoUrl">
+                Đường Dẫn Teaser Cục Bộ
+                <small style="color:#8892a4; font-weight:400; margin-left:6px;">(File MP4, VD: /videos/trailers/breaking_bad.mp4 — để trống sẽ dùng URL Trailer YouTube)</small>
+            </label>
+            <input asp-for="TrailerVideoUrl" class="form-control" placeholder="/videos/trailers/ten_phim.mp4" />
         </div>
 
         <div class="check-row">
@@ -126,17 +143,20 @@
         (function () {
             const fileInput   = document.getElementById('posterFile');
             const urlInput    = document.getElementById('ImageUrl');
+            const removeFlag  = document.getElementById('removeAllImages');
             const preview     = document.getElementById('posterPreview');
             const fileName    = document.getElementById('previewFileName');
             const fileSize    = document.getElementById('previewFileSize');
             const clearBtn    = document.getElementById('clearFile');
             const fileError   = document.getElementById('fileError');
             const DEFAULT_SRC = '@Model.ImageUrl';
+            const PLACEHOLDER = '/images/posters/default.jpg';
             const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.webp'];
             const MAX_SIZE    = 5 * 1024 * 1024;
 
             fileInput.addEventListener('change', function () {
                 fileError.style.display = 'none';
+                removeFlag.value = 'false'; // chọn ảnh mới -> hủy ý định xóa hết ảnh
                 const file = this.files[0];
                 if (!file) { restoreDefault(); return; }
                 const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
@@ -162,20 +182,26 @@
 
             urlInput.addEventListener('input', function () {
                 if (fileInput.files.length > 0) return;
+                removeFlag.value = 'false'; // nhập URL -> hủy ý định xóa hết ảnh
                 const url = this.value.trim();
                 preview.src     = url || DEFAULT_SRC;
                 fileName.textContent = url || DEFAULT_SRC;
                 fileSize.textContent = '';
             });
 
+            // Nút này XÓA HẾT ẢNH của phim (poster + ảnh phụ) khi bấm "Cập Nhật".
             clearBtn.addEventListener('click', function () {
+                removeFlag.value = 'true';
                 fileInput.value = '';
+                urlInput.value  = '';
                 fileError.style.display = 'none';
-                restoreDefault();
+                preview.src          = PLACEHOLDER;
+                fileName.textContent = '⚠ Tất cả ảnh sẽ bị xóa khi bấm "Cập Nhật"';
+                fileSize.textContent = '';
             });
 
             function restoreDefault() {
-                preview.src          = DEFAULT_SRC || '/images/posters/default.jpg';
+                preview.src          = DEFAULT_SRC || PLACEHOLDER;
                 fileName.textContent = DEFAULT_SRC;
                 fileSize.textContent = '';
             }

@@ -59,6 +59,10 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                     Xem Ngay
                 </button>
+                <button onclick="playTeaser()" class="btn btn-ghost" style="padding: 12px 30px; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+                    Xem Teaser
+                </button>
                 <button onclick="toggleWatchlist(this)" class="btn btn-ghost" style="padding: 12px 30px; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                     <span>Danh Sách Của Tôi</span>
@@ -277,6 +281,12 @@
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen></iframe>
         <div id="videoTitleOverlay" style="position: absolute; top: 20px; left: 20px; font-size: 1.3rem; font-weight: 700; color: #fff; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); z-index: 10; pointer-events: none;"></div>
+        <!-- Thông báo khi phim chưa có video để xem -->
+        <div id="videoNotice" style="display: none; position: absolute; inset: 0; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 30px; color: #fff;">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#e50914" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+            <h3 style="margin: 0; font-size: 1.4rem; font-weight: 800;">Phim này chưa có video để xem</h3>
+            <p style="margin: 0; color: #b3b3b3; font-size: 0.95rem; max-width: 420px;">Nội dung đang được cập nhật. Bạn có thể bấm <strong>"Xem Teaser"</strong> để xem đoạn giới thiệu trong lúc chờ.</p>
+        </div>
     </div>
 </div>
 
@@ -338,35 +348,77 @@
             }
         });
 
-        // Trailer sources from server (H-04: encoded to prevent XSS)
-        const localTrailerUrl = '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.TrailerVideoUrl ?? ""))';
-        const youtubeTrailerUrl = '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.TrailerUrl ?? ""))';
+        // Nguồn video từ server (H-04: encode chống XSS)
+        const mainVideoUrl = '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.VideoUrl ?? ""))';      // video phim thật
+        const localTrailerUrl = '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.TrailerVideoUrl ?? ""))'; // teaser cục bộ
+        const youtubeTrailerUrl = '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.TrailerUrl ?? ""))';    // teaser YouTube
 
-        // Video control: Smart fallback: LocalMP4 → YouTube embed → Big Buck Bunny
+        // "Xem Ngay" — phát VIDEO PHIM THẬT (admin cung cấp file qua /videos/movies/...)
         function playMainVideo() {
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('modalVideo');
             const iframe = document.getElementById('modalIframe');
             const overlay = document.getElementById('videoTitleOverlay');
+            const notice = document.getElementById('videoNotice');
             if (!modal) return;
 
             overlay.textContent = '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.Title))';
+
+            if (!mainVideoUrl) {
+                // Chưa có video phim — thông báo cho người dùng
+                video.style.display = 'none';
+                iframe.style.display = 'none';
+                iframe.src = '';
+                if (video) { video.pause(); video.src = ''; }
+                notice.style.display = 'flex';
+                modal.style.display = 'flex';
+                return;
+            }
+
+            notice.style.display = 'none';
+            modal.style.display = 'flex';
+            video.style.display = 'block';
+            iframe.style.display = 'none';
+            iframe.src = '';
+            video.src = mainVideoUrl;
+            video.play().catch(() => {});
+
+            if (window.ContinueWatching) {
+                window.ContinueWatching.track(video, {
+                    id: '@Model.Id',
+                    title: '@Html.Raw(JavaScriptEncoder.Default.Encode(Model.Title))',
+                    imageUrl: '@Model.ImageUrl',
+                    genre: '@Model.Genre',
+                    year: '@Model.Year'
+                });
+            }
+        }
+
+        // "Xem Teaser" — phát trailer: LocalMP4 → YouTube embed → clip mẫu
+        function playTeaser() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            const iframe = document.getElementById('modalIframe');
+            const overlay = document.getElementById('videoTitleOverlay');
+            const notice = document.getElementById('videoNotice');
+            if (!modal) return;
+
+            overlay.textContent = 'Teaser · @Html.Raw(JavaScriptEncoder.Default.Encode(Model.Title))';
+            notice.style.display = 'none';
             modal.style.display = 'flex';
 
             if (localTrailerUrl) {
-                // Priority 1: play local MP4
+                // Ưu tiên 1: teaser MP4 cục bộ
                 video.style.display = 'block';
                 iframe.style.display = 'none';
                 video.src = localTrailerUrl;
                 video.play().catch(() => {
-                    // fallback if local file missing
                     playYouTubeOrSample();
                 });
             } else {
                 playYouTubeOrSample();
             }
 
-            // Start tracking for local video
             if (video.style.display === 'block' && window.ContinueWatching) {
                 window.ContinueWatching.track(video, {
                     id: '@Model.Id',
@@ -402,6 +454,8 @@
             const overlay = document.getElementById('videoTitleOverlay');
 
             if (modal && video) {
+                const notice = document.getElementById('videoNotice');
+                if (notice) notice.style.display = 'none';
                 overlay.textContent = title;
                 video.style.display = 'block';
                 iframe.style.display = 'none';
@@ -432,6 +486,8 @@
                 }
                 if (video) { video.pause(); video.src = ''; }
                 if (iframe) { iframe.src = ''; }
+                const notice = document.getElementById('videoNotice');
+                if (notice) notice.style.display = 'none';
                 modal.style.display = 'none';
             }
         }

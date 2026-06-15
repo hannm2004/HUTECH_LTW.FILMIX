@@ -494,6 +494,15 @@
             if (p.get('mode') === 'signup') switchTab('signup');
         })();
 
+@if (ViewBag.AuthError != null)
+{
+        <text>
+        window.addEventListener('DOMContentLoaded', function () {
+            showToast(@Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.AuthError)), 'error');
+        });
+        </text>
+}
+
         /* ── Tab switch ── */
         function switchTab(tab) {
             document.querySelectorAll('.auth-tab, .auth-panel').forEach(el => el.classList.remove('active'));

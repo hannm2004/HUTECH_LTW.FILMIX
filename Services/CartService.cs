@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +12,7 @@ namespace untitled1.Services
     public class CartService : ICartService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private const string CartCookieKey = "FilmixCart";
+        private const string GuestCartCookieKey = "FilmixCart_guest";
 
         public CartService(IHttpContextAccessor httpContextAccessor)
         {
@@ -19,6 +20,24 @@ namespace untitled1.Services
         }
 
         private HttpContext? Context => _httpContextAccessor.HttpContext;
+
+        // Mỗi tài khoản có giỏ hàng riêng: cookie được đặt tên theo UserId khi đã đăng nhập,
+        // khách (chưa đăng nhập) dùng cookie "guest" tách biệt. Nhờ vậy giỏ của khách KHÔNG
+        // lẫn vào giỏ của tài khoản sau khi đăng nhập, và mỗi tài khoản chỉ thấy giỏ của mình.
+        private string CartCookieKey
+        {
+            get
+            {
+                var user = Context?.User;
+                if (user?.Identity?.IsAuthenticated == true)
+                {
+                    var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(userId))
+                        return $"FilmixCart_{userId}";
+                }
+                return GuestCartCookieKey;
+            }
+        }
 
         public List<CartItemViewModel> GetCart()
         {

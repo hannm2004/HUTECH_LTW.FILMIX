@@ -31,11 +31,19 @@ namespace untitled1.Controllers
             _cartService = cartService;
         }
 
-        public IActionResult Auth(string? returnUrl = null)
+        public IActionResult Auth(string? returnUrl = null, string? error = null)
         {
             if (User.Identity?.IsAuthenticated == true)
                 return RedirectToAction("Index", "Home");
             ViewBag.ReturnUrl = returnUrl;
+            ViewBag.AuthError = error switch
+            {
+                "external_unconfigured" => "Phương thức đăng nhập này chưa được cấu hình trên hệ thống. Vui lòng thử cách khác.",
+                "external_noemail"      => "Nhà cung cấp không chia sẻ email nên không thể đăng nhập. Vui lòng thử cách khác.",
+                "external_create"       => "Không thể tạo tài khoản từ đăng nhập mạng xã hội. Vui lòng thử lại.",
+                "external"              => "Đăng nhập mạng xã hội thất bại. Vui lòng thử lại.",
+                _                        => null
+            };
             return View();
         }
 

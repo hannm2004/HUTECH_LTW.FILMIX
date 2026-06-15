@@ -86,9 +86,21 @@ namespace untitled1.Controllers
             // Clear the cart
             _cartService.ClearCart();
 
-            // Đơn được tạo ở trạng thái Pending với đúng phương thức đã chọn.
-            // KHÔNG xử lý thanh toán hay gửi email tại đây — email xác nhận chỉ được gửi
-            // SAU KHI thanh toán thành công (ProcessMockPayment), không gửi khi chưa thanh toán.
+            // COD không đi qua bước ProcessMockPayment (trang Payment chỉ hiển thị xác nhận),
+            // nên gửi email xác nhận đơn hàng ngay tại đây để mọi phương thức đều gửi mail
+            // về địa chỉ người dùng đã điền. Các phương thức online gửi mail ở ProcessMockPayment.
+            if (string.Equals(order.PaymentMethod, "COD", StringComparison.OrdinalIgnoreCase))
+            {
+                var codOrder = await _orderRepository.GetByIdAsync(order.Id);
+                if (codOrder != null)
+                {
+                    _logger.LogInformation(
+                        "[OrderController] Đơn COD #{OrderId} đã tạo. Đang gửi email xác nhận tới {Email}...",
+                        codOrder.Id, codOrder.Email);
+                    SendOrderConfirmationInBackground(codOrder);
+                }
+            }
+
             return RedirectToAction("Payment", new { orderId = order.Id });
         }
 
@@ -136,28 +148,34 @@ namespace untitled1.Controllers
                         "[OrderController] Đơn hàng #{OrderId} đã thanh toán thành công. Đang gửi email xác nhận tới {Email}...",
                         paidOrder.Id, paidOrder.Email);
 
-                    // Gửi email trong background task — tránh làm chậm redirect của người dùng
-                    // nhưng vẫn log đầy đủ nếu có lỗi SMTP.
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await _emailService.SendOrderConfirmationAsync(paidOrder);
-                            _logger.LogInformation(
-                                "[OrderController] Email xác nhận đơn hàng #{OrderId} đã được gửi thành công.",
-                                paidOrder.Id);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex,
-                                "[OrderController] Gửi email xác nhận thất bại cho đơn hàng #{OrderId} - Email: {Email}",
-                                paidOrder.Id, paidOrder.Email);
-                        }
-                    });
+                    SendOrderConfirmationInBackground(paidOrder);
                 }
             }
 
             return RedirectToAction("Success", new { orderId = order.Id });
+        }
+
+        // Gửi email xác nhận đơn hàng ở background task — không làm chậm redirect của người dùng,
+        // vẫn log đầy đủ nếu SMTP lỗi. Đơn (kèm OrderItems/Plan) đã được nạp sẵn trên luồng request
+        // trước khi truyền vào đây để tránh dùng DbContext (scoped) sau khi request kết thúc.
+        private void SendOrderConfirmationInBackground(Order order)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _emailService.SendOrderConfirmationAsync(order);
+                    _logger.LogInformation(
+                        "[OrderController] Email xác nhận đơn hàng #{OrderId} đã được gửi tới {Email}.",
+                        order.Id, order.Email);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "[OrderController] Gửi email xác nhận thất bại cho đơn hàng #{OrderId} - Email: {Email}",
+                        order.Id, order.Email);
+                }
+            });
         }
 
         // GET /Order/Success

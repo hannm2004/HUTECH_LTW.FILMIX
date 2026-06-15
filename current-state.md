@@ -1,4 +1,48 @@
-# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 14/06/2026
+# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 15/06/2026
+
+---
+
+## 📅 Nhật Ký Cập Nhật Hôm Nay (15/06/2026) — Khắc Phục Kết Nối CSDL, Sửa Lỗi Upload/Xóa Ảnh, Giỏ Hàng Theo Tài Khoản, Trình Phát Video & Teaser, Email Thanh Toán Toàn Diện, Hoàn Thiện Đăng Nhập Facebook
+
+Đã xử lý loạt vấn đề thực tế khi vận hành: khôi phục khả năng mở localhost (sai loại CSDL), sửa triệt để lỗi upload/khôi phục ảnh poster, tách giỏ hàng riêng cho từng tài khoản, làm rõ Hero Banner, bổ sung trình phát video phim thật + teaser, đảm bảo gửi email cho mọi phương thức thanh toán, và hoàn thiện hạ tầng đăng nhập Facebook.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### 1. Khắc Phục Không Mở Được Localhost (Sai Provider CSDL)
+* **`appsettings.json`**: `DbProvider` đang để `"SqlServer"` trỏ tới server máy khác (`LAPTOP-PN800PJP`) khiến ứng dụng không kết nối được. Đã đổi về `"MySql"` với connection string MySQL local (`Server=localhost;Port=3306;Database=filmix_db;User=root;Password=123456;`). Đã kiểm chứng app khởi động, kết nối CSDL và phục vụ các trang HTTP 200.
+
+#### 2. Sửa Lỗi Upload & Khôi Phục Ảnh Poster (Breaking Bad)
+* **Nguyên nhân gốc**: Thực thể `Movie.ImageUrl` là `string` non-nullable nên ASP.NET coi là **bắt buộc ngầm định**. Khi upload ảnh, JS tự xóa trắng ô URL → `ModelState` invalid → file lưu lên đĩa nhưng **DB không cập nhật**.
+* **`Program.cs`**: Bật `SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true` (validation bắt buộc thật sự vẫn do `[Required]` trên DTO đảm nhiệm). Thực thể `Movie.ImageUrl` cũng được chuyển thành `string?`.
+* **Sửa dữ liệu hỏng**: Bản ghi Breaking Bad lưu tên file trần `74da3f39...mangeshdes.png` (không có đường dẫn, file không tồn tại) → khôi phục về `/images/posters/breakingbad.jpg`; dọn file upload mồ côi.
+
+#### 3. Giỏ Hàng Riêng Cho Từng Tài Khoản (Per-User Cart)
+* **`Services/CartService.cs`**: Cookie giỏ hàng được đặt tên theo người dùng — `FilmixCart_{userId}` khi đã đăng nhập, `FilmixCart_guest` cho khách. Giỏ của khách **không còn lẫn** vào tài khoản sau khi đăng nhập; mỗi tài khoản chỉ thấy giỏ của riêng mình. Đã kiểm chứng cookie khách tạo ra đúng `FilmixCart_guest`.
+
+#### 4. Nút "Xóa Ảnh" Trong Admin → Xóa Toàn Bộ Ảnh Của Phim
+* **`Areas/Admin/Controllers/ProductController.cs`** (Edit POST): thêm tham số `removeAllImages`. Khi bật: xóa tất cả `MovieImages` + poster chính (xóa cả file cục bộ lẫn bản ghi DB), đưa poster về `default.jpg`.
+* **`Areas/Admin/Views/Product/Edit.cshtml`**: nút đổi thành **"✕ Xóa tất cả ảnh của phim"**, có cảnh báo trước khi bấm "Cập Nhật"; chọn file/URL mới sẽ tự hủy ý định xóa.
+
+#### 5. Gộp Thư Mục Ảnh — Xóa `hero/` & `tvshows/`
+* Xóa `wwwroot/images/hero/` (8 file) và `wwwroot/images/tvshows/` (10 file) sau khi xác nhận không còn tham chiếu nào ở DB, seed, view hay JS (chỉ tồn tại trong migrations cũ — không chạy). Chỉ giữ `posters/` và `auth/`.
+
+#### 6. Làm Rõ Hero Banner Trang Chủ
+* **`wwwroot/css/hero-banner.css`**: giảm mạnh độ đậm 3 lớp gradient đen phủ banner (~0.3–0.8 thay vì ~0.85–1.0) để ảnh phim hiện rõ hơn, chữ góc dưới-trái vẫn đọc tốt nhờ text-shadow.
+
+#### 7. Trình Phát Video Phim Thật & Teaser
+* **`Models/Entities/Entities.cs`**: thêm trường `Movie.VideoUrl` (đường dẫn video phim thật, admin cung cấp file thủ công). Đã **ALTER TABLE** thêm cột `VideoUrl` vào CSDL MySQL hiện tại (không mất dữ liệu).
+* **`Views/Product/Detail.cshtml`**: nút **"Xem Ngay"** giờ phát `VideoUrl`; nếu chưa có thì hiện thông báo lịch sự. Bổ sung nút **"Xem Teaser"** phát trailer theo thứ tự LocalMP4 → YouTube → clip mẫu.
+* **`Create.cshtml` + `Edit.cshtml`**: thêm ô nhập "Đường Dẫn Video Phim (Xem Ngay)" và "Đường Dẫn Teaser Cục Bộ"; controller lưu cả `VideoUrl` và `TrailerVideoUrl`.
+* Tạo thư mục `wwwroot/videos/movies/` và `wwwroot/videos/trailers/` kèm `README.txt` hướng dẫn bỏ file `.mp4` và gán đường dẫn trong Admin.
+
+#### 8. Gửi Email Cho Mọi Phương Thức Thanh Toán
+* **`Controllers/OrderController.cs`**: Nhánh **COD** trước đây không đi qua `ProcessMockPayment` nên không gửi mail. Nay đơn COD gửi email xác nhận ngay khi đặt hàng (tới đúng email người dùng điền). Gom logic gửi mail vào helper `SendOrderConfirmationInBackground` dùng chung → mỗi đơn gửi đúng 1 email cho mọi phương thức.
+* **Lưu ý**: hệ thống luôn xuất file preview `wwwroot/emails/order_confirmation_{id}.html`; để gửi thật tới hộp thư cần điền **Gmail App Password thật** vào `EmailSettings.Password`.
+
+#### 9. Hoàn Thiện Hạ Tầng Đăng Nhập Facebook
+* **`Program.cs`**: chuẩn hóa cấu hình Facebook giống Google — đọc env `FILMIX_FACEBOOK_APP_ID/SECRET`, bỏ qua giá trị placeholder, log trạng thái bật/tắt.
+* **`Controllers/AccountController.cs`** + **`Views/Account/Auth.cshtml`**: khi provider chưa cấu hình, chuyển về trang đăng nhập kèm **thông báo thân thiện** (toast) thay vì lỗi im lặng. Đã kiểm chứng Google chuyển đúng tới OAuth, Facebook chưa cấu hình xử lý gọn không crash.
+* **Còn lại**: chỉ cần điền `Authentication:Facebook:AppId`/`AppSecret` thật (tạo app tại developers.facebook.com, redirect URI `…/signin-facebook`) là nút Facebook hoạt động như Google.
 
 ---
 
