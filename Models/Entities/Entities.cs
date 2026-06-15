@@ -33,6 +33,10 @@ namespace untitled1.Models.Entities
         /// If populated, plays local MP4; otherwise falls back to YouTube embed.</summary>
         public string? TrailerVideoUrl { get; set; }
 
+        /// <summary>Đường dẫn video phim thật để xem (e.g. /videos/movies/interstellar.mp4).
+        /// Quản trị viên cung cấp file thủ công. Nút "Xem Ngay" sẽ phát video này.</summary>
+        public string? VideoUrl { get; set; }
+
         public double Rating { get; set; } = 0.0;
 
         // Many-to-many relationship with Categories via join table

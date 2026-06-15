@@ -14,6 +14,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews()
+    .AddMvcOptions(options =>
+    {
+        // Không coi các thuộc tính string non-nullable là bắt buộc ngầm định.
+        // Các trường như ImageUrl, Director, Cast... là tùy chọn (controller tự gán mặc định).
+        // Nếu không tắt, khi upload ảnh JS xóa trắng ô ImageUrl -> ModelState invalid -> không lưu được.
+        // Validation thật sự bắt buộc vẫn do [Required] tường minh trên các DTO đảm nhiệm.
+        options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+    })
     .ConfigureApiBehaviorOptions(options =>
     {
         options.InvalidModelStateResponseFactory = context =>
@@ -337,8 +345,23 @@ if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(goo
     });
 }
 
-var facebookAppId = builder.Configuration["Authentication:Facebook:AppId"];
-var facebookAppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+var facebookAppId = Environment.GetEnvironmentVariable("FILMIX_FACEBOOK_APP_ID")
+    ?? builder.Configuration["Authentication:Facebook:AppId"];
+var facebookAppSecret = Environment.GetEnvironmentVariable("FILMIX_FACEBOOK_APP_SECRET")
+    ?? builder.Configuration["Authentication:Facebook:AppSecret"];
+
+// Bỏ qua giá trị placeholder/trống (H-01)
+if (string.IsNullOrWhiteSpace(facebookAppId) || facebookAppId.Contains("PLACEHOLDER"))
+{
+    Console.WriteLine("[WARN] Facebook AppId chưa cấu hình. Đăng nhập Facebook sẽ bị tắt — điền 'Authentication:Facebook:AppId' trong appsettings.json để bật.");
+    facebookAppId = null;
+}
+if (string.IsNullOrWhiteSpace(facebookAppSecret) || facebookAppSecret.Contains("PLACEHOLDER"))
+{
+    Console.WriteLine("[WARN] Facebook AppSecret chưa cấu hình. Đăng nhập Facebook sẽ bị tắt.");
+    facebookAppSecret = null;
+}
+
 if (!string.IsNullOrWhiteSpace(facebookAppId) && !string.IsNullOrWhiteSpace(facebookAppSecret))
 {
     authBuilder.AddFacebook(options =>
@@ -350,6 +373,7 @@ if (!string.IsNullOrWhiteSpace(facebookAppId) && !string.IsNullOrWhiteSpace(face
         options.Fields.Add("name");
         options.SaveTokens = true;
     });
+    Console.WriteLine("[INFO] Đăng nhập Facebook đã được kích hoạt.");
 }
 
 var app = builder.Build();

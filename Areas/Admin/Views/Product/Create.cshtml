@@ -80,6 +80,22 @@
                 <input asp-for="TrailerUrl" class="form-control" placeholder="https://www.youtube.com/embed/..." />
             </div>
 
+            <div class="form-row">
+                <label asp-for="VideoUrl">
+                    Đường Dẫn Video Phim (Xem Ngay)
+                    <small style="color:#8892a4; font-weight:400; margin-left:6px;">(File cục bộ, VD: /videos/movies/ten_phim.mp4)</small>
+                </label>
+                <input asp-for="VideoUrl" class="form-control" placeholder="/videos/movies/ten_phim.mp4" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="TrailerVideoUrl">
+                    Đường Dẫn Teaser Cục Bộ
+                    <small style="color:#8892a4; font-weight:400; margin-left:6px;">(File MP4, VD: /videos/trailers/ten_phim.mp4)</small>
+                </label>
+                <input asp-for="TrailerVideoUrl" class="form-control" placeholder="/videos/trailers/ten_phim.mp4" />
+            </div>
+
             <div class="check-row">
                 <input asp-for="IsTVSeries" type="checkbox" id="IsTVSeries" />
                 <label for="IsTVSeries">Là TV Series (có nhiều tập)</label>
