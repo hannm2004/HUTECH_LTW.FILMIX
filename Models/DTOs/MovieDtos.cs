@@ -7,7 +7,7 @@ namespace untitled1.Models.DTOs
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
-        public string ImageUrl { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }          // nullable – mirrors Movie.ImageUrl (string?)
         public int Year { get; set; }
         public string Genre { get; set; } = string.Empty;
         public bool IsTVSeries { get; set; }
@@ -20,7 +20,7 @@ namespace untitled1.Models.DTOs
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
-        public string ImageUrl { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }          // nullable – mirrors Movie.ImageUrl (string?)
         public int Year { get; set; }
         public string Genre { get; set; } = string.Empty;
         public bool IsTVSeries { get; set; }

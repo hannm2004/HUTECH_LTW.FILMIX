@@ -27,7 +27,7 @@
                    class="btn @(selectedId == null ? "btn-red" : "btn-ghost")" style="padding: 8px 20px; font-size: 0.8rem;">
                    Tất Cả
                 </a>
-                @foreach (var cat in categories)
+                @foreach (var cat in categories ?? Enumerable.Empty<Category>())
                 {
                     <a asp-action="List" asp-route-categoryId="@cat.Id" 
                        class="btn @(selectedId == cat.Id ? "btn-red" : "btn-ghost")" style="padding: 8px 20px; font-size: 0.8rem;">
