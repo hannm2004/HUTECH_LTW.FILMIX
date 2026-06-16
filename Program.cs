@@ -174,16 +174,17 @@ builder.Services.AddScoped<untitled1.Services.ILogService, untitled1.Services.Lo
 builder.Services.Configure<untitled1.Models.Settings.EmailSettings>(options =>
 {
     builder.Configuration.GetSection("EmailSettings").Bind(options);
+    // Ưu tiên biến môi trường (an toàn, không commit secret); nếu không có thì GIỮ NGUYÊN
+    // Password đã bind từ appsettings.json. Không ghi đè bằng giá trị dummy nữa — việc ghi đè
+    // trước đây khiến password thật trong appsettings.json bị vô hiệu hoá và SMTP luôn auth lỗi.
     var envSmtpPassword = Environment.GetEnvironmentVariable("FILMIX_SMTP_PASSWORD");
     if (!string.IsNullOrEmpty(envSmtpPassword))
     {
         options.Password = envSmtpPassword;
     }
-    else
+    else if (string.IsNullOrEmpty(options.Password))
     {
-        // Fallback for local development
-        options.Password = "development_dummy_smtp_password";
-        Console.WriteLine("[WARN] FILMIX_SMTP_PASSWORD environment variable not set. Using development fallback dummy SMTP credentials.");
+        Console.WriteLine("[WARN] Chưa cấu hình SMTP Password (cả biến môi trường FILMIX_SMTP_PASSWORD lẫn EmailSettings:Password trong appsettings.json đều trống). Email sẽ không gửi được.");
     }
 });
 builder.Services.AddScoped<untitled1.Services.IEmailService, untitled1.Services.EmailService>();

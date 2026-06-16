@@ -1,4 +1,24 @@
-# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 15/06/2026
+# Nhật Ký Phát Triển Dự Án FILMIX — Cập nhật 16/06/2026
+
+---
+
+## 📅 Nhật Ký Cập Nhật Hôm Nay (16/06/2026) — Sửa Lỗi Không Gửi Được Email Xác Nhận & Đưa SMTP Password Ra Biến Môi Trường
+
+Khắc phục triệt để tình trạng người dùng mua gói Premium (nhập email, SĐT, chọn phương thức thanh toán) nhưng **không nhận được email xác nhận nào**. Đồng thời chuyển mật khẩu SMTP ra biến môi trường để không lộ secret trong mã nguồn.
+
+### 🛠 Chi Tiết Cập Nhật
+
+#### 1. Sửa Bug Ghi Đè SMTP Password Bằng Giá Trị Dummy (Nguyên Nhân Gốc)
+* **`Program.cs`**: Trước đây sau khi `Bind` cấu hình `EmailSettings`, đoạn code luôn ghi đè `options.Password` bằng chuỗi dummy `"development_dummy_smtp_password"` nếu thiếu biến môi trường `FILMIX_SMTP_PASSWORD` — khiến mật khẩu thật trong `appsettings.json` bị **vô hiệu hoá** và Gmail SMTP luôn báo `5.7.0 Authentication Required`.
+* **Cách sửa**: Ưu tiên biến môi trường `FILMIX_SMTP_PASSWORD`; nếu không có thì **giữ nguyên** `Password` đã bind từ `appsettings.json` (không ghi đè dummy nữa). Chỉ log cảnh báo khi cả hai đều trống.
+
+#### 2. Làm Rõ Cơ Chế Bỏ Qua Gửi Mail Khi Cấu Hình Sai
+* **`Services/EmailService.cs`** (đã có sẵn): khi `FromEmail`/`UserName` không phải email hợp lệ (vd còn để placeholder `[EMAIL_ADDRESS]`), hàm `SendEmailAsync` chỉ ghi log lỗi và **bỏ qua gửi** (không crash). Đây là lý do trước đây "không có thư nào gửi về" dù người dùng nhập email đúng — server không hề kết nối SMTP.
+* **Yêu cầu bắt buộc với Gmail**: phải dùng **App Password 16 ký tự** (bật 2FA → tạo tại `myaccount.google.com/apppasswords`), KHÔNG dùng mật khẩu đăng nhập Gmail thường (bị Google chặn từ 2022).
+
+#### 3. Đưa SMTP Password Ra Biến Môi Trường (Tránh Commit Secret)
+* **`appsettings.json`**: `EmailSettings.Password` để **trống** (`""`) — không còn chứa mật khẩu trong file nguồn.
+* **Biến môi trường**: App Password được lưu ở biến môi trường user-level `FILMIX_SMTP_PASSWORD`; `Program.cs` đọc và ưu tiên giá trị này khi gửi mail. Lưu ý: sau khi set bằng `setx` phải **mở terminal/IDE mới** thì tiến trình `dotnet run` mới nhận được biến.
 
 ---
 
