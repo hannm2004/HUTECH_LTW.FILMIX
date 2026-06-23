@@ -1,0 +1,89 @@
+[33m74b46c4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/movie-features[m[33m)[m test: thêm bộ test case Database/API + QA agent tự động (D1–D13, 100% pass)
+[33m17620e1[m test: thêm bộ test case Database/API + QA agent tự động (D1–D13, 100% pass)
+[33m9065264[m[33m ([m[1;31morigin/feature/movie-features[m[33m)[m fix(email): Fixes the error preventing confirmation emails from being sent and outputs the SMTP password to an environment variable.
+[33m0039098[m feat: fix MySQL config, poster upload & per-account cart; add movie/teaser player, COD email & Facebook login scaffolding
+[33m127bcca[m feat(movie): update entity model for poster upload
+[33m466f8f3[m feat(movie): update entity model for poster upload
+[33m41cb95d[m [update] file current-state.md and README.md
+[33mee49f65[m feat(admin): support poster upload from local files
+[33ma7a9dbb[m chore(git): ignore temporary files
+[33mb477689[m chore(config): update cors and environment configuration
+[33m2522c5d[m feat(auth): add custom access denied page
+[33m25006e3[m feat(admin): add poster upload and mvc crud workflow
+[33m5ab56fd[m refactor(payment): unify premium checkout workflow
+[33m237b066[m fix(security): prevent xss and improve chatbot auth
+[33mf30bbc3[m perf(recommendation): move recommendation queries to sql
+[33m6405649[m fix(security): harden authentication pricing and secret management
+[33mef53977[m [update] README.md and current-state.md
+[33ma58806a[m feat: Chatbot AI, order email and login google
+[33m50afb56[m feat: email confirmation and admin updates
+[33m51df765[m[33m ([m[1;32mmain[m[33m)[m feat: local movie features
+[33m07b139a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #25 from hannm2004/feat/add-chatbot-and-order-email
+[33m5097539[m[33m ([m[1;31morigin/feat/add-chatbot-and-order-email[m[33m)[m update README.md and current-state.md
+[33m52fa2b2[m feat: integrate chatbot and send email after successful order
+[33mb0d4d18[m Merge pull request #24 from hannm2004/feature/auth-guards
+[33m87d3526[m[33m ([m[1;31morigin/feature/auth-guards[m[33m)[m update file README.md and current-state.md
+[33m1179c38[m feat(auth): add login guards for watchlist and cart with returnUrl support
+[33ma141d3d[m Merge pull request #23 from hannm2004/feature/movie-poster-update
+[33m2e6be64[m[33m ([m[1;31morigin/feature/movie-poster-update[m[33m)[m feat: replace placeholder posters with real movie posters
+[33m14f98a0[m[33m ([m[1;31morigin/fix/pre-defense-stabilization[m[33m)[m [update] README.md and current-state.md
+[33m9a8474c[m Merge pull request #22 from hannm2004/fix/pre-defense-stabilization
+[33m0a65cad[m Merge branch 'main' into fix/pre-defense-stabilization
+[33m591d325[m [update] README.md and current-state.md
+[33m6bd97a6[m Merge pull request #21 from hannm2004/fix/pre-defense-stabilization
+[33m6d3b291[m fix: resolve premium activation, enrich database with real movies and upgrade smart trailer system
+[33md09f2c0[m Merge pull request #20 from hannm2004/feature/jwt-authentication
+[33me7bb5f3[m[33m ([m[1;31morigin/feature/jwt-authentication[m[33m)[m Merge branch 'main' into feature/jwt-authentication
+[33m695947e[m feat: JWT Bearer Authentication for REST APIs with JSON 401/403 responses
+[33me5bd804[m [update] README.md and current-state.md
+[33mfc002e1[m Merge pull request #19 from hannm2004/feature/jwt-authentication
+[33mbc605dc[m feat: integrate JWT Bearer authentication for REST APIs and configure Swagger UI
+[33m8193816[m Merge pull request #18 from hannm2004/feature/api-swagger-integration
+[33m948aead[m[33m ([m[1;31morigin/feature/api-swagger-integration[m[33m)[m update current-state.md and README.md
+[33maa3e4fe[m Merge pull request #17 from hannm2004/feature/api-swagger-integration
+[33m7c4a2e7[m feat: implement RESTful Cart & Products APIs and integrate Swagger UI with cookie auth
+[33m2acb5ef[m Merge pull request #16 from hannm2004/feature/recommendation-and-audit-log
+[33m058cd82[m[33m ([m[1;31morigin/feature/recommendation-and-audit-log[m[33m)[m feat: Add Recommendation System & Audit Log
+[33mef6f28c[m Merge pull request #15 from hannm2004/feat/admin-dashboard-payment-system
+[33m415b70e[m[33m ([m[1;31morigin/feat/admin-dashboard-payment-system[m[33m)[m Merge branch 'main' into feat/admin-dashboard-payment-system
+[33mf70cde7[m [feat] complete admin dashboard and payment management
+[33m2eadf15[m Merge pull request #14 from hannm2004/feature/payment-system
+[33m1958113[m[33m ([m[1;31morigin/feature/payment-system[m[33m)[m feat: add premium subscription plans, checkout page, and simulated payment flow
+[33me6a4911[m Merge pull request #13 from hannm2004/feature/search-and-recommendation-system
+[33m127a8d9[m[33m ([m[1;31morigin/feature/search-and-recommendation-system[m[33m)[m Merge branch 'main' into feature/search-and-recommendation-system
+[33m5e35028[m docs: update FILMIX project roadmap and current development status
+[33m01295d3[m chore(startup): update application routing and middleware configuration
+[33m1b08ee9[m feat(error-pages): add custom Netflix-style 404 and general error pages
+[33m7b0ccf9[m refactor(slider): improve netflix slider interaction and responsiveness
+[33ma6c766a[m feat(detail): add similar movies section and improve movie metadata rendering
+[33m2d8d242[m Merge pull request #12 from hannm2004/netflix-ui-upgrades
+[33mb474385[m[33m ([m[1;31morigin/netflix-ui-upgrades[m[33m)[m feat(search): add search page and autocomplete dropdown
+[33ma5dc650[m feat(continue-watching): add playback progress tracking and auto resume
+[33mb9e8fe0[m feat(slider): implement horizontal Netflix slider with arrows and drag support
+[33mf915bc9[m feat(hero-banner): add Netflix-style dynamic hero banner
+[33m7686546[m Merge pull request #11 from hannm2004/netflix-ui-upgrades
+[33m04f4330[m feat: add Netflix-style hero banner, slider, continue watching & search
+[33m4da1259[m Merge pull request #10 from hannm2004/feat/complete-netflix-auth-admin-hover
+[33m79b04fa[m[33m ([m[1;31morigin/feat/complete-netflix-auth-admin-hover[m[33m)[m feat: integrate identity, admin dashboard and filmix hover preview
+[33me31b7c0[m Merge pull request #9 from hannm2004/feat/admin
+[33mf7c18b7[m[33m ([m[1;31morigin/feat/admin[m[33m)[m update file current-state.md
+[33m92fa8fd[m Merge pull request #8 from hannm2004/feat/admin
+[33mbbb2b00[m feat: update admin UI + CRUD + layout
+[33maf5daa8[m Merge pull request #7 from hannm2004/feature/hover-video-preview
+[33mf374977[m[33m ([m[1;31morigin/feature/hover-video-preview[m[33m)[m feat: implement netflix-style hover video preview
+[33m2f875e8[m Merge pull request #6 from hannm2004/feature/smart-live-search
+[33mda756a2[m[33m ([m[1;31morigin/feature/smart-live-search[m[33m)[m feat: implement smart live search in navbar with debounce
+[33m8c2a521[m Merge pull request #5 from hannm2004/feature/advanced-player-and-recommendations
+[33m0679c0f[m[33m ([m[1;31morigin/feature/advanced-player-and-recommendations[m[33m)[m feat: implement advanced video player and similar movies recommendations
+[33md0c4a54[m Merge pull request #4 from hannm2004/fix/watchlist-bugs
+[33m6fd4aa8[m[33m ([m[1;31morigin/fix/watchlist-bugs[m[33m)[m [add] migrations
+[33mf3ac205[m Đồng bộ code từ bt-lapTrinhWeb và cập nhật README
+[33md5f3bce[m Merge pull request #3 from hannm2004/fix/watchlist-bugs
+[33m4e4167b[m fix: resolve i18n dropdown crash, hero watchlist buttons & EF warning
+[33m634d7a9[m Merge pull request #2 from hannm2004/feat/filmix-ui
+[33m1ce8317[m[33m ([m[1;31morigin/feat/filmix-ui[m[33m)[m feat: complete filmix-ui implementation
+[33m4da1d2f[m Merge pull request #1 from hannm2004/feature/web-pages
+[33m068a514[m[33m ([m[1;31morigin/feature/web-pages[m[33m)[m feat: Improve styling for auth and home pages (style.css)
+[33mcb2dd6f[m feat: Add home page (index.html)
+[33m1e76c20[m feat: Add auth page (auth.html)
+[33m5f1966d[m Initial commit
