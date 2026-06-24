@@ -31,6 +31,8 @@
 | 🤖 **FILMIX Chatbot** | Hộp thoại bong bóng chat thông minh hỗ trợ tư vấn gói cước, tra cứu đơn hàng, đề xuất phim và khắc phục lỗi kỹ thuật |
 | ✉️ **Email Notification** | Hệ thống gửi hóa đơn và xác nhận đơn hàng tự động phong cách Dark Mode, tối ưu tương thích Outlook/Gmail |
 | 🖼️ **Poster Upload** | Quản lý tải ảnh bìa phim lên máy chủ local hoặc sử dụng URL ảnh bên ngoài, tự động dọn dẹp ảnh cũ & tối ưu hóa bảo mật (size, type, path traversal validation) |
+| 🏷️ **Quản Lý Danh Mục** | CRUD danh mục phim trong Admin Dashboard: thêm / sửa / xóa, chống trùng tên (case-insensitive), xóa an toàn (chỉ gỡ nhãn khỏi phim, không xóa phim) |
+| 🔄 **Đồng Bộ MovieImages** | Bảng `MovieImages` tự động cập nhật khi upload / đổi / xóa poster, dọn ảnh cũ không phá hủy poster gốc của dự án |
 
 
 
@@ -107,8 +109,9 @@ HUTECH_LTW.FILMIX/
 │   │   ├── DashboardController.cs # Thống kê tổng quan & Charts
 │   │   ├── UserController.cs      # Quản lý người dùng, phân quyền Admin & Premium
 │   │   ├── SubscriptionController.cs # Quản lý & hủy gói cước người dùng
-│   │   └── ProductController.cs   # CRUD phim truyền thống
-│   └── Views/                    # Dashboard, User, Subscription, Analytics views
+│   │   ├── ProductController.cs   # CRUD phim + Poster Upload & đồng bộ MovieImages
+│   │   └── CategoryController.cs  # CRUD danh mục phim (chống trùng, xóa an toàn)
+│   └── Views/                    # Dashboard, User, Subscription, Analytics, Category views
 ├── Controllers/
 │   ├── AccountController.cs      # Login / Register / Logout / Profile / Social Login
 │   ├── AuthApiController.cs      # API JWT xác thực (Login & Profile)
@@ -201,6 +204,7 @@ HUTECH_LTW.FILMIX/
 | `fix/pre-defense-stabilization` | Sửa lỗi và ổn định hệ thống trước đồ án |
 | `feature/auth-guards-and-poster-fixes` | Đồng bộ poster 2:3 mới, tối ưu hóa kích thước và chặn lưu watchlist/thêm giỏ hàng khi chưa đăng nhập |
 | `feat/add-chatbot-and-order-email` | Tích hợp chatbot hỏi đáp sản phẩm/đơn hàng và tự động gửi email xác nhận hóa đơn |
+| `feature/movie-features` | Quản lý danh mục phim (CRUD), đồng bộ MovieImages khi upload poster & sửa lỗi dọn ảnh phá hủy poster gốc |
 ---
 
 ## 🏗 Lộ Trình Phát Triển
@@ -218,6 +222,7 @@ HUTECH_LTW.FILMIX/
 - [x] Phase 11: Chatbot AI (Rule-based) Q&A & Automated Email Notification System
 - [x] Phase 12: Google & Facebook OAuth, Database-backed Watchlist Sync & Multi-database Switch
 - [x] Phase 13: Complete Movie Poster Upload & Security Hardening (File Upload, Auto-cleanup, Traversal Prevention)
+- [x] Phase 14: Category Management (CRUD danh mục), MovieImages Sync & Non-destructive Poster Cleanup
 
 ---
 

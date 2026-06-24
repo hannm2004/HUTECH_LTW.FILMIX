@@ -1,0 +1,85 @@
+@model IEnumerable<Category>
+@{
+    ViewData["Title"] = "Quản Lý Danh Mục";
+    string search     = ViewBag.Search ?? "";
+    int    totalCount = (int)(ViewBag.TotalCount ?? 0);
+}
+
+<div class="page-header">
+    <h1>Quản Lý <span>Danh Mục</span></h1>
+    <div class="page-actions">
+        <form asp-area="Admin" asp-controller="Category" asp-action="Index"
+              method="get" class="toolbar-search">
+            <input type="text" name="search" value="@search" placeholder="Tìm theo tên..." />
+            <button type="submit" title="Tìm kiếm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+            </button>
+        </form>
+        @if (!string.IsNullOrWhiteSpace(search))
+        {
+            <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="btn-clear">✕ Xóa lọc</a>
+        }
+        <a asp-area="Admin" asp-controller="Category" asp-action="Create" class="btn-primary">
+            + Thêm Danh Mục
+        </a>
+    </div>
+</div>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th style="width:70px">ID</th>
+                <th>Tên Danh Mục</th>
+                <th style="width:120px">Số Phim</th>
+                <th style="width:120px">Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <div class="empty-state__icon">🏷️</div>
+                            <div class="empty-state__text">
+                                @(string.IsNullOrWhiteSpace(search)
+                                    ? "Chưa có danh mục nào trong hệ thống."
+                                    : $"Không tìm thấy danh mục nào khớp với \"{search}\".")
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>
+                        <div class="title-cell">
+                            <strong>@item.Name</strong>
+                        </div>
+                    </td>
+                    <td><span class="cat-tag">@item.MovieCategories.Count phim</span></td>
+                    <td>
+                        <div class="action-btns">
+                            <a asp-area="Admin" asp-controller="Category" asp-action="Edit"
+                               asp-route-id="@item.Id" class="btn-edit">Sửa</a>
+                            <a asp-area="Admin" asp-controller="Category" asp-action="Delete"
+                               asp-route-id="@item.Id" class="btn-del">Xóa</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.Any())
+    {
+        <div class="pagination">
+            <span class="pagination-info">@totalCount danh mục</span>
+        </div>
+    }
+</div>

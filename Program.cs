@@ -447,6 +447,11 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
+// Phục vụ các file tĩnh được tạo lúc runtime (vd: poster phim admin upload vào wwwroot/images/posters).
+// MapStaticAssets() chỉ phục vụ tài nguyên có trong manifest lúc build, nên file upload sau khi build
+// sẽ bị 404 nếu thiếu middleware này -> ảnh mới không hiển thị dù DB đã lưu đúng ImageUrl.
+app.UseStaticFiles();
+
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}")
