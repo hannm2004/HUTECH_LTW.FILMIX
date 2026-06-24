@@ -97,6 +97,13 @@ namespace untitled1.Areas.Admin.Controllers
 
                 foreach (var catId in selectedCategories)
                     _context.MovieCategories.Add(new MovieCategory { MovieId = movie.Id, CategoryId = catId });
+
+                // Đồng bộ MovieImages với poster vừa tạo (bỏ qua ảnh mặc định)
+                if (!string.IsNullOrWhiteSpace(movie.ImageUrl) &&
+                    !movie.ImageUrl.EndsWith("default.jpg", StringComparison.OrdinalIgnoreCase))
+                {
+                    _context.MovieImages.Add(new MovieImage { MovieId = movie.Id, ImageUrl = movie.ImageUrl });
+                }
                 await _context.SaveChangesAsync();
 
                 var admin = await _userManager.GetUserAsync(User);
@@ -161,16 +168,20 @@ namespace untitled1.Areas.Admin.Controllers
                 // L-01: Update image path and delete old poster file if appropriate
                 else if (uploadedPath != null && uploadedPath != "INVALID_FILE")
                 {
-                    DeleteLocalPoster(movie.ImageUrl);
+                    var oldImageUrl = movie.ImageUrl;
+                    DeleteLocalPoster(oldImageUrl);
                     movie.ImageUrl = uploadedPath;
+                    SyncPrimaryMovieImage(movie, oldImageUrl, uploadedPath);
                 }
                 else if (uploadedPath == null)
                 {
                     var targetImageUrl = string.IsNullOrWhiteSpace(movieData.ImageUrl) ? "/images/posters/default.jpg" : movieData.ImageUrl;
                     if (movie.ImageUrl != targetImageUrl)
                     {
-                        DeleteLocalPoster(movie.ImageUrl);
+                        var oldImageUrl = movie.ImageUrl;
+                        DeleteLocalPoster(oldImageUrl);
                         movie.ImageUrl = targetImageUrl;
+                        SyncPrimaryMovieImage(movie, oldImageUrl, targetImageUrl);
                     }
                 }
 
@@ -296,26 +307,57 @@ namespace untitled1.Areas.Admin.Controllers
             return $"/images/posters/{uniqueName}";
         }
 
-        // L-01: Helper — deletes local poster files safely, ensuring default.jpg and external URLs are never deleted.
+        // L-01: Helper — đồng bộ bảng MovieImages với poster chính của phim.
+        // Sau khi upload/cập nhật ảnh ở phần Sửa, bảng MovieImages phải hiển thị ImageUrl mới:
+        // xóa dòng mirror trỏ tới ảnh cũ (nếu có) rồi thêm dòng mới cho ảnh hiện tại.
+        // Lưu ý: movie phải được nạp kèm .Include(m => m.MovieImages).
+        private void SyncPrimaryMovieImage(Movie movie, string? oldImageUrl, string newImageUrl)
+        {
+            // Bỏ dòng mirror cũ (khớp đúng ImageUrl cũ) để tránh tích lũy rác
+            if (!string.IsNullOrWhiteSpace(oldImageUrl))
+            {
+                var stale = movie.MovieImages
+                    .Where(mi => string.Equals(mi.ImageUrl, oldImageUrl, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                if (stale.Count > 0)
+                    _context.MovieImages.RemoveRange(stale);
+            }
+
+            // Không lưu ảnh mặc định vào MovieImages
+            if (string.IsNullOrWhiteSpace(newImageUrl) ||
+                newImageUrl.EndsWith("default.jpg", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            // Tránh trùng nếu đã tồn tại dòng với URL mới
+            var alreadyExists = movie.MovieImages
+                .Any(mi => string.Equals(mi.ImageUrl, newImageUrl, StringComparison.OrdinalIgnoreCase));
+            if (!alreadyExists)
+                _context.MovieImages.Add(new MovieImage { MovieId = movie.Id, ImageUrl = newImageUrl });
+        }
+
+        // L-01: Helper — xóa file poster cục bộ một cách AN TOÀN.
+        // CHỈ xóa file do admin UPLOAD lúc runtime (đặt tên "film_..." trong HandlePosterUploadAsync).
+        // KHÔNG BAO GIỜ xóa poster seed đi kèm dự án (vd: inception.jpg, breakingbad.jpg) hay default.jpg —
+        // vì đó là tài nguyên dùng chung, xóa đi sẽ mất ảnh gốc vĩnh viễn và làm phim khác hiển thị sai.
         private void DeleteLocalPoster(string? imageUrl)
         {
             if (string.IsNullOrEmpty(imageUrl)) return;
+            if (!imageUrl.StartsWith("/images/posters/", StringComparison.OrdinalIgnoreCase)) return;
 
-            if (imageUrl.StartsWith("/images/posters/", StringComparison.OrdinalIgnoreCase) && 
-                !imageUrl.EndsWith("default.jpg", StringComparison.OrdinalIgnoreCase))
+            var fileName = Path.GetFileName(imageUrl);
+            if (!fileName.StartsWith("film_", StringComparison.OrdinalIgnoreCase)) return;
+
+            try
             {
-                try
+                var filePath = Path.Combine(_webHostEnvironment.WebRootPath, imageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(filePath))
                 {
-                    var filePath = Path.Combine(_webHostEnvironment.WebRootPath, imageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
+                    System.IO.File.Delete(filePath);
                 }
-                catch
-                {
-                    // Ignore errors during deletion
-                }
+            }
+            catch
+            {
+                // Bỏ qua lỗi khi xóa file
             }
         }
     }

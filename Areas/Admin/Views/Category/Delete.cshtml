@@ -1,0 +1,39 @@
+@model Category
+@{
+    ViewData["Title"] = "Xóa Danh Mục";
+    int movieCount = Model.MovieCategories?.Count ?? 0;
+}
+
+<div class="delete-card">
+    <div class="delete-card__icon">🗑️</div>
+    <h2>Xác Nhận Xóa Danh Mục</h2>
+    <p class="delete-card__sub">Hành động này không thể hoàn tác.</p>
+
+    <div class="delete-info">
+        <dl>
+            <dt>ID</dt>
+            <dd>@Model.Id</dd>
+
+            <dt>Tên danh mục</dt>
+            <dd>@Model.Name</dd>
+
+            <dt>Số phim đang gán</dt>
+            <dd>@movieCount phim</dd>
+        </dl>
+    </div>
+
+    @if (movieCount > 0)
+    {
+        <p class="delete-card__sub" style="color:#ff6b6b;">
+            ⚠ @movieCount phim đang dùng danh mục này sẽ bị gỡ nhãn (phim không bị xóa).
+        </p>
+    }
+
+    <form asp-area="Admin" asp-controller="Category" asp-action="Delete" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <div class="delete-actions">
+            <button type="submit" class="btn-danger">Xóa Vĩnh Viễn</button>
+            <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="btn-cancel">Hủy Bỏ</a>
+        </div>
+    </form>
+</div>
